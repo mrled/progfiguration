@@ -16,8 +16,12 @@ python3 -m pip install --upgrade pip
 python3 -m pip install --editable '.[development]'
 # Run unit tests
 python3 -m unittest
-# Build the packagej
-python3 -m build
+# Build a source-only distribution of the package
+python3 -m build -s
 # Upload it to PyPI
 twine upload dist/*
 ```
+
+We only actually need to build a source version of the package,
+because progfiguration expects that your progfigsite package will pull in the source code.
+We avoid building the binary version because it takes longer.

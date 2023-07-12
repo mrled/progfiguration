@@ -3,6 +3,7 @@ from progfiguration.progfigtypes import Bunch
 
 node = InventoryNode(
     address="node1.example.com",
+    flavortext="This is an example node",
     user="root",
     notes="",
     age_pubkey="",
