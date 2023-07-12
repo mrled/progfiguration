@@ -168,21 +168,21 @@ class Inventory:
     def node(self, name: str) -> ModuleType:
         """The Python module for a given node"""
         if name not in self._node_modules:
-            module = importlib.import_module(f"progfiguration.site.nodes.{name}")
+            module = importlib.import_module(f"progfiguration.sitewrapper.site.nodes.{name}")
             self._node_modules[name] = module
         return self._node_modules[name]
 
     def group(self, name: str) -> ModuleType:
         """The Python module for a given group"""
         if name not in self._group_modules:
-            module = importlib.import_module(f"progfiguration.site.groups.{name}")
+            module = importlib.import_module(f"progfiguration.sitewrapper.site.groups.{name}")
             self._group_modules[name] = module
         return self._group_modules[name]
 
     def role_module(self, name: str) -> ModuleType:
         """The Python module for a given role"""
         if name not in self._role_modules:
-            module = importlib.import_module(f"progfiguration.site.roles.{name}")
+            module = importlib.import_module(f"progfiguration.sitewrapper.site.roles.{name}")
             self._role_modules[name] = module
         return self._role_modules[name]
 
@@ -203,7 +203,7 @@ class Inventory:
             self._node_roles[nodename] = {}
         if rolename not in self._node_roles[nodename]:
 
-            # rolepkg is a string containing the package name of the role, like progfiguration.site.roles.role_name
+            # rolepkg is a string containing the package name of the role, like progfiguration.sitewrapper.site.roles.role_name
             rolepkg = self.role_module(rolename).__package__
 
             # The class it the subclass of ProgfigurationRole that implements the role
@@ -257,14 +257,14 @@ class Inventory:
     def get_node_secrets(self, nodename: str) -> Dict[str, Any]:
         """A Dict of secrets for a given node"""
         if nodename not in self._node_secrets:
-            sfile = importlib_resources_files("progfiguration.site.nodes").joinpath(f"{nodename}.secrets.yml")
+            sfile = importlib_resources_files("progfiguration.sitewrapper.site.nodes").joinpath(f"{nodename}.secrets.yml")
             self._node_secrets[nodename] = self.get_secrets(sfile)
         return self._node_secrets[nodename]
 
     def get_group_secrets(self, groupname: str) -> Dict[str, Any]:
         """A Dict of secrets for a given group"""
         if groupname not in self._group_secrets:
-            sfile = importlib_resources_files("progfiguration.site.groups").joinpath(f"{groupname}.secrets.yml")
+            sfile = importlib_resources_files("progfiguration.sitewrapper.site.groups").joinpath(f"{groupname}.secrets.yml")
             self._group_secrets[groupname] = self.get_secrets(sfile)
         return self._group_secrets[groupname]
 
@@ -283,11 +283,11 @@ class Inventory:
 
     def group_secrets_file(self, group: str) -> Path:
         """The path to the secrets file for a given group"""
-        return importlib_resources_files("progfiguration.site.groups").joinpath(f"{group}.secrets.yml")
+        return importlib_resources_files("progfiguration.sitewrapper.site.groups").joinpath(f"{group}.secrets.yml")
 
     def node_secrets_file(self, node: str) -> Path:
         """The path to the secrets file for a given node"""
-        return importlib_resources_files("progfiguration.site.nodes").joinpath(f"{node}.secrets.yml")
+        return importlib_resources_files("progfiguration.sitewrapper.site.nodes").joinpath(f"{node}.secrets.yml")
 
     def set_node_secret(self, nodename: str, secretname: str, encrypted_value: str):
         """Set a secret for a node"""

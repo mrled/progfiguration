@@ -12,7 +12,7 @@ import tempfile
 import time
 from typing import List, Union
 
-from progfiguration import logger, progfiguration_build_path, remotebrute, site, version
+from progfiguration import logger, progfiguration_build_path, remotebrute, sitewrapper, version
 from progfiguration.cli import (
     progfiguration_error_handler,
     configure_logging,
@@ -316,7 +316,7 @@ def parseargs(arguments: List[str]):
     parser.add_argument(
         "--inventory-file",
         "-f",
-        default=site.package_inventory_file,
+        default=sitewrapper.site.package_inventory_file,
         help="The path to an inventory yaml file. By default, use the one in the package",
     )
     parser.add_argument(

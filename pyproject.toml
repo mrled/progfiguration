@@ -1,6 +1,47 @@
 [build-system]
-requires = ["setuptools", "installer", "wheel", "black", "mypy"]
+requires = [
+    "build",
+    "installer",
+    "setuptools",
+    "twine",
+    "wheel",
+]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "progfiguration"
+version = "0.0.1"
+description = "PROGramatic conFIGURATION for your infrastructure"
+license = {text = "MIT"}
+readme = "readme.md"
+requires-python = ">=3.10"
+dependencies = [
+    "PyYAML",
+    "pytz",
+    "requests",
+]
+
+[[project.authors]]
+name = "Micah R Ledbetter"
+email = "me@micahrl.com"
+
+[project.scripts]
+progfiguration = "progfiguration.cli.progfiguration_cmd:main"
+
+[project.optional-dependencies]
+ssh = [
+    "mitogen",
+]
+development = [
+    "black",
+    "build",
+    "mitogen",
+    "mypy",
+    "twine",
+]
+
+[project.urls]
+Homepage = "https://github.com/mrled/progfiguration"
 
 [tool.black]
 line-length = 120

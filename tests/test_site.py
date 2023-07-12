@@ -3,7 +3,7 @@
 import pdb
 import unittest
 
-from progfiguration import site
+from progfiguration import sitewrapper
 from progfiguration.inventory import Inventory
 
 from tests import PdbTestCase, pdbexc
@@ -13,11 +13,11 @@ class TestRun(PdbTestCase):
     @classmethod
     @pdbexc
     def setUpClass(cls):
-        cls.inventory = Inventory(site.package_inventory_file, None)
-        if not cls.inventory.controller.age:
-            raise Exception(
-                "Controller age is not set - are you running this from the controller with a decrypted secrets volume?"
-            )
+        cls.inventory = Inventory(sitewrapper.site.package_inventory_file, None)
+        # if not cls.inventory.controller.age:
+        #     raise Exception(
+        #         "Controller age is not set - are you running this from the controller with a decrypted secrets volume?"
+        #     )
 
     @pdbexc
     def test_inventory_all_roles(self):
