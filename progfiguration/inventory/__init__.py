@@ -2,9 +2,7 @@
 
 from dataclasses import dataclass
 import os
-import importlib
 from importlib.abc import Traversable
-from importlib.resources import files as importlib_resources_files
 from pathlib import Path
 from types import ModuleType
 from typing import Any, Dict, List, Optional
@@ -15,6 +13,7 @@ from progfiguration import age
 from progfiguration.inventory.roles import ProgfigurationRole, collect_role_arguments
 from progfiguration.localhost import LocalhostLinuxPsyopsOs
 from progfiguration.progfigtypes import AnyPathOrStr
+from progfiguration import sitewrapper
 
 
 @dataclass
@@ -168,21 +167,21 @@ class Inventory:
     def node(self, name: str) -> ModuleType:
         """The Python module for a given node"""
         if name not in self._node_modules:
-            module = importlib.import_module(f"progfiguration.sitewrapper.site.nodes.{name}")
+            module = sitewrapper.site_submodule(f"nodes.{name}")
             self._node_modules[name] = module
         return self._node_modules[name]
 
     def group(self, name: str) -> ModuleType:
         """The Python module for a given group"""
         if name not in self._group_modules:
-            module = importlib.import_module(f"progfiguration.sitewrapper.site.groups.{name}")
+            module = sitewrapper.site_submodule(f"groups.{name}")
             self._group_modules[name] = module
         return self._group_modules[name]
 
     def role_module(self, name: str) -> ModuleType:
         """The Python module for a given role"""
         if name not in self._role_modules:
-            module = importlib.import_module(f"progfiguration.sitewrapper.site.roles.{name}")
+            module = sitewrapper.site_submodule(f"roles.{name}")
             self._role_modules[name] = module
         return self._role_modules[name]
 
@@ -257,21 +256,19 @@ class Inventory:
     def get_node_secrets(self, nodename: str) -> Dict[str, Any]:
         """A Dict of secrets for a given node"""
         if nodename not in self._node_secrets:
-            sfile = importlib_resources_files("progfiguration.sitewrapper.site.nodes").joinpath(f"{nodename}.secrets.yml")
-            self._node_secrets[nodename] = self.get_secrets(sfile)
+            self._node_secrets[nodename] = self.get_secrets(self.node_secrets_file(nodename))
         return self._node_secrets[nodename]
 
     def get_group_secrets(self, groupname: str) -> Dict[str, Any]:
         """A Dict of secrets for a given group"""
         if groupname not in self._group_secrets:
-            sfile = importlib_resources_files("progfiguration.sitewrapper.site.groups").joinpath(f"{groupname}.secrets.yml")
-            self._group_secrets[groupname] = self.get_secrets(sfile)
+            self._group_secrets[groupname] = self.get_secrets(self.group_secrets_file(groupname))
         return self._group_secrets[groupname]
 
     def get_controller_secrets(self) -> Dict[str, Any]:
         """A Dict of secrets for the controller"""
         if not self._controller_secrets:
-            sfile = importlib_resources_files("progfiguration.site").joinpath(f"controller.secrets.yml")
+            sfile = sitewrapper.site_submodule_resource("", "controller.secrets.yml")
             self._controller_secrets = self.get_secrets(sfile)
         return self._controller_secrets
 
@@ -283,11 +280,13 @@ class Inventory:
 
     def group_secrets_file(self, group: str) -> Path:
         """The path to the secrets file for a given group"""
-        return importlib_resources_files("progfiguration.sitewrapper.site.groups").joinpath(f"{group}.secrets.yml")
+        sfile = sitewrapper.site_submodule_resource("groups", f"{group}.secrets.yml")
+        return sfile
 
     def node_secrets_file(self, node: str) -> Path:
         """The path to the secrets file for a given node"""
-        return importlib_resources_files("progfiguration.sitewrapper.site.nodes").joinpath(f"{node}.secrets.yml")
+        sfile = sitewrapper.site_submodule_resource("nodes", f"{node}.secrets.yml")
+        return sfile
 
     def set_node_secret(self, nodename: str, secretname: str, encrypted_value: str):
         """Set a secret for a node"""
