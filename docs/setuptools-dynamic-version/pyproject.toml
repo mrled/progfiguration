@@ -1,0 +1,10 @@
+[project]
+name = "dynvertest"
+dynamic = ["version"]
+
+[project.scripts]
+dynvertest = "dynvertest:main"
+
+[tool.setuptools.dynamic]
+#version = {attr = "dynvertest.staticversion"}
+version = {attr = "dynvertest.epochversion"}
