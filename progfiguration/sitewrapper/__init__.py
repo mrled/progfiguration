@@ -1,22 +1,32 @@
 """Progfiguration site wrapper
 
-If the user site exists, import it.
-Otherwise, import the example site.
+Find a progfigsite package.
+If there is a package called 'progfigsite' in the Python path, import that.
+Otherwise, import the example site from the core progfiguration package.
+Exactly once, at the beginning of program execution,
+the user can call set_site_module_filepath() to use a custom site package,
+which can have any name.
 
 Provide functions for retrieving site-specific resources,
 including submodules and data files.
-(importlib.import_module() can be used to import a module from a string,
-but it requires the full module path.
-Even though we 'import X as site' here,
-'site' is not a module name that import_module() can use.)
+All progfiguration core code should use these functions to access site resources.
+
+(Why can't progfiguration core code use importlib.import_module()?
+Doing that requires the full module path, like 'progfigsite' or 'something.else.my_site'.
+We want to allow the progfigsite to have a dynamically determined name,
+to enable fallback to example_progfigsite and the --progfigsite-package-path option.
+Note that 'import X as progfigsite' does not mean that
+'import_module("sitewrapper.progfigsite")' will work.)
+
+## About site packages
 
 Site packages must contain the following submodules:
 - nodes
 - roles
 - groups
 
-And the following variables:
-- package_inventory_file
+And the following data files:
+- inventory.conf
 
 And may contain an optional 'sitelib' submodule.
 This is not used by progfiguration, but can be used internally in the site package.
@@ -25,18 +35,47 @@ Other names are reserved for future use by progfiguration.
 """
 
 import importlib
-from importlib.resources import files as importlib_resources_files
+import importlib.resources
+import importlib.util
+import os
+import sys
 from types import ModuleType
 
 
-site = None
 site_module_path = ""
 try:
-    import progfigsite as site
+    import progfigsite
+
     site_module_path = "progfigsite"
 except ImportError:
-    import progfiguration.example_site as site
+    import progfiguration.example_site as progfigsite
+
     site_module_path = "progfiguration.example_site"
+
+
+def set_site_module_filepath(filepath: str):
+    """Use a Python package from a filepath as progfigsite
+
+    This is intended to be called only once, at the beginning of program execution.
+
+    Args:
+        filepath: The path to the site package, eg "/path/to/my_progfigsite"
+    """
+    global site_module_path, progfigsite
+
+    site_module_path = "set_site_module_path_progfigsite"
+
+    # spec_from_file_location() will fail if the filepath is a directory,
+    # but if the directory is a package, we can use its __init__.py file.
+    if os.path.exists(f"{filepath}/__init__.py"):
+        filepath = f"{filepath}/__init__.py"
+
+    spec = importlib.util.spec_from_file_location(site_module_path, filepath)
+    if spec is None:
+        raise ImportError(f"Could not import site package from {filepath}")
+    progfigsite = importlib.util.module_from_spec(spec)
+    sys.modules[site_module_path] = progfigsite
+    spec.loader.exec_module(progfigsite)
 
 
 def site_modpath(submodule_path: str) -> str:
@@ -82,4 +121,4 @@ def site_submodule_resource(submodule_path: str, resource_name: str):
         resource_name: The name of the resource file.
             E.g. "inventory.yml", "secrets.yml"
     """
-    return importlib_resources_files(site_modpath(submodule_path)).joinpath(resource_name)
+    return importlib.resources.files(site_modpath(submodule_path)).joinpath(resource_name)

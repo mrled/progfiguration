@@ -307,10 +307,9 @@ def parseargs(arguments: List[str]):
         help="Log level for mitogen IO messages to stderr. Only used for remote commands from the controller.",
     )
     parser.add_argument(
-        "--inventory-file",
-        "-f",
-        default=sitewrapper.site.package_inventory_file,
-        help="The path to an inventory yaml file. By default, use the one in the package",
+        "--progfigsite-package-path",
+        default="",
+        help="The path to a progfigsite package. By default, look for a Python package called 'progfigsite' in the Python path, and fall back to the progfiguration core 'example_site' package.",
     )
     parser.add_argument(
         "--age-private-key", "-k", help="The path to an age private key that decrypts inventory secrets"
@@ -478,9 +477,8 @@ def main_implementation(*arguments):
         mitogen_io_level = logging._nameToLevel[parsed.mitogen_io_log_stderr]
         remoting.configure_mitogen_logging(mitogen_core_level, mitogen_io_level)
 
-    inventory_file = parsed.inventory_file
-    if not hasattr(inventory_file, "open"):
-        inventory_file = pathlib.Path(inventory_file)
+    if parsed.progfigsite_package_path:
+        sitewrapper.set_site_module_filepath(parsed.progfigsite_package_path)
 
     # Get a nodename, if we have one
     try:
@@ -488,7 +486,9 @@ def main_implementation(*arguments):
     except AttributeError:
         nodename = None
 
-    inventory = Inventory(parsed.inventory_file, parsed.age_private_key, current_node=nodename)
+    inventory = Inventory(
+        sitewrapper.site_submodule_resource("", "inventory.conf"), parsed.age_private_key, current_node=nodename
+    )
 
     if parsed.action == "version":
         pkgversion = importlib.metadata.version("progfiguration")

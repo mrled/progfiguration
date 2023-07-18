@@ -1,7 +1,7 @@
 """Tests of inventory functionality using a test site."""
 
+import configparser
 import pathlib
-import sys
 import unittest
 
 from progfiguration import sitewrapper
@@ -15,18 +15,23 @@ class TestRun(PdbTestCase):
     @pdbexc
     def setUpClass(cls):
 
-        # Place the test progfigsite package on the path, and set it as the site package
+        # Find nnss progfigsite paths
         parent_path = pathlib.Path(__file__).parent
-        nnss_path = pathlib.Path(parent_path, "nnss")
-        sys.path.insert(0, str(nnss_path))
-        sitewrapper.site_module_path = "nnss_progfigsite"
+        nnss_path = pathlib.Path(parent_path / "nnss")
+        nnss_progfigsite_path = pathlib.Path(nnss_path / "nnss_progfigsite")
+        nnss_controller_age = pathlib.Path(nnss_path / "controller.age")
 
-        cls.inventory = Inventory(sitewrapper.site.package_inventory_file, None)
+        # Place the test progfigsite package on the path, and set it as the site package
+        sitewrapper.set_site_module_filepath(str(nnss_progfigsite_path))
 
-        # if not cls.inventory.controller.age:
-        #     raise Exception(
-        #         "Controller age is not set - are you running this from the controller with a decrypted secrets volume?"
-        #     )
+        cls.invfilecfg = configparser.ConfigParser()
+        cls.invfilecfg.read(sitewrapper.site_submodule_resource("", "inventory.conf"))
+
+        # Override the controller age path to point to the test controller age,
+        # no matter where it is on the filesystem.
+        cls.invfilecfg.set("general", "controller_age_path", str(nnss_controller_age))
+
+        cls.inventory = Inventory(cls.invfilecfg, str(nnss_controller_age))
 
     @pdbexc
     def test_inventory_all_roles(self):
@@ -61,6 +66,24 @@ class TestRun(PdbTestCase):
     def test_list_roles(self):
         """Find all roles"""
         self.assertCountEqual(self.inventory.roles, ["settz"])
+
+    # @pdbexc
+    # def test_controller_encrypt(self):
+    #     """Test encrypting a secret
+
+    #     This actually creates an encrypted value on disk.
+    #     However, age changes the salt every time something is encrypted,
+    #     so we can't test the result for a specific known value,
+    #     and it will change the secret file on every run,
+    #     which is annoying for version control.
+    #     """
+    #     encrypted_value, pubkeys = self.inventory.encrypt_secret("test_password", "p@ssw0rd", [], [], True, store=True)
+
+    @pdbexc
+    def test_controller_decrypt(self):
+        csecrets = self.inventory.get_controller_secrets()
+        decrypted_test_pass = csecrets["test_password"].decrypt(self.inventory.controller.agepath)
+        self.assertEqual(decrypted_test_pass, "p@ssw0rd")
 
 
 if __name__ == "__main__":

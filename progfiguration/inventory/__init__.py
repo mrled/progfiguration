@@ -1,7 +1,6 @@
 """The progfiguration inventory"""
 
 import configparser
-from dataclasses import dataclass
 from importlib.abc import Traversable
 import json
 import os
@@ -16,11 +15,28 @@ from progfiguration.progfigtypes import AnyPathOrStr
 from progfiguration import sitewrapper
 
 
-@dataclass
 class Controller:
-    age: Optional[age.AgeKey]
-    agepub: str
-    agepath: str
+    """A Controller object
+
+    If this program is running on the controller, it includes the private key;
+    otherwise, it just includes the public key.
+    """
+
+    def __init__(self, agepub: str, privkeypath: str):
+        """Initializer
+
+        agepub:         The path to the controller age public key
+        privkeypath:    The path to the controller age private key
+        """
+        if privkeypath and os.path.exists(privkeypath):
+            self.age = age.AgeKey.from_file(privkeypath)
+        else:
+            self.age = None
+        self.agepub = agepub
+        self.agepath = privkeypath
+
+    def __str__(self):
+        return f"Controller(agepub={self.agepub}, agepath={self.agepath}, age={self.age})"
 
 
 class Inventory:
@@ -29,18 +45,27 @@ class Inventory:
     # When running progfiguration from a node, this is not available.
     age: Optional[age.AgeKey]
 
-    def __init__(self, invfile: Traversable | Path, age_privkey: Optional[str] = None, current_node: Optional[str] = None):
+    def __init__(
+        self,
+        invfile: Traversable | Path | configparser.ConfigParser,
+        age_privkey: Optional[str] = None,
+        current_node: Optional[str] = None,
+    ):
         """Initializer
 
-        invfile:        An inventory configuration file.
+        invfile:        A path to an inventory configuration file.
+                        Alternatively, a configparser.ConfigParser object from a valid configuration file.
         age_privkey:    Use this path to an age private key.
                         If not passed, try to find the appropriate node/controller age key.
         current_node:   The name of the current node, if applicable.
                         If age_privkey is not passed, this is used to find the appropriate node age key.
         """
-        self.invfile = invfile
-        self.config = configparser.ConfigParser()
-        self.config.read(self.invfile)
+        # self.invfile = invfile
+        if isinstance(invfile, configparser.ConfigParser):
+            self.config = invfile
+        else:
+            self.config = configparser.ConfigParser()
+            self.config.read(invfile)
 
         self.localhost = LocalhostLinuxPsyopsOs()
 
@@ -70,14 +95,17 @@ class Inventory:
 
         self._node_secrets = {}
         self._group_secrets = {}
+        self._controller_secrets = {}
 
-        self._controller: Optional[Controller] = None
+        self.controller = Controller(
+            self.config.get("general", "controller_age_pub"), self.config.get("general", "controller_age_path")
+        )
 
         # Get the age key path for this node, if the node is specified and has a key defined
         current_node_age_key_path = None
         if current_node is not None:
             try:
-                current_node_age_key_path = self.node(current_node).age_key_path,
+                current_node_age_key_path = self.node(current_node).age_key_path
             except (KeyError, ModuleNotFoundError):
                 pass
 
@@ -151,22 +179,6 @@ class Inventory:
                 self._function_nodes[function].append(node)
         return self._function_nodes
 
-    @property
-    def controller(self) -> Controller:
-        """A Controller object
-
-        If this program is running on the controller, it includes the private key;
-        otherwise, it just includes the public key.
-        """
-        if not self._controller:
-            controller_age_path = self.config.get("general", "controller_age_path")
-            if os.path.exists(controller_age_path):
-                ctrlrage = age.AgeKey.from_file(controller_age_path)
-            else:
-                ctrlrage = None
-            self._controller = Controller(ctrlrage, self.config.get("general", "controller_age_pub"), controller_age_path)
-        return self._controller
-
     def node_rolename_list(self, nodename: str) -> List[str]:
         """A list of all rolenames for a given node"""
         return self.function_roles[self.node_function[nodename]]
@@ -209,7 +221,7 @@ class Inventory:
             self._node_roles[nodename] = {}
         if rolename not in self._node_roles[nodename]:
 
-            # rolepkg is a string containing the package name of the role, like progfiguration.sitewrapper.site.roles.role_name
+            # rolepkg is a string containing the package name of the role, like 'progfigsite.roles.role_name'
             rolepkg = self.role_module(rolename).__package__
 
             # The class it the subclass of ProgfigurationRole that implements the role
@@ -293,6 +305,11 @@ class Inventory:
     def node_secrets_file(self, node: str) -> Path:
         """The path to the secrets file for a given node"""
         sfile = sitewrapper.site_submodule_resource("nodes", f"{node}.secrets.json")
+        return sfile
+
+    def controller_secrets_file(self) -> Path:
+        """The path to the secrets file for the controller"""
+        sfile = sitewrapper.site_submodule_resource("", "controller.secrets.json")
         return sfile
 
     def set_node_secret(self, nodename: str, secretname: str, encrypted_value: str):
