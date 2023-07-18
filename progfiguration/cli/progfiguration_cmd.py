@@ -2,6 +2,7 @@
 
 import argparse
 import importlib
+import importlib.metadata
 import logging
 import os
 import pathlib
@@ -10,9 +11,9 @@ import subprocess
 import sys
 import tempfile
 import time
-from typing import List, Union
+from typing import List
 
-from progfiguration import logger, progfiguration_build_path, remotebrute, sitewrapper, version
+from progfiguration import logger, progfiguration_build_path, remotebrute, sitewrapper
 from progfiguration.cli import (
     progfiguration_error_handler,
     configure_logging,
@@ -171,14 +172,6 @@ def action_build(parsed: argparse.Namespace):
         progfiguration_build.build_alpine(parsed.apkdir)
     elif parsed.buildaction == "pyz":
         progfiguration_build.build_zipapp(parsed.pyzfile)
-    elif parsed.buildaction == "save-version":
-        if not version:
-            version = progfiguration_build.get_epoch_build_version()
-        progfiguration_build.set_build_version(version)
-        print("Saved APKBUILD and package version files:")
-        print(progfiguration_build.APKBUILD_FILE)
-        print(progfiguration_build.PKG_VERSION_FILE)
-        print("Take care not to commit these files to git")
     else:
         raise Exception(f"Unknown buildaction {parsed.buildaction}")
 
@@ -448,12 +441,6 @@ def parseargs(arguments: List[str]):
         description="Build a zipapp .pyz file containing the Python module. Must be run from an editable install.",
     )
     sub_build_sub_pyz.add_argument("pyzfile", type=ResolvedPath, help="Save the resulting pyz file to this path")
-    sub_build_sub_version = sub_build_subparsers.add_parser(
-        "save-version", description="Save the Python module and APKBUILD file with a version number"
-    )
-    sub_build_sub_version.add_argument(
-        "--version", help="Set the version to this string. If not present, use a version based on the epoch."
-    )
 
     # rcmd subcommand
     sub_rcmd = subparsers.add_parser(
@@ -494,10 +481,18 @@ def main_implementation(*arguments):
     inventory_file = parsed.inventory_file
     if not hasattr(inventory_file, "open"):
         inventory_file = pathlib.Path(inventory_file)
-    inventory = Inventory(parsed.inventory_file, parsed.age_private_key)
+
+    # Get a nodename, if we have one
+    try:
+        nodename = parsed.nodename
+    except AttributeError:
+        nodename = None
+
+    inventory = Inventory(parsed.inventory_file, parsed.age_private_key, current_node=nodename)
 
     if parsed.action == "version":
-        print(version.VersionInfo.from_build_version_or_default().verbose())
+        pkgversion = importlib.metadata.version("progfiguration")
+        print(f"progfiguration core version: {pkgversion}")
     elif parsed.action == "apply":
         action_apply(inventory, parsed.nodename, roles=parsed.roles, force=parsed.force_apply)
     elif parsed.action == "deploy":

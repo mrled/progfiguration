@@ -26,6 +26,7 @@ class InventoryNode:
     serial: str
     roles: Bunch
     network_interfaces: Optional[str] = None
+    age_key_path: Optional[str] = None
 
     # If this is True, 'progfiguration apply' will refuse to run.
     # Useful for inspecting early state after a reboot during development.

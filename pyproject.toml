@@ -6,14 +6,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "progfiguration"
-version = "0.0.2a1"
+version = "0.0.2a2"
 description = "PROGramatic conFIGURATION for your infrastructure"
 license = {text = "MIT"}
 readme = "readme.md"
 requires-python = ">=3.10"
-dependencies = [
-    "PyYAML",
-]
 
 [[project.authors]]
 name = "Micah R Ledbetter"
@@ -39,3 +36,6 @@ Homepage = "https://github.com/mrled/progfiguration"
 
 [tool.black]
 line-length = 120
+
+[tool.setuptools.package-data]
+"*" = ["*"]

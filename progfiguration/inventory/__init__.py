@@ -1,13 +1,13 @@
 """The progfiguration inventory"""
 
+import configparser
 from dataclasses import dataclass
-import os
 from importlib.abc import Traversable
+import json
+import os
 from pathlib import Path
 from types import ModuleType
 from typing import Any, Dict, List, Optional
-
-import yaml
 
 from progfiguration import age
 from progfiguration.inventory.roles import ProgfigurationRole, collect_role_arguments
@@ -29,28 +29,39 @@ class Inventory:
     # When running progfiguration from a node, this is not available.
     age: Optional[age.AgeKey]
 
-    def __init__(self, invfile: Traversable | Path, age_privkey: Optional[str]):
+    def __init__(self, invfile: Traversable | Path, age_privkey: Optional[str] = None, current_node: Optional[str] = None):
         """Initializer
 
-        invfile:        A YAML inventory file.
+        invfile:        An inventory configuration file.
         age_privkey:    Use this path to an age private key.
                         If not passed, try to find the appropriate node/controller age key.
+        current_node:   The name of the current node, if applicable.
+                        If age_privkey is not passed, this is used to find the appropriate node age key.
         """
         self.invfile = invfile
-        with self.invfile.open() as ifp:
-            self.inventory_parsed = yaml.load(ifp, Loader=yaml.Loader)
+        self.config = configparser.ConfigParser()
+        self.config.read(self.invfile)
 
         self.localhost = LocalhostLinuxPsyopsOs()
 
-        self.node_function = self.inventory_parsed["nodeFunctionMap"]
-        self.function_roles = self.inventory_parsed["functionRoleMap"]
+        # node_function is a dict where keys are node names and values are function names
+        self.node_function = {}
+        for node, func in self.config.items("node_function_map"):
+            self.node_function[node] = func
 
-        # Prepend the universal group to the list of groups
-        self.group_members = {"universal": self.node_function.keys(), **self.inventory_parsed["groupNodeMap"]}
+        # function_roles is a dict where keys are function names and value are lists of role names
+        self.function_roles = {}
+        for func, roles in self.config.items("function_role_map"):
+            self.function_roles[func] = roles.split()
+
+        # group_members is a dict where keys are group names and values are lists of node names
+        # (Prepend the universal group to the list of groups)
+        self.group_members = {"universal": [n for n in self.node_function.keys()]}
+        for group, members in self.config.items("groups"):
+            self.group_members[group] = members.split()
 
         self._node_groups = None
         self._function_nodes = None
-        self._role_functions = None
 
         self._node_modules = {}
         self._group_modules = {}
@@ -62,7 +73,31 @@ class Inventory:
 
         self._controller: Optional[Controller] = None
 
-        self._age_path = age_privkey
+        # Get the age key path for this node, if the node is specified and has a key defined
+        current_node_age_key_path = None
+        if current_node is not None:
+            try:
+                current_node_age_key_path = self.node(current_node).age_key_path,
+            except (KeyError, ModuleNotFoundError):
+                pass
+
+        # The path to an age private key, or None if no private key is available.
+        # Lookup order, highest priority first:
+        # * A key passed to the class initializer directly, if present
+        # * The controller key, if available
+        # * The key for the current node, if running from a node with an available key
+        # * None
+        for possible_key in [
+            age_privkey,
+            self.controller.agepath,
+            current_node_age_key_path,
+            self.config.get("general", "node_fallback_age_path"),
+        ]:
+            if possible_key and os.path.exists(possible_key):
+                self.age_path = possible_key
+                break
+        else:
+            self.age_path = None
 
     @property
     def groups(self) -> List[str]:
@@ -78,6 +113,14 @@ class Inventory:
     def functions(self) -> List[str]:
         """All functions, in undetermined order"""
         return self.function_roles.keys()
+
+    @property
+    def roles(self) -> List[str]:
+        """All roles, in undetermined order"""
+        result = set()
+        for func_role_list in self.function_roles.values():
+            result.update(func_role_list)
+        return result
 
     @property
     def node_groups(self) -> Dict[str, List[str]]:
@@ -109,18 +152,6 @@ class Inventory:
         return self._function_nodes
 
     @property
-    def role_functions(self) -> Dict[str, str]:
-        """A dict, containing role:function mappings"""
-        if not self._role_functions:
-            self._role_functions = {}
-            for function, nodes in self.function_nodes.items():
-                for node in nodes:
-                    if node not in self._role_functions:
-                        self._role_functions[node] = []
-                    self._role_functions[node].append(function)
-        return self._role_functions
-
-    @property
     def controller(self) -> Controller:
         """A Controller object
 
@@ -128,37 +159,13 @@ class Inventory:
         otherwise, it just includes the public key.
         """
         if not self._controller:
-            ctrlrdata = self.inventory_parsed["controller"]
-            if os.path.exists(ctrlrdata["age"]):
-                ctrlrage = age.AgeKey.from_file(ctrlrdata["age"])
+            controller_age_path = self.config.get("general", "controller_age_path")
+            if os.path.exists(controller_age_path):
+                ctrlrage = age.AgeKey.from_file(controller_age_path)
             else:
                 ctrlrage = None
-            self._controller = Controller(ctrlrage, ctrlrdata["agepub"], ctrlrdata["age"])
+            self._controller = Controller(ctrlrage, self.config.get("general", "controller_age_pub"), controller_age_path)
         return self._controller
-
-    @property
-    def age_path(self) -> str:
-        """The path to an age private key
-
-        Return the path to an age private key.
-        May return None if no private key is available
-        (some progfiguration functions can be performed without one).
-        Lookup order, highest priority first:
-
-        * A key passed to the class initializer directly, if present
-        * The controller key, if available
-        * The key for the current node, if running from a node with an available key
-        * None
-        """
-        if not self._age_path:
-            if os.path.exists(self.controller.agepath):
-                self._age_path = self.controller.agepath
-            else:
-                for agekey in self.inventory_parsed["nodeSettings"]["age"]:
-                    if os.path.exists(agekey):
-                        self._age_path = agekey
-                        break
-        return self._age_path
 
     def node_rolename_list(self, nodename: str) -> List[str]:
         """A list of all rolenames for a given node"""
@@ -247,7 +254,7 @@ class Inventory:
             filename = Path(filename)
         try:
             with filename.open() as fp:
-                contents = yaml.load(fp, Loader=yaml.Loader)
+                contents = json.load(fp)
                 encrypted_secrets = {k: age.AgeSecret(v) for k, v in contents.items()}
                 return encrypted_secrets
         except FileNotFoundError:
@@ -268,7 +275,7 @@ class Inventory:
     def get_controller_secrets(self) -> Dict[str, Any]:
         """A Dict of secrets for the controller"""
         if not self._controller_secrets:
-            sfile = sitewrapper.site_submodule_resource("", "controller.secrets.yml")
+            sfile = sitewrapper.site_submodule_resource("", "controller.secrets.json")
             self._controller_secrets = self.get_secrets(sfile)
         return self._controller_secrets
 
@@ -276,16 +283,16 @@ class Inventory:
         """Set the contents of a secrets file"""
         file_contents = {k: v.secret for k, v in secrets.items()}
         with open(filename, "w") as fp:
-            yaml.dump(file_contents, fp, default_style="|")
+            json.dump(file_contents, fp)
 
     def group_secrets_file(self, group: str) -> Path:
         """The path to the secrets file for a given group"""
-        sfile = sitewrapper.site_submodule_resource("groups", f"{group}.secrets.yml")
+        sfile = sitewrapper.site_submodule_resource("groups", f"{group}.secrets.json")
         return sfile
 
     def node_secrets_file(self, node: str) -> Path:
         """The path to the secrets file for a given node"""
-        sfile = sitewrapper.site_submodule_resource("nodes", f"{node}.secrets.yml")
+        sfile = sitewrapper.site_submodule_resource("nodes", f"{node}.secrets.json")
         return sfile
 
     def set_node_secret(self, nodename: str, secretname: str, encrypted_value: str):

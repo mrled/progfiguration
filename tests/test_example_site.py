@@ -1,4 +1,8 @@
-"""Site-specific tests"""
+"""Tests of the example site
+
+This also entails tests of the inventory module.
+It would be better if those tests were hermetic and didn't rely on this, yolo.
+"""
 
 import pdb
 import unittest
@@ -31,6 +35,26 @@ class TestRun(PdbTestCase):
             for role in self.inventory.node_role_list(nodename):
                 with self.subTest(msg=f"nodename={nodename}, role={role}"):
                     pass
+
+    @pdbexc
+    def test_list_nodes(self):
+        """Find all nodes"""
+        self.assertCountEqual(self.inventory.nodes, ["node1"])
+
+    @pdbexc
+    def test_list_groups(self):
+        """Find all groups"""
+        self.assertCountEqual(self.inventory.groups, ["universal", "group1"])
+
+    @pdbexc
+    def test_list_functions(self):
+        """Find all functions"""
+        self.assertCountEqual(self.inventory.functions, ["default", "func1"])
+
+    @pdbexc
+    def test_list_roles(self):
+        """Find all roles"""
+        self.assertCountEqual(self.inventory.roles, ["settz"])
 
 
 if __name__ == "__main__":
