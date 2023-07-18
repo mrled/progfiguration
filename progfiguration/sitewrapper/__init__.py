@@ -39,6 +39,22 @@ except ImportError:
     site_module_path = "progfiguration.example_site"
 
 
+def site_modpath(submodule_path: str) -> str:
+    """The full path to a site submodule
+
+    Args:
+        submodule_path: The path to the submodule, relative to the site package.
+            This can be an empty string for the site package itself,
+            or a dotted path to a submodule.
+            E.g. "", "nodes", "nodes.example_node"
+    """
+    if submodule_path:
+        modpath = f"{site_module_path}.{submodule_path}"
+    else:
+        modpath = site_module_path
+    return modpath
+
+
 def site_submodule(submodule_path: str) -> ModuleType:
     """The Python module for a given site submodule
 
@@ -48,7 +64,7 @@ def site_submodule(submodule_path: str) -> ModuleType:
             or a dotted path to a submodule.
             E.g. "", "nodes", "nodes.example_node"
     """
-    module = importlib.import_module(f"{site_module_path}.{submodule_path}")
+    module = importlib.import_module(site_modpath(submodule_path))
     return module
 
 
@@ -66,5 +82,4 @@ def site_submodule_resource(submodule_path: str, resource_name: str):
         resource_name: The name of the resource file.
             E.g. "inventory.yml", "secrets.yml"
     """
-    module_fullpath = f"{site_module_path}.{submodule_path}"
-    return importlib_resources_files(module_fullpath).joinpath(resource_name)
+    return importlib_resources_files(site_modpath(submodule_path)).joinpath(resource_name)

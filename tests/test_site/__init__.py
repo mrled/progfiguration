@@ -1,10 +1,7 @@
-"""Tests of the example site
+"""Tests of inventory functionality using a test site."""
 
-This also entails tests of the inventory module.
-It would be better if those tests were hermetic and didn't rely on this, yolo.
-"""
-
-import pdb
+import pathlib
+import sys
 import unittest
 
 from progfiguration import sitewrapper
@@ -17,7 +14,15 @@ class TestRun(PdbTestCase):
     @classmethod
     @pdbexc
     def setUpClass(cls):
+
+        # Place the test progfigsite package on the path, and set it as the site package
+        parent_path = pathlib.Path(__file__).parent
+        nnss_path = pathlib.Path(parent_path, "nnss")
+        sys.path.insert(0, str(nnss_path))
+        sitewrapper.site_module_path = "nnss_progfigsite"
+
         cls.inventory = Inventory(sitewrapper.site.package_inventory_file, None)
+
         # if not cls.inventory.controller.age:
         #     raise Exception(
         #         "Controller age is not set - are you running this from the controller with a decrypted secrets volume?"
@@ -40,6 +45,7 @@ class TestRun(PdbTestCase):
     def test_list_nodes(self):
         """Find all nodes"""
         self.assertCountEqual(self.inventory.nodes, ["node1"])
+        self.assertEqual(self.inventory.node("node1").node.address, "node1.example.mil")
 
     @pdbexc
     def test_list_groups(self):

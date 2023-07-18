@@ -36,7 +36,3 @@ class TestRun(unittest.TestCase):
 
         self.assertEqual(terminal_out, "hello\n")
         self.assertEqual(terminal_err, "world\n")
-
-
-if __name__ == "__main__":
-    unittest.main()
