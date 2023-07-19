@@ -22,6 +22,8 @@
           Progfigsite implementations can use dependencies whenever it makes sense for them.
     * Vendoring (implementation TBD)
     * Python string.template, including custom subclasses
+        * Can you avoid a full featured templating dependency like jinja?
+          I do miss conditionals, but...
     * ... all the other tricks I found to make this work
 * Add a "lore" section of the docs
     * History:
