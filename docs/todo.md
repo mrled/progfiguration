@@ -29,3 +29,6 @@
         * Made more general
         * Lobotomized into core and progfigsite
 * Make sure progfiguration core works on all in-support Python 3 verions
+* Currently `progfiguration build pyz ...` copies the running progfiguration into the file.
+  Consider adding support for downloading a fresh copy from pypi,
+  in case the user does something weird with their current version.
