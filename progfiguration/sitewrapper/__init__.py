@@ -20,16 +20,25 @@ Note that 'import X as progfigsite' does not mean that
 
 ## About site packages
 
-Site packages must contain the following submodules:
-- nodes
-- roles
-- groups
+Site packages must meet the following requirements:
 
-And the following data files:
-- inventory.conf
+Submodules:
+    Required:
+        - nodes
+        - roles
+        - groups
+    Optional:
+        - sitelib: not used by progfiguration, but can be used internally in the site package
 
-And may contain an optional 'sitelib' submodule.
-This is not used by progfiguration, but can be used internally in the site package.
+Data files:
+    Required:
+        - inventory.conf
+
+Variables exported from package root:
+    Required:
+        - site_name: An arbitrary string used to identify the site to users
+    Optional:
+        - site_description: A longer string describing the site
 
 Other names are reserved for future use by progfiguration.
 """

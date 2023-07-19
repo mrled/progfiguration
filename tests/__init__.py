@@ -1,5 +1,6 @@
 import os
 import pdb
+from typing import List
 import unittest
 
 
@@ -39,3 +40,12 @@ def pdbexc(test_method):
                 raise
 
     return wrapper
+
+
+def skipUnlessAnyEnv(*envvars: List):
+    """Skip a test unless any of the given environment variables are set"""
+    if any(os.environ.get(envvar) for envvar in envvars):
+        return lambda func: func
+    return unittest.skip(
+        "Skipping test unless any of the following environment variables are set: " + ", ".join(envvars)
+    )

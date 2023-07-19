@@ -65,7 +65,8 @@ class Inventory:
             self.config = invfile
         else:
             self.config = configparser.ConfigParser()
-            self.config.read(invfile)
+            with invfile.open() as f:
+                self.config.read_file(f)
 
         self.localhost = LocalhostLinuxPsyopsOs()
 

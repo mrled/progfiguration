@@ -10,10 +10,11 @@ import pdb
 import subprocess
 import sys
 import tempfile
+import textwrap
 import time
 from typing import List
 
-from progfiguration import logger, progfiguration_build_path, remotebrute, sitewrapper
+from progfiguration import logger, progfigbuild, remotebrute, sitewrapper
 from progfiguration.cli import (
     progfiguration_error_handler,
     configure_logging,
@@ -42,16 +43,21 @@ def CommaSeparatedStrList(cssl: str) -> List[str]:
     return cssl.split(",")
 
 
-def import_progfiguration_build():
-    """Import the progfiguration_build module
-
-    This module is also used outside of the progfiguration CLI, which is why we do this.
-    """
-    spec = importlib.util.spec_from_file_location("progfiguration_build", progfiguration_build_path)
-    progfiguration_build = importlib.util.module_from_spec(spec)
-    sys.modules["progfiguration_build"] = progfiguration_build
-    spec.loader.exec_module(progfiguration_build)
-    return progfiguration_build
+def action_version(inventory: Inventory):
+    """Retrieve the version of progfiguration core and the progfigsite"""
+    coreversion = importlib.metadata.version("progfiguration")
+    # TODO: Get the version of the site package
+    print(
+        textwrap.dedent(
+            f"""\
+            progfiguration core:
+                version: {coreversion}
+            progfigsite:
+                {sitewrapper.progfigsite.site_name}
+                {sitewrapper.progfigsite.site_description}
+            """
+        )
+    )
 
 
 def action_apply(inventory: Inventory, nodename: str, roles: list[str] = None, force: bool = False):
@@ -160,27 +166,12 @@ def action_decrypt(inventory: Inventory, nodes: List[str], groups: List[str], co
         print("---")
 
 
-def action_build(parsed: argparse.Namespace):
-    """Build the progfiguration package
-
-    Must pass in the parsed arguments from the main command.
-    """
-
-    progfiguration_build = import_progfiguration_build()
-
-    if parsed.buildaction == "apk":
-        progfiguration_build.build_alpine(parsed.apkdir)
-    elif parsed.buildaction == "pyz":
-        progfiguration_build.build_zipapp(parsed.pyzfile)
-    else:
-        raise Exception(f"Unknown buildaction {parsed.buildaction}")
-
-
 def action_rcmd(inventory: Inventory, nodes: List[str], groups: List[str], cmd: str):
     remoting.command(inventory, nodes, groups, cmd)
 
 
 def action_deploy_apply(
+    progfigsite_path: pathlib.Path,
     inventory: Inventory,
     nodenames: List[str],
     groupnames: List[str],
@@ -193,8 +184,6 @@ def action_deploy_apply(
     if roles is None:
         roles = []
 
-    progfiguration_build = import_progfiguration_build()
-
     nodenames = set(nodenames + [inventory.group_members(g) for g in groupnames])
     nodes = {n: inventory.node(n).node for n in nodenames}
 
@@ -202,7 +191,7 @@ def action_deploy_apply(
 
     with tempfile.TemporaryDirectory() as tmpdir:
         pyzfile = os.path.join(tmpdir, "progfiguration.pyz")
-        progfiguration_build.build_zipapp(pyzfile)
+        progfigbuild.build_progfigsite_zipapp(pyzfile, progfigsite_path)
         for nname, node in nodes.items():
             args = []
             if remote_debug:
@@ -243,19 +232,18 @@ def action_deploy_apply(
 
 
 def action_deploy_copy(
+    progfigsite_path: pathlib.Path,
     inventory: Inventory,
     nodenames: List[str],
     groupnames: List[str],
     remotepath: str,
 ):
-    progfiguration_build = import_progfiguration_build()
-
     nodenames = set(nodenames + [inventory.group_members(g) for g in groupnames])
     nodes = {n: inventory.node(n).node for n in nodenames}
 
     with tempfile.TemporaryDirectory() as tmpdir:
         pyzfile = os.path.join(tmpdir, "progfiguration.pyz")
-        progfiguration_build.build_zipapp(pyzfile)
+        progfigbuild.build_progfigsite_zipapp(pyzfile, progfigsite_path)
         for nname, node in nodes.items():
             remotebrute.scp(f"{node.user}@{node.address}", pyzfile, remotepath)
 
@@ -367,7 +355,7 @@ def parseargs(arguments: List[str]):
     sub_deploy = subparsers.add_parser(
         "deploy",
         parents=[node_opts],
-        description="Deploy progfiguration to remote system in inventory as a pyz package (NOT a pip or apk package!); requires passwordless SSH configured",
+        description="Deploy progfiguration to remote system in inventory as a pyz package; requires passwordless SSH configured",
     )
     sub_deploy_subparsers = sub_deploy.add_subparsers(dest="deploy_action", required=True)
     sub_deploy_sub_apply = sub_deploy_subparsers.add_parser(
@@ -430,11 +418,6 @@ def parseargs(arguments: List[str]):
     # build subcommand
     sub_build = subparsers.add_parser("build", description="Build the package")
     sub_build_subparsers = sub_build.add_subparsers(dest="buildaction", required=True)
-    sub_build_sub_apk = sub_build_subparsers.add_parser(
-        "apk",
-        description="Build an Alpine APK package. Must be run from an editable install on an Alpine linux system with the appropriate signing keys.",
-    )
-    sub_build_sub_apk.add_argument("apkdir", type=ResolvedPath, help="Save the resulting package to this directory")
     sub_build_sub_pyz = sub_build_subparsers.add_parser(
         "pyz",
         description="Build a zipapp .pyz file containing the Python module. Must be run from an editable install.",
@@ -478,7 +461,11 @@ def main_implementation(*arguments):
         remoting.configure_mitogen_logging(mitogen_core_level, mitogen_io_level)
 
     if parsed.progfigsite_package_path:
+        progfigsite_package_path = pathlib.Path(parsed.progfigsite_package_path)
         sitewrapper.set_site_module_filepath(parsed.progfigsite_package_path)
+    else:
+        # Make sure we have a path to the progfigsite package even if one wasn't passed in
+        progfigsite_package_path = pathlib.Path(sitewrapper.progfigsite.__file__).parent
 
     # Get a nodename, if we have one
     try:
@@ -491,8 +478,7 @@ def main_implementation(*arguments):
     )
 
     if parsed.action == "version":
-        pkgversion = importlib.metadata.version("progfiguration")
-        print(f"progfiguration core version: {pkgversion}")
+        action_version(inventory)
     elif parsed.action == "apply":
         action_apply(inventory, parsed.nodename, roles=parsed.roles, force=parsed.force_apply)
     elif parsed.action == "deploy":
@@ -500,6 +486,7 @@ def main_implementation(*arguments):
             parser.error("You must pass at least one of --nodes or --groups")
         if parsed.deploy_action == "apply":
             action_deploy_apply(
+                progfigsite_package_path,
                 inventory,
                 parsed.nodes,
                 parsed.groups,
@@ -509,7 +496,7 @@ def main_implementation(*arguments):
                 keep_remote_file=parsed.keep_remote_file,
             )
         elif parsed.deploy_action == "copy":
-            action_deploy_copy(inventory, parsed.nodes, parsed.groups, parsed.destination)
+            action_deploy_copy(progfigsite_package_path, inventory, parsed.nodes, parsed.groups, parsed.destination)
             print(f"Copied to remote host(s) at {parsed.destination}")
         else:
             raise ValueError(f"Unknown deploy action {parsed.deploy_action}")
@@ -549,7 +536,11 @@ def main_implementation(*arguments):
         action_rcmd(inventory, parsed.nodes, parsed.groups, parsed.command)
         # remoting.mitogen_example()
     elif parsed.action == "build":
-        action_build(parsed)
+        # TODO: how will sites extend this?
+        if parsed.buildaction == "pyz":
+            progfigbuild.build_progfigsite_zipapp(pathlib.Path(parsed.pyzfile), progfigsite_package_path)
+        else:
+            raise Exception(f"Unknown buildaction {parsed.buildaction}")
     elif parsed.action == "debugger":
         pdb.set_trace()
     else:

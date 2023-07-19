@@ -1,13 +1,17 @@
 """Tests of inventory functionality using a test site."""
 
 import configparser
+import os
 import pathlib
+import subprocess
+from typing import List
+import tempfile
 import unittest
 
-from progfiguration import sitewrapper
+from progfiguration import example_site, progfigbuild, sitewrapper
 from progfiguration.inventory import Inventory
 
-from tests import PdbTestCase, pdbexc
+from tests import PdbTestCase, pdbexc, skipUnlessAnyEnv
 
 
 class TestRun(PdbTestCase):
@@ -18,11 +22,11 @@ class TestRun(PdbTestCase):
         # Find nnss progfigsite paths
         parent_path = pathlib.Path(__file__).parent
         nnss_path = pathlib.Path(parent_path / "nnss")
-        nnss_progfigsite_path = pathlib.Path(nnss_path / "nnss_progfigsite")
+        cls.nnss_progfigsite_path = pathlib.Path(nnss_path / "nnss_progfigsite")
         nnss_controller_age = pathlib.Path(nnss_path / "controller.age")
 
         # Place the test progfigsite package on the path, and set it as the site package
-        sitewrapper.set_site_module_filepath(str(nnss_progfigsite_path))
+        sitewrapper.set_site_module_filepath(str(cls.nnss_progfigsite_path))
 
         cls.invfilecfg = configparser.ConfigParser()
         cls.invfilecfg.read(sitewrapper.site_submodule_resource("", "inventory.conf"))
@@ -84,6 +88,34 @@ class TestRun(PdbTestCase):
         csecrets = self.inventory.get_controller_secrets()
         decrypted_test_pass = csecrets["test_password"].decrypt(self.inventory.controller.agepath)
         self.assertEqual(decrypted_test_pass, "p@ssw0rd")
+
+    # TODO: move these tests to another test file
+    # TODO: move NNSS to some shared location so that we can use it in other test files
+    @pdbexc
+    @skipUnlessAnyEnv("PROGFIGURATION_TEST_SLOW_ALL", "PROGFIGURATION_TEST_SLOW_PACKAGING")
+    def test_package_example_site(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            pyzfile = pathlib.Path(tmpdir) / "test.pyz"
+            progfigbuild.build_progfigsite_zipapp(pyzfile, pathlib.Path(example_site.__file__).parent)
+            self.assertTrue(pyzfile.exists())
+            result = subprocess.run([str(pyzfile), "version"], check=True, capture_output=True)
+            stdout = result.stdout.decode("utf-8").strip()
+            self.assertTrue("progfiguration core" in stdout)
+            self.assertTrue(example_site.site_name in stdout)
+            self.assertTrue(example_site.site_description in stdout)
+
+    @pdbexc
+    @skipUnlessAnyEnv("PROGFIGURATION_TEST_SLOW_ALL", "PROGFIGURATION_TEST_SLOW_PACKAGING")
+    def test_package_nnss(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            pyzfile = pathlib.Path(tmpdir) / "test.pyz"
+            progfigbuild.build_progfigsite_zipapp(pyzfile, self.nnss_progfigsite_path)
+            self.assertTrue(pyzfile.exists())
+            result = subprocess.run([str(pyzfile), "version"], check=True, capture_output=True)
+            stdout = result.stdout.decode("utf-8").strip()
+            self.assertTrue("progfiguration core" in stdout)
+            self.assertTrue(sitewrapper.progfigsite.site_name in stdout)
+            self.assertTrue(sitewrapper.progfigsite.site_description in stdout)
 
 
 if __name__ == "__main__":

@@ -25,3 +25,12 @@ twine upload dist/*
 We only actually need to build a source version of the package,
 because progfiguration expects that your progfigsite package will pull in the source code.
 We avoid building the binary version because it takes longer.
+
+## Testing
+
+After entering the venv (see above), run unit tests with `python3 -m unittest`.
+You can modify the test run with a few environment variables:
+
+* `PROGFIGURATION_TEST_DEBUG=1`: Launch a debugger on any test failure or exception
+* `PROGFIGURATION_TEST_SLOW_ALL=1`: Run all slow tests
+* `PROGFIGURATION_TEST_SLOW_PACKAGING=1`: Run slow tests related to packaging (`progfiguration build`, etc)
