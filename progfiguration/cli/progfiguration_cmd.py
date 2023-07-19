@@ -14,6 +14,7 @@ import textwrap
 import time
 from typing import List
 
+import progfiguration
 from progfiguration import logger, progfigbuild, remotebrute, sitewrapper
 from progfiguration.cli import (
     progfiguration_error_handler,
@@ -47,17 +48,25 @@ def action_version(inventory: Inventory):
     """Retrieve the version of progfiguration core and the progfigsite"""
     coreversion = importlib.metadata.version("progfiguration")
     # TODO: Get the version of the site package
-    print(
-        textwrap.dedent(
-            f"""\
-            progfiguration core:
-                version: {coreversion}
-            progfigsite:
-                {sitewrapper.progfigsite.site_name}
-                {sitewrapper.progfigsite.site_description}
-            """
-        )
-    )
+
+    result = [
+        f"progfiguration core:",
+        f"    path: {pathlib.Path(progfiguration.__file__).parent}",
+        f"    version: {coreversion}",
+        f"progfigsite:",
+        f"    path: {pathlib.Path(sitewrapper.progfigsite.__file__).parent}",
+        f"    name: {sitewrapper.progfigsite.site_name}",
+        f"    description: {sitewrapper.progfigsite.site_description}",
+    ]
+    try:
+        from progfiguration.builddata import builddate
+
+        result.append(f"package:")
+        result.append(f"    build date: {builddate.builddate}")
+    except ImportError:
+        result.append("Not running from a progfigsite package")
+
+    print("\n".join(result))
 
 
 def action_apply(inventory: Inventory, nodename: str, roles: list[str] = None, force: bool = False):

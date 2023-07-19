@@ -1,6 +1,7 @@
 """Support for building pip and zipapp progfigsite packages"""
 
 
+from datetime import datetime
 import pathlib
 import stat
 import textwrap
@@ -61,9 +62,21 @@ def build_progfigsite_zipapp(
         """
     )
 
+    builddata_builddate_py = textwrap.dedent(
+        f"""\
+        from datetime import datetime
+        builddate_str = "{datetime.utcnow().isoformat()}"
+        builddate = datetime.fromisoformat(builddate_str)
+        """
+    )
+
     def shouldignore(path: pathlib.Path) -> bool:
         """Return True if the path should be excluded from the zipapp file"""
-        if path.name == "__pycache__":
+        exacts = [
+            "__pycache__",
+            ".gitignore",
+        ]
+        if path.name in exacts:
             return True
         if path.name.endswith(".pyc"):
             return True
@@ -94,6 +107,9 @@ def build_progfigsite_zipapp(
                     continue
                 child_relname = child.relative_to(progfiguration_package_path)
                 z.write(child, "progfiguration/" + child_relname.as_posix())
+
+            # Inject build date file
+            z.writestr("progfiguration/builddata/builddate.py", builddata_builddate_py.encode("utf-8"))
 
             # Add the __main__.py file to the zipfile root, which is required for zipapps
             z.writestr("__main__.py", main_py.encode("utf-8"))
