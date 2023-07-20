@@ -165,3 +165,15 @@ roles/
       untemplated_script.sh
       templated_config_file.conf.j2
 ```
+
+## Hypotheses
+
+I have a few conjectures I've been thinking about,
+and I'm using progfiguration as one test for them.
+
+* Writing code is better than writing yaml
+* You don't need any dependencies apart from Python itself (stdlib dominance)
+* A useful configuration management framework can fit in one person's head
+* Configuration management doesn't need a server
+  * A more specific form of the general hypothesis:
+    the network should be a dumb pipe, with all processing happening on the endpoints.
