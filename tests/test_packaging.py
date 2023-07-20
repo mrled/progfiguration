@@ -14,7 +14,7 @@ class TestRun(PdbTestCase):
     def test_package_example_site(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             pyzfile = pathlib.Path(tmpdir) / "test.pyz"
-            progfigbuild.build_progfigsite_zipapp(pyzfile, pathlib.Path(example_site.__file__).parent)
+            progfigbuild.build_progfigsite_zipapp(pyzfile).parent)
             self.assertTrue(pyzfile.exists())
             result = subprocess.run([str(pyzfile), "version"], check=True, capture_output=True)
             stdout = result.stdout.decode("utf-8").strip()
@@ -28,10 +28,10 @@ class TestRun(PdbTestCase):
         nnss = NnssTestData()
         with tempfile.TemporaryDirectory() as tmpdir:
             pyzfile = pathlib.Path(tmpdir) / "test.pyz"
-            progfigbuild.build_progfigsite_zipapp(pyzfile, nnss.nnss_progfigsite_path)
+            progfigbuild.build_progfigsite_zipapp(pyzfile)
             self.assertTrue(pyzfile.exists())
             result = subprocess.run([str(pyzfile), "version"], check=True, capture_output=True)
             stdout = result.stdout.decode("utf-8").strip()
             self.assertTrue("progfiguration core" in stdout)
-            self.assertTrue(sitewrapper.progfigsite.site_name in stdout)
+            self.assertTrue("Nevada Test Site" in stdout)
             self.assertTrue(sitewrapper.progfigsite.site_description in stdout)

@@ -9,11 +9,11 @@ from typing import Optional
 import zipfile
 
 import progfiguration
+from progfiguration import sitewrapper
 
 
 def build_progfigsite_zipapp(
     package_out_path: pathlib.Path,
-    progfigsite_package_path: pathlib.Path,
     progfiguration_package_path: Optional[pathlib.Path] = None,
     compression: int = zipfile.ZIP_STORED,
 ) -> pathlib.Path:
@@ -21,7 +21,6 @@ def build_progfigsite_zipapp(
 
     Args:
         package_out_path: The path where the zipfile will be written.
-        progfigsite_package_path: The path to the site package, eg "/path/to/my_progfigsite"
         progfiguration_package_path: The path to the progfiguration package, eg "/path/to/progfiguration"
             If None, the progfiguration package will be copied from the Python path.
             This will only work if progfiguration is installed via pip
@@ -84,6 +83,8 @@ def build_progfigsite_zipapp(
             return True
         return False
 
+    progfigsite_fs_path = sitewrapper.get_progfigsite_path()
+
     with open(package_out_path, "wb") as fp:
         # Writing a shebang like this is optional in zipapp,
         # but there's no reason not to since it's a valid zip file either way.
@@ -92,10 +93,10 @@ def build_progfigsite_zipapp(
         with zipfile.ZipFile(fp, "w", compression=compression) as z:
 
             # Copy the progfigsite package into the zipfile
-            for child in progfigsite_package_path.rglob("*"):
+            for child in progfigsite_fs_path.rglob("*"):
                 if shouldignore(child):
                     continue
-                child_relname = child.relative_to(progfigsite_package_path)
+                child_relname = child.relative_to(progfigsite_fs_path)
                 # Place the progfigsite package inside a subdirectory called 'progfigsite'.
                 # This ignores the actual name of the package,
                 # and allows progfiguration to find it when run from the zipfile.

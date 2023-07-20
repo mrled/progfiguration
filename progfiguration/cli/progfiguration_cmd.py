@@ -200,7 +200,7 @@ def action_deploy_apply(
 
     with tempfile.TemporaryDirectory() as tmpdir:
         pyzfile = os.path.join(tmpdir, "progfiguration.pyz")
-        progfigbuild.build_progfigsite_zipapp(pyzfile, progfigsite_path)
+        progfigbuild.build_progfigsite_zipapp(pyzfile)
         for nname, node in nodes.items():
             args = []
             if remote_debug:
@@ -252,7 +252,7 @@ def action_deploy_copy(
 
     with tempfile.TemporaryDirectory() as tmpdir:
         pyzfile = os.path.join(tmpdir, "progfiguration.pyz")
-        progfigbuild.build_progfigsite_zipapp(pyzfile, progfigsite_path)
+        progfigbuild.build_progfigsite_zipapp(pyzfile)
         for nname, node in nodes.items():
             remotebrute.scp(f"{node.user}@{node.address}", pyzfile, remotepath)
 
@@ -547,7 +547,7 @@ def main_implementation(*arguments):
     elif parsed.action == "build":
         # TODO: how will sites extend this?
         if parsed.buildaction == "pyz":
-            progfigbuild.build_progfigsite_zipapp(pathlib.Path(parsed.pyzfile), progfigsite_package_path)
+            progfigbuild.build_progfigsite_zipapp(pathlib.Path(parsed.pyzfile))
         else:
             raise Exception(f"Unknown buildaction {parsed.buildaction}")
     elif parsed.action == "debugger":

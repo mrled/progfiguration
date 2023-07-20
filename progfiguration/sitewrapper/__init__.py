@@ -47,6 +47,7 @@ import importlib
 import importlib.resources
 import importlib.util
 import os
+from pathlib import Path
 import sys
 from types import ModuleType
 
@@ -131,3 +132,12 @@ def site_submodule_resource(submodule_path: str, resource_name: str):
             E.g. "inventory.yml", "secrets.yml"
     """
     return importlib.resources.files(site_modpath(submodule_path)).joinpath(resource_name)
+
+
+def get_progfigsite_path() -> Path:
+    """The filesystem path to the progfigsite package
+
+    Returns:
+        The path to the progfigsite package, as a string.
+    """
+    return Path(progfigsite.__file__).parent
