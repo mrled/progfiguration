@@ -9,6 +9,15 @@ from progfiguration.inventory import Inventory
 
 
 class NnssTestData:
+    """A bundle of test data for the NNSS progfigsite
+
+    Properties:
+    - nnss_progfigsite_path: pathlib.Path to the NNSS progfigsite package
+    - invfilecfg: configparser.ConfigParser for the NNSS progfigsite inventory.conf
+    - inventory: progfiguration.inventory.Inventory for the NNSS progfigsite
+
+    """
+
     def __init__(self):
         # Find nnss progfigsite paths
         parent_path = pathlib.Path(__file__).parent
