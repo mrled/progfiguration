@@ -4,6 +4,8 @@ Things here should not depend on any other parts of the progfiguration package
 """
 
 
+from dataclasses import dataclass
+from datetime import datetime
 from importlib.abc import Traversable
 from pathlib import Path as PathlibPath
 from typing import Union
@@ -21,3 +23,11 @@ class Bunch:
 
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
+
+
+@dataclass
+class BuildMetadata:
+    """Build metadata for a progfigsite package"""
+
+    date: datetime
+    version: str

@@ -27,6 +27,7 @@ Submodules:
         - nodes
         - roles
         - groups
+        - builddata: should contain only an empty __init__.py file and nothing else
     Optional:
         - sitelib: not used by progfiguration, but can be used internally in the site package
 
@@ -37,12 +38,14 @@ Data files:
 Variables exported from package root:
     Required:
         - site_name: An arbitrary string used to identify the site to users
+        - mint_version(): A function that returns a valid pip version number
     Optional:
         - site_description: A longer string describing the site
 
 Other names are reserved for future use by progfiguration.
 """
 
+import datetime
 import importlib
 import importlib.resources
 import importlib.util
@@ -50,6 +53,8 @@ import os
 from pathlib import Path
 import sys
 from types import ModuleType
+
+from progfiguration.progfigtypes import BuildMetadata
 
 
 site_module_path = ""
@@ -112,6 +117,10 @@ def site_submodule(submodule_path: str) -> ModuleType:
             This can be an empty string for the site package itself,
             or a dotted path to a submodule.
             E.g. "", "nodes", "nodes.example_node"
+
+    Raises:
+        ModuleNotFoundError: If the submodule does not exist
+            (not ImportError!)
     """
     module = importlib.import_module(site_modpath(submodule_path))
     return module
@@ -130,6 +139,10 @@ def site_submodule_resource(submodule_path: str, resource_name: str):
             E.g. "", "nodes", "nodes.example_node"
         resource_name: The name of the resource file.
             E.g. "inventory.yml", "secrets.yml"
+
+    Raises:
+        ModuleNotFoundError: If the submodule does not exist
+            (not ImportError!)
     """
     return importlib.resources.files(site_modpath(submodule_path)).joinpath(resource_name)
 
@@ -141,3 +154,21 @@ def get_progfigsite_path() -> Path:
         The path to the progfigsite package, as a string.
     """
     return Path(progfigsite.__file__).parent
+
+
+def get_progfigsite_build_metadata() -> BuildMetadata:
+    """Return build metadata for the progfigsite
+
+    Check if there is a version file in builddata.
+    If not, return a default version number (for 'pip install -e').
+    """
+
+    try:
+        builddata_version = site_submodule("builddata.version")
+        return builddata_version.build_metadata
+
+    except ModuleNotFoundError:
+        return BuildMetadata(
+            date=datetime.datetime.utcnow(),
+            version="0.0.1a0",
+        )

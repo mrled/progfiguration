@@ -1,6 +1,7 @@
 """The command line interface for progfiguration"""
 
 import argparse
+import datetime
 import importlib
 import importlib.metadata
 import logging
@@ -46,8 +47,9 @@ def CommaSeparatedStrList(cssl: str) -> List[str]:
 
 def action_version(inventory: Inventory):
     """Retrieve the version of progfiguration core and the progfigsite"""
+
     coreversion = importlib.metadata.version("progfiguration")
-    # TODO: Get the version of the site package
+    build_metadata = sitewrapper.get_progfigsite_build_metadata()
 
     result = [
         f"progfiguration core:",
@@ -57,14 +59,9 @@ def action_version(inventory: Inventory):
         f"    path: {pathlib.Path(sitewrapper.progfigsite.__file__).parent}",
         f"    name: {sitewrapper.progfigsite.site_name}",
         f"    description: {sitewrapper.progfigsite.site_description}",
+        f"    build date: {build_metadata.date.isoformat()}",
+        f"    version: {build_metadata.version}",
     ]
-    try:
-        from progfiguration.builddata import builddate
-
-        result.append(f"package:")
-        result.append(f"    build date: {builddate.builddate}")
-    except ImportError:
-        result.append("Not running from a progfigsite package")
 
     print("\n".join(result))
 

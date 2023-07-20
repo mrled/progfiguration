@@ -14,6 +14,7 @@ from progfiguration import sitewrapper
 
 def build_progfigsite_zipapp(
     package_out_path: pathlib.Path,
+    build_date: Optional[datetime] = None,
     progfiguration_package_path: Optional[pathlib.Path] = None,
     compression: int = zipfile.ZIP_STORED,
 ) -> pathlib.Path:
@@ -21,6 +22,8 @@ def build_progfigsite_zipapp(
 
     Args:
         package_out_path: The path where the zipfile will be written.
+        build_date: The build date to embed in the zipapp.
+            If None, the current UTC time will be used.
         progfiguration_package_path: The path to the progfiguration package, eg "/path/to/progfiguration"
             If None, the progfiguration package will be copied from the Python path.
             This will only work if progfiguration is installed via pip
@@ -32,9 +35,6 @@ def build_progfigsite_zipapp(
 
     Returns:
         The path to the zipapp file, eg "/path/to/my_progfigsite.pyz"
-
-    TODO: how should build_progfigsite_zipapp handle versions?
-    Should we allow overriding progfiguration and progfigsite versions by overwriting files in the zipapp?
 
     What this function does:
 
@@ -54,6 +54,9 @@ def build_progfigsite_zipapp(
     if progfiguration_package_path is None:
         progfiguration_package_path = pathlib.Path(progfiguration.__file__).parent
 
+    if build_date is None:
+        build_date = datetime.utcnow()
+
     main_py = textwrap.dedent(
         r"""
         from progfiguration.cli import progfiguration_cmd
@@ -61,11 +64,16 @@ def build_progfigsite_zipapp(
         """
     )
 
-    builddata_builddate_py = textwrap.dedent(
+    progfigsite_minted_version = sitewrapper.progfigsite.mint_version()
+
+    builddata_version_py = textwrap.dedent(
         f"""\
         from datetime import datetime
-        builddate_str = "{datetime.utcnow().isoformat()}"
-        builddate = datetime.fromisoformat(builddate_str)
+        from progfiguration.progfigtypes import BuildMetadata
+        build_metadata = BuildMetadata(
+            date=datetime.fromisoformat("{build_date.isoformat()}"),
+            version="{progfigsite_minted_version}",
+        )
         """
     )
 
@@ -110,7 +118,7 @@ def build_progfigsite_zipapp(
                 z.write(child, "progfiguration/" + child_relname.as_posix())
 
             # Inject build date file
-            z.writestr("progfiguration/builddata/builddate.py", builddata_builddate_py.encode("utf-8"))
+            z.writestr("progfigsite/builddata/version.py", builddata_version_py.encode("utf-8"))
 
             # Add the __main__.py file to the zipfile root, which is required for zipapps
             z.writestr("__main__.py", main_py.encode("utf-8"))
