@@ -23,11 +23,3 @@ class Bunch:
 
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
-
-
-@dataclass
-class BuildMetadata:
-    """Build metadata for a progfigsite package"""
-
-    date: datetime
-    version: str

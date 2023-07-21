@@ -45,7 +45,6 @@ Variables exported from package root:
 Other names are reserved for future use by progfiguration.
 """
 
-import datetime
 import importlib
 import importlib.resources
 import importlib.util
@@ -54,18 +53,36 @@ from pathlib import Path
 import sys
 from types import ModuleType
 
-from progfiguration.progfigtypes import BuildMetadata
 
+"""Find the progfigsite package
+
+* First check for a bundled progfigsite package.
+* If that doesn't exist, check for a progfigsite pacakge in the Python path.
+* Fall back to the example site.
+
+TODO: should we stop looking for a package called 'progfigsite' at all?
+TODO: can we also avoid fallback to example_site? just raise an error if the user tries to use a function that requires a site but one isn't bundled?
+"""
 
 site_module_path = ""
+
 try:
-    import progfigsite
+    from progfiguration.builddata import bundled_progfigsite as progfigsite
 
-    site_module_path = "progfigsite"
+    site_module_path = "progfiguration.builddata.bundled_progfigsite"
+
 except ImportError:
-    import progfiguration.example_site as progfigsite
 
-    site_module_path = "progfiguration.example_site"
+    try:
+        import progfigsite
+
+        site_module_path = "progfigsite"
+
+    except ImportError:
+
+        import progfiguration.example_site as progfigsite
+
+        site_module_path = "progfiguration.example_site"
 
 
 def set_site_module_filepath(filepath: str):
@@ -154,21 +171,3 @@ def get_progfigsite_path() -> Path:
         The path to the progfigsite package, as a string.
     """
     return Path(progfigsite.__file__).parent
-
-
-def get_progfigsite_build_metadata() -> BuildMetadata:
-    """Return build metadata for the progfigsite
-
-    Check if there is a version file in builddata.
-    If not, return a default version number (for 'pip install -e').
-    """
-
-    try:
-        builddata_version = site_submodule("builddata.version")
-        return builddata_version.build_metadata
-
-    except ModuleNotFoundError:
-        return BuildMetadata(
-            date=datetime.datetime.utcnow(),
-            version="0.0.1a0",
-        )

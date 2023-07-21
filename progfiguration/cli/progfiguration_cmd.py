@@ -49,7 +49,14 @@ def action_version(inventory: Inventory):
     """Retrieve the version of progfiguration core and the progfigsite"""
 
     coreversion = importlib.metadata.version("progfiguration")
-    build_metadata = sitewrapper.get_progfigsite_build_metadata()
+
+    try:
+        builddata_version = sitewrapper.site_submodule("builddata.version")
+        version = builddata_version.version
+        builddate = builddata_version.builddate
+    except ModuleNotFoundError:
+        version = sitewrapper.progfigsite.get_version()
+        builddate = datetime.datetime.utcnow()
 
     result = [
         f"progfiguration core:",
@@ -59,8 +66,8 @@ def action_version(inventory: Inventory):
         f"    path: {pathlib.Path(sitewrapper.progfigsite.__file__).parent}",
         f"    name: {sitewrapper.progfigsite.site_name}",
         f"    description: {sitewrapper.progfigsite.site_description}",
-        f"    build date: {build_metadata.date.isoformat()}",
-        f"    version: {build_metadata.version}",
+        f"    build date: {version}",
+        f"    version: {builddate}",
     ]
 
     print("\n".join(result))
@@ -303,6 +310,7 @@ def parseargs(arguments: List[str]):
     parser.add_argument(
         "--progfigsite-package-path",
         default="",
+        type=pathlib.Path,
         help="The path to a progfigsite package. By default, look for a Python package called 'progfigsite' in the Python path, and fall back to the progfiguration core 'example_site' package.",
     )
     parser.add_argument(
@@ -429,6 +437,21 @@ def parseargs(arguments: List[str]):
         description="Build a zipapp .pyz file containing the Python module. Must be run from an editable install.",
     )
     sub_build_sub_pyz.add_argument("pyzfile", type=ResolvedPath, help="Save the resulting pyz file to this path")
+    sub_build_sub_pip = sub_build_subparsers.add_parser(
+        "pip",
+        description="Build a pip package containing the Python module. Must be run from an editable install.",
+    )
+    sub_build_sub_pip.add_argument(
+        "--outdir",
+        default="./dist",
+        type=ResolvedPath,
+        help="Save the resulting pip package to this path. Defaults to ./dist",
+    )
+    sub_build_sub_pip.add_argument(
+        "--keep-injected-files",
+        action="store_true",
+        help="Keep the injected files in the package after building. This is useful for debugging.",
+    )
 
     # rcmd subcommand
     sub_rcmd = subparsers.add_parser(
@@ -467,11 +490,11 @@ def main_implementation(*arguments):
         remoting.configure_mitogen_logging(mitogen_core_level, mitogen_io_level)
 
     if parsed.progfigsite_package_path:
-        progfigsite_package_path = pathlib.Path(parsed.progfigsite_package_path)
-        sitewrapper.set_site_module_filepath(parsed.progfigsite_package_path)
+        progfigsite_package_path = pathlib.Path(parsed.progfigsite_package_path).resolve()
+        sitewrapper.set_site_module_filepath(progfigsite_package_path.as_posix())
     else:
         # Make sure we have a path to the progfigsite package even if one wasn't passed in
-        progfigsite_package_path = pathlib.Path(sitewrapper.progfigsite.__file__).parent
+        progfigsite_package_path = pathlib.Path(sitewrapper.progfigsite.__file__).parent.resolve()
 
     # Get a nodename, if we have one
     try:
@@ -545,6 +568,10 @@ def main_implementation(*arguments):
         # TODO: how will sites extend this?
         if parsed.buildaction == "pyz":
             progfigbuild.build_progfigsite_zipapp(pathlib.Path(parsed.pyzfile))
+        elif parsed.buildaction == "pip":
+            progfigbuild.build_progfigsite_pip(
+                pathlib.Path(parsed.outdir), keep_injected_files=parsed.keep_injected_files or False
+            )
         else:
             raise Exception(f"Unknown buildaction {parsed.buildaction}")
     elif parsed.action == "debugger":
