@@ -26,3 +26,21 @@ def mint_version() -> str:
     epoch = int(dt.timestamp())
     version = f"1.0.{epoch}"
     return version
+
+
+def get_version() -> str:
+    """Dynamically get the package version
+
+    If we have version data injected at build time, retrieve that.
+    Otherwise return a default version.
+
+    The default version can be any valid version that conforms to your normal versioning scheme.
+    A reasonable default is "0.0.1a0".
+    """
+
+    try:
+        from nnss_progfigsite.builddata import version
+
+        return version.version
+    except ImportError:
+        return "0.0.1a0"
