@@ -596,6 +596,14 @@ def main_implementation(*arguments):
             f"Could not find progfigsite module, pass --progfigsite-filesystem-path to an existing valid progfigsite module or --progfigsite-python-path to a Python module path that is valid for the current interpreter"
         )
 
+    validation = validate(progfiguration.progfigsite_module_path)
+    if not validation.is_valid:
+        print(
+            f"Progfigsite (Python path: '{progfiguration.progfigsite_module_path}') has {len(validation.errors)} errors:"
+        )
+        for attrib in validation.errors:
+            print(attrib.errstr)
+
     if parsed.action == "version":
         action_version_all(inventory)
     elif parsed.action == "apply":

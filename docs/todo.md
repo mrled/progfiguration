@@ -36,7 +36,6 @@
   in case the user does something weird with their current version.
 * Before first release
   * Update example sites
-    * Use NNSS / example_site to support the recent site version stuff
     * Use example_site as an example, NNSS can hold more complicated test only stuff
     * Maybe make an example template site, and/or add that functionality to the commandline
     * Test the recent site version stuff with unit tests
