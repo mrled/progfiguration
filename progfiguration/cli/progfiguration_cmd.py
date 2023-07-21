@@ -26,6 +26,7 @@ from progfiguration.cli import (
     yaml_dump_str,
 )
 from progfiguration.inventory import Inventory
+from progfiguration.progfigsite_validator import validate
 
 try:
     from progfiguration import remoting
@@ -297,6 +298,18 @@ def action_deploy_copy(
             remotebrute.scp(f"{node.user}@{node.address}", pyzfile, remotepath)
 
 
+def action_validate():
+    validation = validate(progfiguration.progfigsite_module_path)
+    if validation.is_valid:
+        print(f"Progfigsite (Python path: '{progfiguration.progfigsite_module_path}') is valid.")
+    else:
+        print(
+            f"Progfigsite (Python path: '{progfiguration.progfigsite_module_path}') has {len(validation.errors)} errors:"
+        )
+    for attrib in validation.errors:
+        print(attrib.errstr)
+
+
 def parseargs(arguments: List[str]):
     parser = argparse.ArgumentParser("psyopsOS programmatic configuration")
 
@@ -501,6 +514,11 @@ def parseargs(arguments: List[str]):
         help="Keep the injected files in the package after building. This is useful for debugging.",
     )
 
+    # validate subcommand
+    sub_validate = subparsers.add_parser(
+        "validate", description="Validate the progfigsite that it matches the required API"
+    )
+
     # rcmd subcommand
     sub_rcmd = subparsers.add_parser(
         "rcmd",
@@ -645,6 +663,8 @@ def main_implementation(*arguments):
             )
         else:
             parser.error(f"Unknown buildaction {parsed.buildaction}")
+    elif parsed.action == "validate":
+        action_validate()
     else:
         parser.error(f"Unknown action {parsed.action}")
 
