@@ -34,3 +34,14 @@
 * Currently `progfiguration build pyz ...` copies the running progfiguration into the file.
   Consider adding support for downloading a fresh copy from pypi,
   in case the user does something weird with their current version.
+* Before first release
+  * Update example sites
+    * Use NNSS / example_site to support the recent site version stuff
+    * Use example_site as an example, NNSS can hold more complicated test only stuff
+    * Maybe make an example template site, and/or add that functionality to the commandline
+    * Test the recent site version stuff with unit tests
+  * Show example with support for at least one site specific package implementation, maybe RPM or just link to psyops progfigsite for APK
+  * Get APK working so I can use this myself...
+  * Test that pip packages are doing what I want. Do they have all functionality of old non-lobotomy?
+  * Rip out stuff I don't need: mitogen etc
+  * Merge lobotomy.
