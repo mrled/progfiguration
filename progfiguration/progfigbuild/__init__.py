@@ -30,7 +30,7 @@ class InjectedFile:
 def generate_builddata_version_py(build_date: datetime) -> str:
     """Generate the contents of builddata_version.py"""
 
-    progfigsite_minted_version = sitewrapper.progfigsite.mint_version()
+    progfigsite_minted_version = sitewrapper.get_progfigsite().mint_version()
     builddata_version_py = textwrap.dedent(
         f"""\
         from datetime import datetime

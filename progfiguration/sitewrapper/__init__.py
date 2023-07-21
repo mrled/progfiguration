@@ -1,48 +1,12 @@
 """Progfiguration site wrapper
 
-Find a progfigsite package.
-If there is a package called 'progfigsite' in the Python path, import that.
-Otherwise, import the example site from the core progfiguration package.
-Exactly once, at the beginning of program execution,
-the user can call set_site_module_filepath() to use a custom site package,
-which can have any name.
+We keep a Python package path to the progfigsite module in progfiguration/__init__.py.
+Using that, wrapper functions in this module can find and import the module.
+If we can't find a module with that path, raise ProgfigsiteModuleNotFoundError.
 
 Provide functions for retrieving site-specific resources,
 including submodules and data files.
 All progfiguration core code should use these functions to access site resources.
-
-(Why can't progfiguration core code use importlib.import_module()?
-Doing that requires the full module path, like 'progfigsite' or 'something.else.my_site'.
-We want to allow the progfigsite to have a dynamically determined name,
-to enable fallback to example_progfigsite and the --progfigsite-package-path option.
-Note that 'import X as progfigsite' does not mean that
-'import_module("sitewrapper.progfigsite")' will work.)
-
-## About site packages
-
-Site packages must meet the following requirements:
-
-Submodules:
-    Required:
-        - nodes
-        - roles
-        - groups
-        - builddata: should contain only an empty __init__.py file and nothing else
-    Optional:
-        - sitelib: not used by progfiguration, but can be used internally in the site package
-
-Data files:
-    Required:
-        - inventory.conf
-
-Variables exported from package root:
-    Required:
-        - site_name: An arbitrary string used to identify the site to users
-        - mint_version(): A function that returns a valid pip version number
-    Optional:
-        - site_description: A longer string describing the site
-
-Other names are reserved for future use by progfiguration.
 """
 
 import importlib
@@ -53,36 +17,34 @@ from pathlib import Path
 import sys
 from types import ModuleType
 
+import progfiguration
 
-"""Find the progfigsite package
 
-* First check for a bundled progfigsite package.
-* If that doesn't exist, check for a progfigsite pacakge in the Python path.
-* Fall back to the example site.
+class ProgfigsiteModuleNotFoundError(ModuleNotFoundError):
+    """Raised when the progfigsite module cannot be found"""
 
-TODO: should we stop looking for a package called 'progfigsite' at all?
-TODO: can we also avoid fallback to example_site? just raise an error if the user tries to use a function that requires a site but one isn't bundled?
-"""
+    pass
 
-site_module_path = ""
 
-try:
-    from progfiguration.builddata import bundled_progfigsite as progfigsite
+"""A cached reference to the progfigsite module"""
+_progfigsite_module = None
 
-    site_module_path = "progfiguration.builddata.bundled_progfigsite"
 
-except ImportError:
+def get_progfigsite() -> ModuleType:
+    """The progfigsite module
 
-    try:
-        import progfigsite
-
-        site_module_path = "progfigsite"
-
-    except ImportError:
-
-        import progfiguration.example_site as progfigsite
-
-        site_module_path = "progfiguration.example_site"
+    Returns:
+        The progfigsite module
+    """
+    global _progfigsite_module
+    if _progfigsite_module is None:
+        try:
+            _progfigsite_module = importlib.import_module(progfiguration.progfigsite_module_path)
+        except ModuleNotFoundError as e:
+            raise ProgfigsiteModuleNotFoundError(
+                f"Could not find progfigsite module at {progfiguration.progfigsite_module_path}"
+            ) from e
+    return _progfigsite_module
 
 
 def set_site_module_filepath(filepath: str):
@@ -93,20 +55,18 @@ def set_site_module_filepath(filepath: str):
     Args:
         filepath: The path to the site package, eg "/path/to/my_progfigsite"
     """
-    global site_module_path, progfigsite
-
-    site_module_path = "set_site_module_path_progfigsite"
+    progfiguration.progfigsite_module_path = "set_site_module_path_progfigsite"
 
     # spec_from_file_location() will fail if the filepath is a directory,
     # but if the directory is a package, we can use its __init__.py file.
     if os.path.exists(f"{filepath}/__init__.py"):
         filepath = f"{filepath}/__init__.py"
 
-    spec = importlib.util.spec_from_file_location(site_module_path, filepath)
+    spec = importlib.util.spec_from_file_location(progfiguration.progfigsite_module_path, filepath)
     if spec is None:
         raise ImportError(f"Could not import site package from {filepath}")
     progfigsite = importlib.util.module_from_spec(spec)
-    sys.modules[site_module_path] = progfigsite
+    sys.modules[progfiguration.progfigsite_module_path] = progfigsite
     spec.loader.exec_module(progfigsite)
 
 
@@ -120,9 +80,9 @@ def site_modpath(submodule_path: str) -> str:
             E.g. "", "nodes", "nodes.example_node"
     """
     if submodule_path:
-        modpath = f"{site_module_path}.{submodule_path}"
+        modpath = f"{progfiguration.progfigsite_module_path}.{submodule_path}"
     else:
-        modpath = site_module_path
+        modpath = progfiguration.progfigsite_module_path
     return modpath
 
 
@@ -170,4 +130,4 @@ def get_progfigsite_path() -> Path:
     Returns:
         The path to the progfigsite package, as a string.
     """
-    return Path(progfigsite.__file__).parent
+    return Path(get_progfigsite().__file__).parent.resolve()

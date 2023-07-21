@@ -16,7 +16,7 @@ import time
 from typing import List
 
 import progfiguration
-from progfiguration import logger, progfigbuild, remotebrute, sitewrapper
+from progfiguration import logger, progfigbuild, progfigsite_module_path, remotebrute, sitewrapper
 from progfiguration.cli import (
     progfiguration_error_handler,
     configure_logging,
@@ -45,31 +45,69 @@ def CommaSeparatedStrList(cssl: str) -> List[str]:
     return cssl.split(",")
 
 
-def action_version(inventory: Inventory):
-    """Retrieve the version of progfiguration core and the progfigsite"""
+def set_progfigsite(fspath: str, pypath: str):
+    """Given a filesystem path or a python path, set the progfigsite module path
+
+    If neither are specified, use the default of 'progfigsite'.
+
+    Return the site's Inventory object.
+
+    Raise an error if both are specified or the path cannot be found.
+    """
+
+    progfiguration.progfigsite_module_path = ""
+    if fspath:
+        progfigsite_filesystem_path = pathlib.Path(fspath).resolve()
+        # Note: sets progfiguration.progfigsite_module_path
+        sitewrapper.set_site_module_filepath(progfigsite_filesystem_path.as_posix())
+    elif pypath:
+        progfiguration.progfigsite_module_path = pypath
+    else:
+        progfiguration.progfigsite_module_path = "progfigsite"
+
+    # Raises ProgfigsiteModuleNotFoundError if the module cannot be found
+    sitewrapper.get_progfigsite()
+
+    inventory = Inventory(sitewrapper.site_submodule_resource("", "inventory.conf"), progfigsite_module_path)
+
+    return inventory
+
+
+def action_version_core():
+    """Retrieve the version of progfiguration core"""
 
     coreversion = importlib.metadata.version("progfiguration")
+    result = [
+        f"progfiguration core:",
+        f"    path: {pathlib.Path(progfiguration.__file__).parent}",
+        f"    version: {coreversion}",
+    ]
+    print("\n".join(result))
+
+
+def action_version_all(inventory: Inventory):
+    """Retrieve the version of progfiguration core and the progfigsite"""
+
+    progfigsite = sitewrapper.get_progfigsite()
 
     try:
         builddata_version = sitewrapper.site_submodule("builddata.version")
         version = builddata_version.version
         builddate = builddata_version.builddate
     except ModuleNotFoundError:
-        version = sitewrapper.progfigsite.get_version()
+        version = progfigsite.get_version()
         builddate = datetime.datetime.utcnow()
 
     result = [
-        f"progfiguration core:",
-        f"    path: {pathlib.Path(progfiguration.__file__).parent}",
-        f"    version: {coreversion}",
         f"progfigsite:",
-        f"    path: {pathlib.Path(sitewrapper.progfigsite.__file__).parent}",
-        f"    name: {sitewrapper.progfigsite.site_name}",
-        f"    description: {sitewrapper.progfigsite.site_description}",
+        f"    path: {sitewrapper.get_progfigsite_path()}",
+        f"    name: {progfigsite.site_name}",
+        f"    description: {progfigsite.site_description}",
         f"    build date: {version}",
         f"    version: {builddate}",
     ]
 
+    action_version_core()
     print("\n".join(result))
 
 
@@ -184,7 +222,6 @@ def action_rcmd(inventory: Inventory, nodes: List[str], groups: List[str], cmd: 
 
 
 def action_deploy_apply(
-    progfigsite_path: pathlib.Path,
     inventory: Inventory,
     nodenames: List[str],
     groupnames: List[str],
@@ -245,7 +282,6 @@ def action_deploy_apply(
 
 
 def action_deploy_copy(
-    progfigsite_path: pathlib.Path,
     inventory: Inventory,
     nodenames: List[str],
     groupnames: List[str],
@@ -307,12 +343,21 @@ def parseargs(arguments: List[str]):
         choices=progfiguration_log_levels,
         help="Log level for mitogen IO messages to stderr. Only used for remote commands from the controller.",
     )
-    parser.add_argument(
-        "--progfigsite-package-path",
-        default="",
+
+    # options for finding the progfigsite
+    # site_opts = argparse.ArgumentParser(add_help=False)
+    site_grp = parser.add_mutually_exclusive_group()
+    site_grp.add_argument(
+        "--progfigsite-filesystem-path",
         type=pathlib.Path,
-        help="The path to a progfigsite package. By default, look for a Python package called 'progfigsite' in the Python path, and fall back to the progfiguration core 'example_site' package.",
+        help="The filesystem path to a progfigsite package, like /path/to/progfigsite. If neither this nor --progfigsite-python-path is passed, look for a 'progfigsite' package in the Python path.",
     )
+    site_grp.add_argument(
+        "--progfigsite-python-path",
+        type=str,
+        help="The python path to a progfigsite package, like 'whatever.progfigsite'. If neither this nor --progfigsite-filesystem-path is passed, look for a 'progfigsite' package in the Python path.",
+    )
+
     parser.add_argument(
         "--age-private-key", "-k", help="The path to an age private key that decrypts inventory secrets"
     )
@@ -356,7 +401,10 @@ def parseargs(arguments: List[str]):
     subparsers = parser.add_subparsers(dest="action", required=True)
 
     # version subcommand
-    svn = subparsers.add_parser("version", description="Show progfiguration version")
+    svn_all = subparsers.add_parser("version", description="Show progfiguration core and progfigsite versions")
+
+    # version-core subcommand
+    svn_core = subparsers.add_parser("version-core", description="Show progfiguration core version")
 
     # apply subcommand
     sub_apply = subparsers.add_parser("apply", parents=[roles_opts], description="Apply configuration")
@@ -489,25 +537,49 @@ def main_implementation(*arguments):
         mitogen_io_level = logging._nameToLevel[parsed.mitogen_io_log_stderr]
         remoting.configure_mitogen_logging(mitogen_core_level, mitogen_io_level)
 
-    if parsed.progfigsite_package_path:
-        progfigsite_package_path = pathlib.Path(parsed.progfigsite_package_path).resolve()
-        sitewrapper.set_site_module_filepath(progfigsite_package_path.as_posix())
-    else:
-        # Make sure we have a path to the progfigsite package even if one wasn't passed in
-        progfigsite_package_path = pathlib.Path(sitewrapper.progfigsite.__file__).parent.resolve()
+    # These actions do not require an inventory at all:
+    no_inventory_actions = ["debugger", "version-core"]
+    if parsed.action in no_inventory_actions:
+        if parsed.action == "debugger":
+            pdb.set_trace()
+        elif parsed.action == "version-core":
+            action_version_core()
+        else:
+            parser.error(f"Unknown action {parsed.action}")
+        return
 
-    # Get a nodename, if we have one
+    # Later actions do require an inventory
     try:
-        nodename = parsed.nodename
-    except AttributeError:
-        nodename = None
+        # Get a nodename, if we have one
+        try:
+            nodename = parsed.nodename
+        except AttributeError:
+            nodename = None
 
-    inventory = Inventory(
-        sitewrapper.site_submodule_resource("", "inventory.conf"), parsed.age_private_key, current_node=nodename
-    )
+        progfiguration.progfigsite_module_path = ""
+        if parsed.progfigsite_filesystem_path:
+            progfigsite_filesystem_path = pathlib.Path(parsed.progfigsite_filesystem_path).resolve()
+            # Note: sets progfiguration.progfigsite_module_path
+            sitewrapper.set_site_module_filepath(progfigsite_filesystem_path.as_posix())
+        elif parsed.progfigsite_python_path:
+            progfiguration.progfigsite_module_path = parsed.progfigsite_python_path
+        else:
+            progfiguration.progfigsite_module_path = "progfigsite"
+
+        inventory = Inventory(
+            sitewrapper.site_submodule_resource("", "inventory.conf"),
+            progfigsite_module_path,
+            age_privkey=parsed.age_private_key,
+            current_node=nodename,
+        )
+
+    except sitewrapper.ProgfigsiteModuleNotFoundError:
+        parser.error(
+            f"Could not find progfigsite module, pass --progfigsite-filesystem-path to an existing valid progfigsite module or --progfigsite-python-path to a Python module path that is valid for the current interpreter"
+        )
 
     if parsed.action == "version":
-        action_version(inventory)
+        action_version_all(inventory)
     elif parsed.action == "apply":
         action_apply(inventory, parsed.nodename, roles=parsed.roles, force=parsed.force_apply)
     elif parsed.action == "deploy":
@@ -515,7 +587,6 @@ def main_implementation(*arguments):
             parser.error("You must pass at least one of --nodes or --groups")
         if parsed.deploy_action == "apply":
             action_deploy_apply(
-                progfigsite_package_path,
                 inventory,
                 parsed.nodes,
                 parsed.groups,
@@ -525,10 +596,10 @@ def main_implementation(*arguments):
                 keep_remote_file=parsed.keep_remote_file,
             )
         elif parsed.deploy_action == "copy":
-            action_deploy_copy(progfigsite_package_path, inventory, parsed.nodes, parsed.groups, parsed.destination)
+            action_deploy_copy(inventory, parsed.nodes, parsed.groups, parsed.destination)
             print(f"Copied to remote host(s) at {parsed.destination}")
         else:
-            raise ValueError(f"Unknown deploy action {parsed.deploy_action}")
+            parser.error(f"Unknown deploy action {parsed.deploy_action}")
     elif parsed.action == "list":
         action_list(inventory, parsed.collection)
     elif parsed.action == "info":
@@ -573,11 +644,9 @@ def main_implementation(*arguments):
                 pathlib.Path(parsed.outdir), keep_injected_files=parsed.keep_injected_files or False
             )
         else:
-            raise Exception(f"Unknown buildaction {parsed.buildaction}")
-    elif parsed.action == "debugger":
-        pdb.set_trace()
+            parser.error(f"Unknown buildaction {parsed.buildaction}")
     else:
-        raise Exception(f"Unknown action {parsed.action}")
+        parser.error(f"Unknown action {parsed.action}")
 
 
 def main():

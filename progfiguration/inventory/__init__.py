@@ -48,6 +48,7 @@ class Inventory:
     def __init__(
         self,
         invfile: Traversable | Path | configparser.ConfigParser,
+        progfigsite_package_path: str,
         age_privkey: Optional[str] = None,
         current_node: Optional[str] = None,
     ):
@@ -55,6 +56,8 @@ class Inventory:
 
         invfile:        A path to an inventory configuration file.
                         Alternatively, a configparser.ConfigParser object from a valid configuration file.
+        progfigsite_package_path:   The path to the progfigsite package.
+                        This is a Python package path to the progfigsite package.
         age_privkey:    Use this path to an age private key.
                         If not passed, try to find the appropriate node/controller age key.
         current_node:   The name of the current node, if applicable.
