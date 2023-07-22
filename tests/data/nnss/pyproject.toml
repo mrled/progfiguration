@@ -11,7 +11,7 @@ name = "Micah R Ledbetter"
 email = "me@micahrl.com"
 
 [project.scripts]
-progfigsite = "progfigsite.cli.progfigsite_shim:main"
+progfigsite = "nnss_progfigsite.cli.progfigsite_shim:main"
 
 [project.optional-dependencies]
 development = [
@@ -35,10 +35,10 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.package-data]
-progfigsite = ["*"]
+nnss_progfigsite = ["*"]
 
 [tool.setuptools.dynamic]
-version = {attr = "progfigsite.get_version"}
+version = {attr = "nnss_progfigsite.get_version"}
 
 [tool.black]
 line-length = 120
