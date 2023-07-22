@@ -28,13 +28,6 @@ from progfiguration.cli import (
 from progfiguration.inventory import Inventory
 from progfiguration.progfigsite_validator import validate
 
-try:
-    from progfiguration import remoting
-
-    REMOTING = True
-except ModuleNotFoundError:
-    REMOTING = False
-
 
 def CommaSeparatedStrList(cssl: str) -> List[str]:
     """Convert a string with commas into a list of strings"""
@@ -185,10 +178,6 @@ def action_decrypt(inventory: Inventory, nodes: List[str], groups: List[str], co
         print("---")
 
 
-def action_rcmd(inventory: Inventory, nodes: List[str], groups: List[str], cmd: str):
-    remoting.command(inventory, nodes, groups, cmd)
-
-
 def action_deploy_apply(
     inventory: Inventory,
     nodenames: List[str],
@@ -310,18 +299,6 @@ def parseargs(arguments: List[str]):
         default=syslog_default(),
         choices=progfiguration_log_levels,
         help="Log level to send to syslog. Defaults to INFO if /dev/log exists, otherwise NONE. NONE to disable. If a value other than NONE is passed explicitly and /dev/log does not exist, an exception will be raised.",
-    )
-    parser.add_argument(
-        "--mitogen-log-stderr",
-        default="CRITICAL",
-        choices=progfiguration_log_levels,
-        help="Log level for mitogen messages to stderr. Only used for remote commands from the controller.",
-    )
-    parser.add_argument(
-        "--mitogen-io-log-stderr",
-        default="CRITICAL",
-        choices=progfiguration_log_levels,
-        help="Log level for mitogen IO messages to stderr. Only used for remote commands from the controller.",
     )
 
     parser.add_argument(
@@ -445,17 +422,6 @@ def parseargs(arguments: List[str]):
         "validate", description="Validate the progfigsite that it matches the required API"
     )
 
-    # rcmd subcommand
-    sub_rcmd = subparsers.add_parser(
-        "rcmd",
-        parents=[node_opts],
-        description="Run a command on remote nodes. Intended to be run from the controller.",
-    )
-    sub_rcmd.add_argument(
-        "--sh", action="store_true", help="Run the command inside a shell, rather than directly on the host"
-    )
-    sub_rcmd.add_argument("command", help="A command to run remotely")
-
     # debugger subcommand
     # This is useful for debugging a pyz deployment,
     # since you can't just 'import progfiguration' inside a python3 interpreter
@@ -478,11 +444,6 @@ def main_implementation(*arguments):
     elif parsed.syslog_exception:
         sys.excepthook = syslog_excepthook
     configure_logging(parsed.log_stderr, parsed.log_syslog)
-
-    if REMOTING:
-        mitogen_core_level = logging._nameToLevel[parsed.mitogen_log_stderr]
-        mitogen_io_level = logging._nameToLevel[parsed.mitogen_io_log_stderr]
-        remoting.configure_mitogen_logging(mitogen_core_level, mitogen_io_level)
 
     # Later actions do require an inventory
 
@@ -557,13 +518,6 @@ def main_implementation(*arguments):
         if not parsed.nodes and not parsed.groups and not parsed.controller:
             parser.error("You must pass at least one of --nodes, --groups, or --controller")
         action_decrypt(inventory, parsed.nodes, parsed.groups, parsed.controller)
-    elif parsed.action == "rcmd":
-        if not REMOTING:
-            raise Exception("Could not import remoting module - make sure mitogen is installed")
-        if not parsed.nodes and not parsed.groups:
-            parser.error("You must pass at least one of --nodes or --groups")
-        action_rcmd(inventory, parsed.nodes, parsed.groups, parsed.command)
-        # remoting.mitogen_example()
     elif parsed.action == "validate":
         # We always validate but this shows a nice message even if validation succeeds
         action_validate()

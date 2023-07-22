@@ -42,6 +42,5 @@
   * Show example with support for at least one site specific package implementation, maybe RPM or just link to psyops progfigsite for APK
   * Get APK working so I can use this myself...
   * Test that pip packages are doing what I want. Do they have all functionality of old non-lobotomy?
-  * Rip out stuff I don't need: mitogen etc
   * Merge lobotomy.
   * Build a documentation site

@@ -20,13 +20,9 @@ email = "me@micahrl.com"
 progfiguration = "progfiguration.cli.progfiguration_core_cmd:main"
 
 [project.optional-dependencies]
-ssh = [
-    "mitogen",
-]
 development = [
     "black",
     "build",
-    "mitogen",
     "mypy",
     "twine",
 ]
