@@ -10,22 +10,23 @@ from typing import Union
 from zipfile import Path as ZipfilePath
 
 
-"""A pathlib.Path, a Traversable, or a zipfile.Path"""
 AnyPath = Union[PathlibPath, Traversable, ZipfilePath]
+"""A pathlib.Path, a Traversable, or a zipfile.Path"""
 
-"""A pathlib.Path, a Traversable, a zipfile.Path, or a str"""
 AnyPathOrStr = Union[AnyPath, str]
+"""A pathlib.Path, a Traversable, a zipfile.Path, or a str"""
 
+PathOrStr = Union[PathlibPath, str]
 """A pathlib.Path or a str only
 
 Traversable and zipfile.Path cannot be copied to and do not have .exists(),
 so it's useful to have a type that excludes them.
 """
-PathOrStr = Union[PathlibPath, str]
 
 
 class Bunch:
     """A nice little object wrapper.
+
     From <https://code.activestate.com/recipes/52308-the-simple-but-handy-collector-of-a-bunch-of-named/?in=user-97991>
     """
 

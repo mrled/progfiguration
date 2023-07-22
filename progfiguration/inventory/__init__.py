@@ -23,14 +23,19 @@ class Controller:
     """
 
     age: Optional[AgeKey]
+    """An age key object, if the private key is available"""
+
     agepub: str
+    """A string containing the age public key"""
+
     agepath: Optional[str]
+    """The path to the controller age private key, if available"""
 
     def __init__(self, agepub: str, privkeypath: str):
-        """Initializer
+        """Initializer params:
 
-        agepub:         The path to the controller age public key
-        privkeypath:    The path to the controller age private key
+        * `agepub`:         The path to the controller age public key
+        * `privkeypath`:    The path to the controller age private key
         """
         if privkeypath and os.path.exists(privkeypath):
             self.age = AgeKey.from_file(privkeypath)
@@ -44,6 +49,29 @@ class Controller:
 
 
 class Inventory:
+    """An site's inventory
+
+    An inventory is the heart of a progfigsite.
+    It's composed of the following:
+
+    * `progfiguration.inventory.nodes.InventoryNode`: A machine that can be configured.
+      See an example node definition in `example_site.nodes.node1`.
+    * Group: Simple collections of nodes, which can provide shared configuration.
+      See an example group definition in `example_site.groups.group1`.
+    * Function: Simple collection of nodes, which have a list of roles to be applied.
+      Functions can't share any configuration,
+      so they don't have a source code file of their own.
+      They're just defined in the inventory configuration file.
+    * `progfiguration.inventory.roles.ProgfigurationRole`: A configuration that can be applied to a function.
+      See an example role in `example_site.roles.settz`.
+
+    The best way to understand the inventory is to look at an example inventory configuration file.
+    Here's the inventory configuration file for `example_site`:
+
+    ```
+    .. include:: ../../tests/data/simple/example_site/inventory.conf
+    ```
+    """
 
     # The controller age key that can be used to decrypt anything.
     # When running progfiguration from a node, this is not available.
@@ -56,18 +84,18 @@ class Inventory:
         age_privkey: Optional[str] = None,
         current_node: Optional[str] = None,
     ):
-        """Initializer
+        """Initializer parameters:
 
-        invfile:        A path to an inventory configuration file.
-                        Alternatively, a configparser.ConfigParser object from a valid configuration file.
-        progfigsite_package_path:   The path to the progfigsite package.
-                        This is a Python package path to the progfigsite package.
-        age_privkey:    Use this path to an age private key.
-                        If not passed, try to find the appropriate node/controller age key.
-        current_node:   The name of the current node, if applicable.
-                        If age_privkey is not passed, this is used to find the appropriate node age key.
+        * `invfile`: A path to an inventory configuration file.
+          Alternatively, a `configparser.ConfigParser` object from a valid configuration file.
+        * `progfigsite_package_path`: The path to the progfigsite package.
+          This is a Python package path to the progfigsite package.
+        * `age_privkey`: Use this path to an age private key.
+          If not passed, try to find the appropriate node/controller age key.
+        * `current_node`: The name of the current node, if applicable.
+          If `age_privkey` is not passed, this is used to find the appropriate node age key.
         """
-        # self.invfile = invfile
+
         if isinstance(invfile, configparser.ConfigParser):
             self.config = invfile
         else:

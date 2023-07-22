@@ -13,17 +13,16 @@ from typing import Any, Callable, List
 
 @dataclass
 class ProgfigsiteAttribute:
-    """An attribute of a progfigsite module
-
-    Attributes:
-        path: The path of the attribute relative to the root module
-        type: The type of the attribute
-        required: Whether the attribute is required
-    """
+    """An attribute of a progfigsite module"""
 
     path: str
+    """The path of the attribute relative to the root module"""
+
     type: Any
+    """The type of the attribute"""
+
     required: bool
+    """Whether the attribute is required"""
 
     @property
     def errstr(self) -> str:
@@ -32,12 +31,7 @@ class ProgfigsiteAttribute:
 
 
 class ValidationResult:
-    """The result of validating a module
-
-    Attributes:
-        path: The path to the module (must be present in Python module path)
-        errors: A list of errors that were found
-    """
+    """The result of validating a module"""
 
     valid_attributes = [
         ProgfigsiteAttribute("site_name", str, True),
@@ -51,10 +45,15 @@ class ValidationResult:
         ProgfigsiteAttribute("roles", ModuleType, True),
         ProgfigsiteAttribute("sitelib", ModuleType, False),
     ]
+    """A list of attributes that a progfigsite module must have"""
 
     def __init__(self, path: str):
+
         self.path = path
+        """The path to the module (must already be present in Python module path)"""
+
         self.errors: List[ProgfigsiteAttribute] = []
+        """A list of errors that were found"""
 
     @property
     def is_valid(self) -> bool:
@@ -65,7 +64,7 @@ class ValidationResult:
 def validate(module_path: str) -> ValidationResult:
     """Validate a module
 
-    Return a ValidationResult object.
+    Return a `ValidationResult` object.
     """
     result = ValidationResult(module_path)
     module = importlib.import_module(module_path)

@@ -11,6 +11,14 @@ class AgeParseException(Exception):
 
 
 class AgeKey:
+    """An age keypair
+
+    Attributes:
+        secret: The secret key
+        public: The public key
+        created: The datetime the key was created
+    """
+
     def __init__(self, secret: str, public: str, created: datetime.datetime):
         self.secret = secret
         self.public = public
@@ -18,10 +26,15 @@ class AgeKey:
 
     @classmethod
     def from_output(cls, output: str) -> "AgeKey":
-        example_stdout = """
+        """Parse the output of age-keygen into an AgeKey
+
+        Here's example output from age-keygen -y:
+
             # created: 2022-09-28T16:01:22-05:00
             # public key: age14e42u048nehghjj3ch9mmnkdh4nsujn774klqxn02mznppx3gflsuj6y5m
             AGE-SECRET-KEY-1ASKGXED4DVGUH7SA50DHE2UHAYQ00PV87N2RQ5J5S6AUN9MLNSGQ3TKFGJ
+
+        This function parses that output and returns an AgeKey object.
         """
         outlines = [l for l in output.split("\n") if l]
         if len(outlines) == 3:
@@ -39,11 +52,13 @@ class AgeKey:
 
     @classmethod
     def generate(cls) -> "AgeKey":
+        """Generate a new age keypair using the age-keygen binary"""
         result = subprocess.run(["age-keygen"], check=True, capture_output=True)
         return cls.from_output(result.stdout.decode())
 
     @classmethod
     def from_file(cls, path: str) -> "AgeKey":
+        """Load an age keypair from a file"""
         with open(path) as fp:
             content = fp.read()
         try:
@@ -57,11 +72,12 @@ class AgeSecret:
     """An age-encrypted secret value"""
 
     secret: str
+    """The encrypted secret value"""
 
     _decrypted: str = ""
 
     def decrypt(self, privkey_path: str):
-        """Decrypt a secret and cache the result."""
+        """Decrypt the secret and cache the result."""
         if not self._decrypted:
             self._decrypted = decrypt(self.secret, privkey_path)
         return self._decrypted
@@ -69,9 +85,14 @@ class AgeSecret:
 
 @dataclass
 class AgeSecretReference:
-    """A reference to a secret by name"""
+    """A reference to a secret by name
+
+    This is a wrapper type that allows us to pass around a reference to a secret
+    without having to know the secret's value.
+    """
 
     name: str
+    """The name of the secret"""
 
 
 def encrypt(value: str, pubkeys: List[str]):

@@ -9,6 +9,15 @@ from progfiguration import logger
 
 
 class MagicPopen(subprocess.Popen):
+    """A subprocess.Popen with superpowers
+
+    This is a wrapper for subprocess.Popen,
+    which is guaranteed to have a .stdout and .stderr property,
+    which will always be StringIO objects (not bytes).
+
+    It's the return value for magicrun(),
+    and shouldn't be used elsewhere.
+    """
 
     stdout: io.StringIO
     stderr: io.StringIO
@@ -17,17 +26,19 @@ class MagicPopen(subprocess.Popen):
 def magicrun(cmd: str | list, print_output=True, log_output=False, check=True, *args, **kwargs) -> MagicPopen:
     """Run a command, with superpowers
 
-    * cmd: The command to run. If a string, it will be passed to a shell.
-    * print_output: Print the command's stdout/stderr in to the controlling terminal's stdout/stderr in real time.
+    Params:
+
+    * `cmd`: The command to run. If a string, it will be passed to a shell.
+    * `print_output`: Print the command's stdout/stderr in to the controlling terminal's stdout/stderr in real time.
         stdout/stderr is always captured and returned, whether this is True or False (superpowers).
         The .stdout and .stderr properties are always strings, not bytes
         (which is required because we must use universal_newlines=True).
         * <https://gist.github.com/nawatts/e2cdca610463200c12eac2a14efc0bfb>
         * <https://stackoverflow.com/questions/4417546/constantly-print-subprocess-output-while-process-is-running>
-    * log_output: Log the command's stdout/stderr in a single log message (each) after the command completes.
-    * check: Raise an exception if the command returns a non-zero exit code.
+    * `log_output`: Log the command's stdout/stderr in a single log message (each) after the command completes.
+    * `check`: Raise an exception if the command returns a non-zero exit code.
         Unlike subprocess.run, this is True by default.
-    * *args, **kwargs: Passed to subprocess.Popen
+    * `*args, **kwargs`: Passed to subprocess.Popen
         Do not pass the following arguments, as they are used internally:
         * shell: Determined automatically based on the type of cmd
         * stdout: Always subprocess.PIPE
@@ -35,7 +46,7 @@ def magicrun(cmd: str | list, print_output=True, log_output=False, check=True, *
         * universal_newlines: Always True
         * bufsize: Always 1
 
-    The Popen object is always returned.
+    A `MagicPopen` object is always returned.
     """
     shell = isinstance(cmd, str)
 

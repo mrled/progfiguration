@@ -1,13 +1,4 @@
-"""Progfiguration site wrapper
-
-We keep a Python package path to the progfigsite module in progfiguration/__init__.py.
-Using that, wrapper functions in this module can find and import the module.
-If we can't find a module with that path, raise ProgfigsiteModuleNotFoundError.
-
-Provide functions for retrieving site-specific resources,
-including submodules and data files.
-All progfiguration core code should use these functions to access site resources.
-"""
+"""Utility functions for progfiguration"""
 
 import hashlib
 import importlib
@@ -25,12 +16,15 @@ from progfiguration.progfigtypes import AnyPathOrStr
 def import_module_from_filepath(filepath: AnyPathOrStr):
     """Import a module from a filesystem path
 
+    Imported modules must have a unique name.
+    This function will generate a unique name for the module by hashing the path.
+
     Args:
         filepath: The path to the site package, eg "/path/to/package"
 
     Returns:
-        A tuple of (module, module_name),
-        where the module_name is a hash of the filesystem path.
+        A tuple of `(module, module_name)`,
+        where the `module_name` is a hash of the filesystem path.
     """
 
     if type(filepath) is not str:

@@ -12,7 +12,6 @@ from typing import List
 from progfiguration import logger
 
 
-"""Log levels that our command-line programs can configure"""
 progfiguration_log_levels = [
     # Levels from the library
     "CRITICAL",
@@ -24,15 +23,31 @@ progfiguration_log_levels = [
     # My customization
     "NONE",
 ]
+"""Log levels that our command-line programs can configure
+
+Taken from the logging module,
+see <https://docs.python.org/3/library/logging.html#logging-levels>.
+
+Includes NONE, which is a special value that means "don't configure logging at all".
+"""
 
 
 def progfiguration_error_handler(func: Callable[[List[str]], int], *arguments: List[str]) -> int:
     """Special error handler
 
-    Wrap the main() function in this to properly handle broken pipes.
-    The EPIPE signal is sent if you run e.g. `script.py | head`.
+    Wrap a `main()` function in this to properly handle broken pipes.
+    The `EPIPE` signal is sent if you run e.g. `script.py | head`.
     Wrapping the main function with this one exits cleanly if that happens.
-    See <https://docs.python.org/3/library/signal.html#note-on-sigpipe>
+    See <https://docs.python.org/3/library/signal.html#note-on-sigpipe>.
+
+    Params:
+
+    * `func`: The main function to wrap, which should take a list of arguments and return an exit code.
+    * `arguments`: A list of arguments to pass to `func`, probably from `sys.argv[1:]`.
+
+    Returns:
+
+    * The exit code from `func`.
     """
     try:
         returncode = func(*arguments)
@@ -50,7 +65,7 @@ def progfiguration_error_handler(func: Callable[[List[str]], int], *arguments: L
 def idb_excepthook(type, value, tb):
     """Call an interactive debugger in post-mortem mode
 
-    If you do "sys.excepthook = idb_excepthook", then an interactive debugger
+    If you do `sys.excepthook = idb_excepthook`, then an interactive debugger
     will be spawned at an unhandled exception
     """
     if hasattr(sys, "ps1") or not sys.stderr.isatty():
@@ -62,7 +77,11 @@ def idb_excepthook(type, value, tb):
 
 
 def syslog_excepthook(type, value, tb):
-    """Send an unhandled exception to syslog"""
+    """Send an unhandled exception to syslog
+
+    If you do `sys.excepthook = syslog_excepthook`,
+    then unhandled exceptions will be sent to syslog before the program exits.
+    """
 
     # Note that format_exception() returns
     # "a list of strings, each ending in a newline and some containing internal newlines"
@@ -79,6 +98,11 @@ def configure_logging(log_stderr: str, log_syslog: str = "NONE") -> None:
     A convenience function that sets up logging based on the command-line arguments.
 
     Should only be called once.
+
+    Params:
+
+    * `log_stderr`: The log level for stderr, one of `progfiguration_log_levels`.
+    * `log_syslog`: The log level for syslog, one of `progfiguration_log_levels`.
     """
     if log_stderr != "NONE":
         handler_stderr = logging.StreamHandler()

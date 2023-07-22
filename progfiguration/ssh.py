@@ -27,7 +27,12 @@ def _generate_pubkey_from_string(key: str) -> str:
 
 
 def generate_pubkey(privkey: AnyPathOrStr) -> str:
-    """Generate a public key from a private key"""
+    """Generate a public key from a private key
+
+    The private key can be a string containing the key itself,
+    or a path to a file containing the key.
+    If a path, it can be a string or one of several Path-like types.
+    """
     if isinstance(privkey, str):
         if os.path.exists(privkey):
             # If it's a string of a path that exists, read from that file
