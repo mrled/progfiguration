@@ -17,7 +17,7 @@ name = "Micah R Ledbetter"
 email = "me@micahrl.com"
 
 [project.scripts]
-progfiguration = "progfiguration.cli.progfiguration_cmd:main"
+progfiguration = "progfiguration.cli.progfiguration_core_cmd:main"
 
 [project.optional-dependencies]
 ssh = [

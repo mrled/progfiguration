@@ -6,12 +6,13 @@ from datetime import datetime
 import pathlib
 import stat
 import textwrap
-from typing import Any, Callable, Dict, Optional
+from typing import Callable, Optional
 import zipfile
 
 import progfiguration
-from progfiguration import logger, sitewrapper
+from progfiguration import logger
 from progfiguration.cmd import run
+from progfiguration.util import import_module_from_filepath
 
 
 @dataclass
@@ -27,14 +28,13 @@ class InjectedFile:
     contents: str
 
 
-def generate_builddata_version_py(build_date: datetime) -> str:
+def generate_builddata_version_py(version: str, build_date: datetime) -> str:
     """Generate the contents of builddata_version.py"""
 
-    progfigsite_minted_version = sitewrapper.get_progfigsite().mint_version()
     builddata_version_py = textwrap.dedent(
         f"""\
         from datetime import datetime
-        version = "{progfigsite_minted_version}"
+        version = "{version}"
         builddate = datetime.fromisoformat("{build_date.isoformat()}")
         """
     )
@@ -43,6 +43,7 @@ def generate_builddata_version_py(build_date: datetime) -> str:
 
 
 def build_progfigsite_zipapp(
+    progfigsite_filesystem_path: pathlib.Path,
     package_out_path: pathlib.Path,
     build_date: Optional[datetime] = None,
     progfiguration_package_path: Optional[pathlib.Path] = None,
@@ -51,6 +52,7 @@ def build_progfigsite_zipapp(
     """Build a .pyz zipapp progfigsite package
 
     Args:
+        progfigsite_filesystem_path: The path to the progfigsite package, eg "/path/to/progfigsite"
         package_out_path: The path where the zipfile will be written.
         build_date: The build date to embed in the zipapp.
             If None, the current UTC time will be used.
@@ -89,8 +91,8 @@ def build_progfigsite_zipapp(
 
     main_py = textwrap.dedent(
         r"""
-        from progfiguration.cli import progfiguration_cmd
-        progfiguration_cmd.main()
+        from progfiguration.cli import progfiguration_site_cmd
+        progfiguration_site_cmd.main("progfigsite")
         """
     )
 
@@ -108,7 +110,11 @@ def build_progfigsite_zipapp(
             return True
         return False
 
-    progfigsite_fs_path = sitewrapper.get_progfigsite_path()
+    progfigsite, progfigsite_modname = import_module_from_filepath(progfigsite_filesystem_path)
+    version = progfigsite.mint_version()
+    if progfigsite.__file__ is None:
+        raise ValueError("Cannot find the filesystem path to the progfigsite package")
+    builddata_version_py = generate_builddata_version_py(version, build_date)
 
     with open(package_out_path, "wb") as fp:
         # Writing a shebang like this is optional in zipapp,
@@ -118,10 +124,10 @@ def build_progfigsite_zipapp(
         with zipfile.ZipFile(fp, "w", compression=compression) as z:
 
             # Copy the progfigsite package into the zipfile
-            for child in progfigsite_fs_path.rglob("*"):
+            for child in progfigsite_filesystem_path.rglob("*"):
                 if shouldignore(child):
                     continue
-                child_relname = child.relative_to(progfigsite_fs_path)
+                child_relname = child.relative_to(progfigsite_filesystem_path)
                 # Place the progfigsite package inside a subdirectory called 'progfigsite'.
                 # This ignores the actual name of the package,
                 # and allows progfiguration to find it when run from the zipfile.
@@ -135,7 +141,7 @@ def build_progfigsite_zipapp(
                 z.write(child, "progfiguration/" + child_relname.as_posix())
 
             # Inject build date file
-            z.writestr("progfigsite/builddata/version.py", generate_builddata_version_py(build_date).encode("utf-8"))
+            z.writestr("progfigsite/builddata/version.py", builddata_version_py.encode("utf-8"))
 
             # Add the __main__.py file to the zipfile root, which is required for zipapps
             z.writestr("__main__.py", main_py.encode("utf-8"))
@@ -194,6 +200,7 @@ def progfigsite_setuptools_builder(
 
 
 def build_progfigsite_pip(
+    progfigsite_filesystem_path: pathlib.Path,
     package_out_path: pathlib.Path,
     build_date: Optional[datetime] = None,
     progfiguration_package_path: Optional[pathlib.Path] = None,
@@ -203,6 +210,7 @@ def build_progfigsite_pip(
     """Build a pip package
 
     Args:
+        progfigsite_filesystem_path: The path to the progfigsite package, eg "/path/to/progfigsite"
         package_out_path: The path where the zipfile will be written.
         build_date: The build date to inject into the package.
             If None, the current date will be used.
@@ -231,26 +239,27 @@ def build_progfigsite_pip(
 
     package_out_path.mkdir(parents=True, exist_ok=True)
 
-    # This is the progfigsite PACKAGE path containing an __init__.py
-    # This might be inside a directory called 'src' or 'progfigsite' inside the PROJECT path (below)
-    progfigsite_package_path = sitewrapper.get_progfigsite_path()
+    progfigsite, progfigsite_modname = import_module_from_filepath(progfigsite_filesystem_path)
+    version = progfigsite.mint_version()
+    builddata_version_py = generate_builddata_version_py(version, build_date)
 
     # Find the progfigsite PROJECT path containing a pyproject.toml
-    progfigsite_pyproject_toml_path = progfigsite_package_path / "pyproject.toml"
+    # progfigsite_filesystem_path might be inside a directory called 'src' or 'progfigsite' inside the PROJECT path
+    progfigsite_pyproject_toml_path = progfigsite_filesystem_path / "pyproject.toml"
     while not progfigsite_pyproject_toml_path.exists():
         if progfigsite_pyproject_toml_path == progfigsite_pyproject_toml_path.parent:
             raise RuntimeError("Could not find progfigsite project path")
         progfigsite_pyproject_toml_path = progfigsite_pyproject_toml_path.parent
     progfigsite_project_path = progfigsite_pyproject_toml_path.parent
 
-    progfiguration_autovendored_path = progfigsite_package_path / "autovendor" / "progfiguration"
+    progfiguration_autovendored_path = progfigsite_filesystem_path / "autovendor" / "progfiguration"
 
     # Inject build data into the packages.
     # We have to do this on disk before building the pip package.
     injections = [
         InjectedFile(
-            path=progfigsite_package_path / "builddata" / "version.py",
-            contents=generate_builddata_version_py(build_date),
+            path=progfigsite_filesystem_path / "builddata" / "version.py",
+            contents=builddata_version_py,
         ),
     ]
 

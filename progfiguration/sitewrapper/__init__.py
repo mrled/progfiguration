@@ -12,12 +12,11 @@ All progfiguration core code should use these functions to access site resources
 import importlib
 import importlib.resources
 import importlib.util
-import os
 from pathlib import Path
-import sys
 from types import ModuleType
 
 import progfiguration
+from progfiguration.util import import_module_from_filepath
 
 
 class ProgfigsiteModuleNotFoundError(ModuleNotFoundError):
@@ -55,19 +54,8 @@ def set_site_module_filepath(filepath: str):
     Args:
         filepath: The path to the site package, eg "/path/to/my_progfigsite"
     """
-    progfiguration.progfigsite_module_path = "set_site_module_path_progfigsite"
-
-    # spec_from_file_location() will fail if the filepath is a directory,
-    # but if the directory is a package, we can use its __init__.py file.
-    if os.path.exists(f"{filepath}/__init__.py"):
-        filepath = f"{filepath}/__init__.py"
-
-    spec = importlib.util.spec_from_file_location(progfiguration.progfigsite_module_path, filepath)
-    if spec is None:
-        raise ImportError(f"Could not import site package from {filepath}")
-    progfigsite = importlib.util.module_from_spec(spec)
-    sys.modules[progfiguration.progfigsite_module_path] = progfigsite
-    spec.loader.exec_module(progfigsite)
+    _, modname = import_module_from_filepath(filepath)
+    progfiguration.progfigsite_module_path = modname
 
 
 def site_modpath(submodule_path: str) -> str:

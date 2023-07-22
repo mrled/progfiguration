@@ -7,20 +7,20 @@ import importlib.metadata
 import logging
 import os
 import pathlib
-import pdb
 import subprocess
 import sys
 import tempfile
-import textwrap
 import time
 from typing import List
 
 import progfiguration
 from progfiguration import logger, progfigbuild, progfigsite_module_path, remotebrute, sitewrapper
 from progfiguration.cli import (
-    progfiguration_error_handler,
     configure_logging,
+    find_progfigsite_module,
+    get_progfigsite_module_opts,
     idb_excepthook,
+    progfiguration_error_handler,
     progfiguration_log_levels,
     syslog_excepthook,
     yaml_dump_str,
@@ -36,42 +36,9 @@ except ModuleNotFoundError:
     REMOTING = False
 
 
-def ResolvedPath(p: str) -> str:
-    """Convert a user-input path to an absolute path"""
-    return os.path.realpath(os.path.normpath(os.path.expanduser(p)))
-
-
 def CommaSeparatedStrList(cssl: str) -> List[str]:
     """Convert a string with commas into a list of strings"""
     return cssl.split(",")
-
-
-def set_progfigsite(fspath: str, pypath: str):
-    """Given a filesystem path or a python path, set the progfigsite module path
-
-    If neither are specified, use the default of 'progfigsite'.
-
-    Return the site's Inventory object.
-
-    Raise an error if both are specified or the path cannot be found.
-    """
-
-    progfiguration.progfigsite_module_path = ""
-    if fspath:
-        progfigsite_filesystem_path = pathlib.Path(fspath).resolve()
-        # Note: sets progfiguration.progfigsite_module_path
-        sitewrapper.set_site_module_filepath(progfigsite_filesystem_path.as_posix())
-    elif pypath:
-        progfiguration.progfigsite_module_path = pypath
-    else:
-        progfiguration.progfigsite_module_path = "progfigsite"
-
-    # Raises ProgfigsiteModuleNotFoundError if the module cannot be found
-    sitewrapper.get_progfigsite()
-
-    inventory = Inventory(sitewrapper.site_submodule_resource("", "inventory.conf"), progfigsite_module_path)
-
-    return inventory
 
 
 def action_version_core():
@@ -241,8 +208,8 @@ def action_deploy_apply(
     errors: list[dict[str, str]] = []
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        pyzfile = os.path.join(tmpdir, "progfiguration.pyz")
-        progfigbuild.build_progfigsite_zipapp(pyzfile)
+        pyzfile = pathlib.Path(os.path.join(tmpdir, "progfiguration.pyz"))
+        progfigbuild.build_progfigsite_zipapp(sitewrapper.get_progfigsite_path(), pyzfile)
         for nname, node in nodes.items():
             args = []
             if remote_debug:
@@ -262,7 +229,7 @@ def action_deploy_apply(
             try:
                 remotebrute.cpexec(
                     f"{node.user}@{node.address}",
-                    pyzfile,
+                    pyzfile.as_posix(),
                     args,
                     interpreter=["python3", "-u"],
                     ssh_tty=True,
@@ -293,7 +260,7 @@ def action_deploy_copy(
 
     with tempfile.TemporaryDirectory() as tmpdir:
         pyzfile = os.path.join(tmpdir, "progfiguration.pyz")
-        progfigbuild.build_progfigsite_zipapp(pyzfile)
+        progfigbuild.build_progfigsite_zipapp(sitewrapper.get_progfigsite_path(), pyzfile)
         for nname, node in nodes.items():
             remotebrute.scp(f"{node.user}@{node.address}", pyzfile, remotepath)
 
@@ -357,20 +324,6 @@ def parseargs(arguments: List[str]):
         help="Log level for mitogen IO messages to stderr. Only used for remote commands from the controller.",
     )
 
-    # options for finding the progfigsite
-    # site_opts = argparse.ArgumentParser(add_help=False)
-    site_grp = parser.add_mutually_exclusive_group()
-    site_grp.add_argument(
-        "--progfigsite-filesystem-path",
-        type=pathlib.Path,
-        help="The filesystem path to a progfigsite package, like /path/to/progfigsite. If neither this nor --progfigsite-python-path is passed, look for a 'progfigsite' package in the Python path.",
-    )
-    site_grp.add_argument(
-        "--progfigsite-python-path",
-        type=str,
-        help="The python path to a progfigsite package, like 'whatever.progfigsite'. If neither this nor --progfigsite-filesystem-path is passed, look for a 'progfigsite' package in the Python path.",
-    )
-
     parser.add_argument(
         "--age-private-key", "-k", help="The path to an age private key that decrypts inventory secrets"
     )
@@ -415,9 +368,6 @@ def parseargs(arguments: List[str]):
 
     # version subcommand
     svn_all = subparsers.add_parser("version", description="Show progfiguration core and progfigsite versions")
-
-    # version-core subcommand
-    svn_core = subparsers.add_parser("version-core", description="Show progfiguration core version")
 
     # apply subcommand
     sub_apply = subparsers.add_parser("apply", parents=[roles_opts], description="Apply configuration")
@@ -490,30 +440,6 @@ def parseargs(arguments: List[str]):
         "decrypt", parents=[node_opts, ctrl_opts], description="Decrypt secrets from the secret store"
     )
 
-    # build subcommand
-    sub_build = subparsers.add_parser("build", description="Build the package")
-    sub_build_subparsers = sub_build.add_subparsers(dest="buildaction", required=True)
-    sub_build_sub_pyz = sub_build_subparsers.add_parser(
-        "pyz",
-        description="Build a zipapp .pyz file containing the Python module. Must be run from an editable install.",
-    )
-    sub_build_sub_pyz.add_argument("pyzfile", type=ResolvedPath, help="Save the resulting pyz file to this path")
-    sub_build_sub_pip = sub_build_subparsers.add_parser(
-        "pip",
-        description="Build a pip package containing the Python module. Must be run from an editable install.",
-    )
-    sub_build_sub_pip.add_argument(
-        "--outdir",
-        default="./dist",
-        type=ResolvedPath,
-        help="Save the resulting pip package to this path. Defaults to ./dist",
-    )
-    sub_build_sub_pip.add_argument(
-        "--keep-injected-files",
-        action="store_true",
-        help="Keep the injected files in the package after building. This is useful for debugging.",
-    )
-
     # validate subcommand
     sub_validate = subparsers.add_parser(
         "validate", description="Validate the progfigsite that it matches the required API"
@@ -531,6 +457,9 @@ def parseargs(arguments: List[str]):
     sub_rcmd.add_argument("command", help="A command to run remotely")
 
     # debugger subcommand
+    # This is useful for debugging a pyz deployment,
+    # since you can't just 'import progfiguration' inside a python3 interpreter
+    # because the pyz is not on the PYTHONPATH.
     sub_debugger = subparsers.add_parser(
         "debugger",
         description="Open a debugger on localhost.",
@@ -555,46 +484,20 @@ def main_implementation(*arguments):
         mitogen_io_level = logging._nameToLevel[parsed.mitogen_io_log_stderr]
         remoting.configure_mitogen_logging(mitogen_core_level, mitogen_io_level)
 
-    # These actions do not require an inventory at all:
-    no_inventory_actions = ["debugger", "version-core"]
-    if parsed.action in no_inventory_actions:
-        if parsed.action == "debugger":
-            pdb.set_trace()
-        elif parsed.action == "version-core":
-            action_version_core()
-        else:
-            parser.error(f"Unknown action {parsed.action}")
-        return
-
     # Later actions do require an inventory
+
+    # Get a nodename, if we have one
     try:
-        # Get a nodename, if we have one
-        try:
-            nodename = parsed.nodename
-        except AttributeError:
-            nodename = None
+        nodename = parsed.nodename
+    except AttributeError:
+        nodename = None
 
-        progfiguration.progfigsite_module_path = ""
-        if parsed.progfigsite_filesystem_path:
-            progfigsite_filesystem_path = pathlib.Path(parsed.progfigsite_filesystem_path).resolve()
-            # Note: sets progfiguration.progfigsite_module_path
-            sitewrapper.set_site_module_filepath(progfigsite_filesystem_path.as_posix())
-        elif parsed.progfigsite_python_path:
-            progfiguration.progfigsite_module_path = parsed.progfigsite_python_path
-        else:
-            progfiguration.progfigsite_module_path = "progfigsite"
-
-        inventory = Inventory(
-            sitewrapper.site_submodule_resource("", "inventory.conf"),
-            progfigsite_module_path,
-            age_privkey=parsed.age_private_key,
-            current_node=nodename,
-        )
-
-    except sitewrapper.ProgfigsiteModuleNotFoundError:
-        parser.error(
-            f"Could not find progfigsite module, pass --progfigsite-filesystem-path to an existing valid progfigsite module or --progfigsite-python-path to a Python module path that is valid for the current interpreter"
-        )
+    inventory = Inventory(
+        sitewrapper.site_submodule_resource("", "inventory.conf"),
+        progfiguration.progfigsite_module_path,
+        age_privkey=parsed.age_private_key,
+        current_node=nodename,
+    )
 
     validation = validate(progfiguration.progfigsite_module_path)
     if not validation.is_valid:
@@ -661,21 +564,17 @@ def main_implementation(*arguments):
             parser.error("You must pass at least one of --nodes or --groups")
         action_rcmd(inventory, parsed.nodes, parsed.groups, parsed.command)
         # remoting.mitogen_example()
-    elif parsed.action == "build":
-        # TODO: how will sites extend this?
-        if parsed.buildaction == "pyz":
-            progfigbuild.build_progfigsite_zipapp(pathlib.Path(parsed.pyzfile))
-        elif parsed.buildaction == "pip":
-            progfigbuild.build_progfigsite_pip(
-                pathlib.Path(parsed.outdir), keep_injected_files=parsed.keep_injected_files or False
-            )
-        else:
-            parser.error(f"Unknown buildaction {parsed.buildaction}")
     elif parsed.action == "validate":
+        # We always validate but this shows a nice message even if validation succeeds
         action_validate()
     else:
         parser.error(f"Unknown action {parsed.action}")
 
 
-def main():
+def main(progfigsite_modpath: str):
+    """The main function for the progfiguration site command
+
+    TODO: document how the modpath thing works
+    """
+    progfiguration.progfigsite_module_path = progfigsite_modpath
     progfiguration_error_handler(main_implementation, *sys.argv)
