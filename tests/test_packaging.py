@@ -25,7 +25,7 @@ class TestRun(PdbTestCase):
     #         self.assertTrue(example_site.site_description in stdout)
 
     @pdbexc
-    @skipUnlessAnyEnv("PROGFIGURATION_TEST_SLOW_ALL", "PROGFIGURATION_TEST_SLOW_PACKAGING")
+    @skipUnlessAnyEnv(["PROGFIGURATION_TEST_SLOW_ALL", "PROGFIGURATION_TEST_SLOW_PACKAGING"])
     def test_package_nnss(self):
         nnss = NnssTestData()
         with tempfile.TemporaryDirectory() as tmpdir:

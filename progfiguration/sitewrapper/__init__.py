@@ -14,6 +14,7 @@ import importlib.resources
 import importlib.util
 from pathlib import Path
 from types import ModuleType
+from typing import Optional
 
 import progfiguration
 from progfiguration.util import import_module_from_filepath
@@ -26,7 +27,7 @@ class ProgfigsiteModuleNotFoundError(ModuleNotFoundError):
 
 
 """A cached reference to the progfigsite module"""
-_progfigsite_module = None
+_progfigsite_module: Optional[ModuleType] = None
 
 
 def get_progfigsite() -> ModuleType:

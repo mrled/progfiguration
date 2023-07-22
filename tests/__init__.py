@@ -42,7 +42,7 @@ def pdbexc(test_method):
     return wrapper
 
 
-def skipUnlessAnyEnv(*envvars: List):
+def skipUnlessAnyEnv(envvars: List):
     """Skip a test unless any of the given environment variables are set"""
     if any(os.environ.get(envvar) for envvar in envvars):
         return lambda func: func

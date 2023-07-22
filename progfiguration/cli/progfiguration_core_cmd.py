@@ -3,7 +3,6 @@
 import argparse
 import importlib
 import importlib.metadata
-import os
 import pathlib
 import sys
 from typing import List
@@ -12,13 +11,28 @@ import progfiguration
 from progfiguration import progfigbuild
 from progfiguration.cli import (
     configure_logging,
-    find_progfigsite_module,
-    get_progfigsite_module_opts,
     idb_excepthook,
     progfiguration_error_handler,
     progfiguration_log_levels,
 )
 from progfiguration.progfigsite_validator import validate
+from progfiguration.util import import_module_from_filepath
+
+
+def find_progfigsite_module(parser: argparse.ArgumentParser, parsed: argparse.Namespace):
+    """Find the progfigsite module from the command line arguments"""
+
+    if parsed.progfigsite_filesystem_path:
+        progfigsite_filesystem_path = parsed.progfigsite_filesystem_path
+        progfigsite, progfigsite_module_path = import_module_from_filepath(parsed.progfigsite_filesystem_path)
+    elif parsed.progfigsite_python_path:
+        progfigsite_module_path = parsed.progfigsite_python_path
+        progfigsite = importlib.import_module(progfigsite_module_path)
+        progfigsite_filesystem_path = pathlib.Path(progfigsite.__file__).parent
+    else:
+        parser.error(f"Missing progfigsite path option")
+
+    return (progfigsite, progfigsite_module_path, progfigsite_filesystem_path)
 
 
 def action_version_core():
@@ -67,7 +81,18 @@ def parseargs(arguments: List[str]):
     )
 
     # options for finding the progfigsite
-    site_opts = get_progfigsite_module_opts()
+    site_opts = argparse.ArgumentParser(add_help=False)
+    site_grp = site_opts.add_mutually_exclusive_group(required=True)
+    site_grp.add_argument(
+        "--progfigsite-filesystem-path",
+        type=pathlib.Path,
+        help="The filesystem path to a progfigsite package, like /path/to/progfigsite. If neither this nor --progfigsite-python-path is passed, look for a 'progfigsite' package in the Python path.",
+    )
+    site_grp.add_argument(
+        "--progfigsite-python-path",
+        type=str,
+        help="The python path to a progfigsite package, like 'my_progfigsite' or 'one.two.three.progfigsite'. If neither this nor --progfigsite-filesystem-path is passed, look for a 'progfigsite' package in the Python path.",
+    )
 
     subparsers = parser.add_subparsers(dest="action", required=True)
 

@@ -10,9 +10,9 @@ import tempfile
 from typing import Any, Dict, List, Optional
 
 from progfiguration import temple
-from progfiguration.cmd import run
+from progfiguration.cmd import magicrun
 from progfiguration.localhost.localusers import LocalhostUsers
-from progfiguration.progfigtypes import AnyPathOrStr
+from progfiguration.progfigtypes import AnyPathOrStr, PathOrStr
 
 
 class LocalhostLinux:
@@ -73,6 +73,22 @@ class LocalhostLinux:
         else:
             return contents
 
+    def chown(self, path: PathOrStr, owner: Optional[int | str], group: Optional[int | str]):
+        """Change the owner and/or group of a file or directory
+
+        A convenience function that can handle any combination of owner and group.
+        """
+        if not isinstance(path, str):
+            path = str(path)
+        if owner and group:
+            shutil.chown(path, owner, group)
+        elif owner:
+            shutil.chown(path, owner)
+        elif group:
+            # ... why is this not a thing in the stdlib?
+            uid = os.stat(path).st_uid
+            shutil.chown(path, uid, group)
+
     def set_file_contents(
         self,
         path: AnyPathOrStr,
@@ -89,14 +105,13 @@ class LocalhostLinux:
             del self._cache_files[path]
         with open(path, "w") as fp:
             fp.write(contents)
-        if owner or group:
-            shutil.chown(path, owner, group)
+        self.chown(path, owner, group)
         if mode:
             os.chmod(path, mode)
 
     def makedirs(
         self,
-        path: AnyPathOrStr,
+        path: PathOrStr,
         owner: Optional[str] = None,
         group: Optional[str] = None,
         mode: Optional[int] = None,
@@ -117,19 +132,21 @@ class LocalhostLinux:
         # We have to set the mode separately, as os.mkdir()'s mode argument is umasked
         # <https://stackoverflow.com/questions/37118558/python3-os-mkdir-does-not-enforce-correct-mode>
         os.mkdir(str(path))
-        path.chmod(mode)
-        if owner or group:
-            shutil.chown(str(path), user=owner, group=group)
+        if mode is not None:
+            path.chmod(mode)
+        self.chown(path, owner, group)
 
     def cp(
         self,
-        src: AnyPathOrStr,
-        dest: AnyPathOrStr,
+        src: PathOrStr,
+        dest: PathOrStr,
         owner: Optional[str] = None,
         group: Optional[str] = None,
         mode: Optional[int] = None,
         dirmode: Optional[int] = None,
     ):
+        if isinstance(src, str):
+            src = Path(src)
         if isinstance(dest, str):
             dest = Path(dest)
         self.makedirs(dest.parent, owner, group, dirmode)
@@ -143,16 +160,15 @@ class LocalhostLinux:
                     shutil.copyfileobj(srcfp, destfp)
         else:
             raise Exception(f"Not sure how to copy src (type: {type(src)}) at {src} (does it exist?)")
-        if owner or group:
-            shutil.chown(str(dest), user=owner, group=group)
+        self.chown(dest, owner, group)
         if mode:
             dest.chmod(mode)
 
     def _template_backend(
         self,
         template: type,
-        src: AnyPathOrStr,
-        dest: AnyPathOrStr,
+        src: PathOrStr,
+        dest: PathOrStr,
         template_args: Dict[str, Any],
         owner: Optional[str] = None,
         group: Optional[str] = None,
@@ -196,7 +212,7 @@ class LocalhostLinux:
 
     def linesinfile(
         self,
-        file: AnyPathOrStr,
+        file: PathOrStr,
         lines: List[str],
         create_owner: Optional[str] = None,
         create_group: Optional[str] = None,
@@ -241,10 +257,10 @@ class LocalhostLinux:
 
     def touch(
         self,
-        file: AnyPathOrStr,
+        file: PathOrStr,
         owner: Optional[str] = None,
         group: Optional[str] = None,
-        mode: Optional[int] = None,
+        mode: int = 0o666,
         dirmode: Optional[int] = None,
     ):
         """Create an empty file.
@@ -261,7 +277,7 @@ class LocalhostLinux:
         if not file.parent.exists():
             self.makedirs(file.parent, owner, group, dirmode)
         file.touch(mode=mode, exist_ok=True)
-        shutil.chown(str(file), user=owner, group=group)
+        self.chown(file, owner, group)
 
     def get_user_primary_group(self, user: str):
         """Get the primary group for a user.
@@ -272,7 +288,7 @@ class LocalhostLinux:
         result = subprocess.run(["id", "-g", "-n", user], capture_output=True, check=True)
         return result.stdout.decode().strip()
 
-    def write_sudoers(self, path: AnyPathOrStr, contents: str):
+    def write_sudoers(self, path: PathOrStr, contents: str):
         """Write a sudoers file.
 
         The file is written to a temporary file and then moved into place.
@@ -284,7 +300,7 @@ class LocalhostLinux:
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpfile = Path(tmpdir) / "sudoers"
             self.set_file_contents(tmpfile, contents, owner="root", group="root", mode=0o640)
-            validation = run(["visudo", "-cf", str(tmpfile)], check=False, print_output=False)
+            validation = magicrun(["visudo", "-cf", str(tmpfile)], check=False, print_output=False)
             if validation.returncode == 0:
                 self.cp(tmpfile, path, owner="root", group="root", mode=0o440)
             else:

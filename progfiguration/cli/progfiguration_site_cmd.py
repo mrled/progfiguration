@@ -12,7 +12,7 @@ import subprocess
 import sys
 import tempfile
 import time
-from typing import List
+from typing import List, Optional
 
 import progfiguration
 from progfiguration import logger, progfigbuild, remotebrute, sitewrapper
@@ -70,7 +70,7 @@ def action_version_all(inventory: Inventory):
     print("\n".join(result))
 
 
-def action_apply(inventory: Inventory, nodename: str, roles: list[str] = None, force: bool = False):
+def action_apply(inventory: Inventory, nodename: str, roles: Optional[List[str]] = None, force: bool = False):
     """Apply configuration for the node 'nodename' to localhost"""
 
     if roles is None:
@@ -189,7 +189,10 @@ def action_deploy_apply(
     if roles is None:
         roles = []
 
-    nodenames = set(nodenames + [inventory.group_members(g) for g in groupnames])
+    for group in groupnames:
+        nodenames += inventory.group_members[group]
+    nodenames = list(set(nodenames))
+
     nodes = {n: inventory.node(n).node for n in nodenames}
 
     errors: list[dict[str, str]] = []
@@ -242,14 +245,17 @@ def action_deploy_copy(
     groupnames: List[str],
     remotepath: str,
 ):
-    nodenames = set(nodenames + [inventory.group_members(g) for g in groupnames])
+    for group in groupnames:
+        nodenames += inventory.group_members[group]
+    nodenames = list(set(nodenames))
+
     nodes = {n: inventory.node(n).node for n in nodenames}
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        pyzfile = os.path.join(tmpdir, "progfiguration.pyz")
+        pyzfile = pathlib.Path(os.path.join(tmpdir, "progfiguration.pyz"))
         progfigbuild.build_progfigsite_zipapp(sitewrapper.get_progfigsite_path(), pyzfile)
         for nname, node in nodes.items():
-            remotebrute.scp(f"{node.user}@{node.address}", pyzfile, remotepath)
+            remotebrute.scp(f"{node.user}@{node.address}", pyzfile.as_posix(), remotepath)
 
 
 def action_validate():
@@ -529,4 +535,4 @@ def main(progfigsite_modpath: str):
     TODO: document how the modpath thing works
     """
     progfiguration.progfigsite_module_path = progfigsite_modpath
-    progfiguration_error_handler(main_implementation, *sys.argv)
+    progfiguration_error_handler(main_implementation, sys.argv)

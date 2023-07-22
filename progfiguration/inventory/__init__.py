@@ -8,7 +8,8 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any, Dict, List, Optional
 
-from progfiguration import age, logger, sitewrapper
+from progfiguration import logger, sitewrapper
+from progfiguration.age import AgeKey, AgeSecret, encrypt
 from progfiguration.inventory.roles import ProgfigurationRole, collect_role_arguments
 from progfiguration.localhost import LocalhostLinuxPsyopsOs
 from progfiguration.progfigtypes import AnyPathOrStr
@@ -21,6 +22,10 @@ class Controller:
     otherwise, it just includes the public key.
     """
 
+    age: Optional[AgeKey]
+    agepub: str
+    agepath: Optional[str]
+
     def __init__(self, agepub: str, privkeypath: str):
         """Initializer
 
@@ -28,7 +33,7 @@ class Controller:
         privkeypath:    The path to the controller age private key
         """
         if privkeypath and os.path.exists(privkeypath):
-            self.age = age.AgeKey.from_file(privkeypath)
+            self.age = AgeKey.from_file(privkeypath)
         else:
             self.age = None
         self.agepub = agepub
@@ -42,7 +47,7 @@ class Inventory:
 
     # The controller age key that can be used to decrypt anything.
     # When running progfiguration from a node, this is not available.
-    age: Optional[age.AgeKey]
+    age: Optional[AgeKey]
 
     def __init__(
         self,
@@ -88,17 +93,17 @@ class Inventory:
         for group, members in self.config.items("groups"):
             self.group_members[group] = members.split()
 
-        self._node_groups = None
-        self._function_nodes = None
+        self._node_groups: Dict[str, List[str]] = {}
+        self._function_nodes: Dict[str, List[str]] = {}
 
-        self._node_modules = {}
-        self._group_modules = {}
-        self._role_modules = {}
-        self._node_roles = {}
+        self._node_modules: Dict[str, ModuleType] = {}
+        self._group_modules: Dict[str, ModuleType] = {}
+        self._role_modules: Dict[str, ModuleType] = {}
+        self._node_roles: Dict[str, Dict[str, ProgfigurationRole]] = {}
 
-        self._node_secrets = {}
-        self._group_secrets = {}
-        self._controller_secrets = {}
+        self._node_secrets: Dict[str, Dict[str, AgeSecret]] = {}
+        self._group_secrets: Dict[str, Dict[str, AgeSecret]] = {}
+        self._controller_secrets: Dict[str, AgeSecret] = {}
 
         self.controller = Controller(
             self.config.get("general", "controller_age_pub"), self.config.get("general", "controller_age_path")
@@ -137,17 +142,17 @@ class Inventory:
     @property
     def groups(self) -> List[str]:
         """All groups, in undetermined order"""
-        return self.group_members.keys()
+        return list(self.group_members.keys())
 
     @property
     def nodes(self) -> List[str]:
         """All nodes, in undetermined order"""
-        return self.node_function.keys()
+        return list(self.node_function.keys())
 
     @property
     def functions(self) -> List[str]:
         """All functions, in undetermined order"""
-        return self.function_roles.keys()
+        return list(self.function_roles.keys())
 
     @property
     def roles(self) -> List[str]:
@@ -155,7 +160,7 @@ class Inventory:
         result = set()
         for func_role_list in self.function_roles.values():
             result.update(func_role_list)
-        return result
+        return list(result)
 
     @property
     def node_groups(self) -> Dict[str, List[str]]:
@@ -244,7 +249,7 @@ class Inventory:
 
             # Collect all the arguments we need to instantiate the role class
             # This function finds the most specific definition of each argument
-            roleargs = collect_role_arguments(self, nodename, node, groupmods, rolename, role_cls)
+            roleargs = collect_role_arguments(self, nodename, node, groupmods, rolename)
 
             # Instantiate the role class, now that we have all the arguments we need
             try:
@@ -264,7 +269,7 @@ class Inventory:
         """A list of all instantiated roles for a given node"""
         return [self.node_role(nodename, rolename) for rolename in self.node_rolename_list(nodename)]
 
-    def get_secrets(self, filename: AnyPathOrStr) -> Dict[str, age.AgeSecret]:
+    def get_secrets(self, filename: AnyPathOrStr) -> Dict[str, AgeSecret]:
         """Retrieve secrets from a file.
 
         If the file is not found, just return an empty dict.
@@ -274,12 +279,12 @@ class Inventory:
         try:
             with filename.open() as fp:
                 contents = json.load(fp)
-                encrypted_secrets = {k: age.AgeSecret(v) for k, v in contents.items()}
+                encrypted_secrets = {k: AgeSecret(v) for k, v in contents.items()}
                 return encrypted_secrets
         except FileNotFoundError:
             return {}
 
-    def get_node_secrets(self, nodename: str) -> Dict[str, Any]:
+    def get_node_secrets(self, nodename: str) -> Dict[str, AgeSecret]:
         """A Dict of secrets for a given node"""
         if nodename not in self._node_secrets:
             self._node_secrets[nodename] = self.get_secrets(self.node_secrets_file(nodename))
@@ -298,10 +303,10 @@ class Inventory:
             self._controller_secrets = self.get_secrets(sfile)
         return self._controller_secrets
 
-    def _set_secrets(self, filename: str, secrets: Dict[str, age.AgeSecret]):
+    def _set_secrets(self, filepath: Path, secrets: Dict[str, AgeSecret]):
         """Set the contents of a secrets file"""
         file_contents = {k: v.secret for k, v in secrets.items()}
-        with open(filename, "w") as fp:
+        with filepath.open("w") as fp:
             json.dump(file_contents, fp)
 
     def group_secrets_file(self, group: str) -> Path:
@@ -322,19 +327,19 @@ class Inventory:
     def set_node_secret(self, nodename: str, secretname: str, encrypted_value: str):
         """Set a secret for a node"""
         self.get_node_secrets(nodename)  # Ensure it's cached
-        self._node_secrets[nodename][secretname] = age.AgeSecret(encrypted_value)
+        self._node_secrets[nodename][secretname] = AgeSecret(encrypted_value)
         self._set_secrets(self.node_secrets_file(nodename), self._node_secrets[nodename])
 
     def set_group_secret(self, groupname: str, secretname: str, encrypted_value: str):
         """Set a secret for a group"""
         self.get_group_secrets(groupname)  # Ensure it's cached
-        self._group_secrets[groupname][secretname] = age.AgeSecret(encrypted_value)
+        self._group_secrets[groupname][secretname] = AgeSecret(encrypted_value)
         self._set_secrets(self.group_secrets_file(groupname), self._group_secrets[groupname])
 
     def set_controller_secret(self, secretname: str, encrypted_value: str):
         """Set a secret for the controller"""
         self.get_controller_secrets()  # Ensure it's cached
-        self._controller_secrets[secretname] = age.AgeSecret(encrypted_value)
+        self._controller_secrets[secretname] = AgeSecret(encrypted_value)
         self._set_secrets(self.controller_secrets_file(), self._controller_secrets)
 
     def encrypt_secret(
@@ -349,7 +354,7 @@ class Inventory:
 
         for group in groups:
             recipients += self.group_members[group]
-        recipients = set(recipients)
+        recipients = list(set(recipients))
 
         nmods = [self.node(n) for n in recipients]
         pubkeys = [nm.node.age_pubkey for nm in nmods]
@@ -358,7 +363,7 @@ class Inventory:
         if controller_key or store:
             pubkeys += [self.controller.agepub]
 
-        encrypted_value = age.encrypt(value, pubkeys)
+        encrypted_value = encrypt(value, pubkeys)
 
         if store:
             for node in nodes:

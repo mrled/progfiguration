@@ -4,16 +4,24 @@ Things here should not depend on any other parts of the progfiguration package
 """
 
 
-from dataclasses import dataclass
-from datetime import datetime
 from importlib.abc import Traversable
 from pathlib import Path as PathlibPath
 from typing import Union
 from zipfile import Path as ZipfilePath
 
 
+"""A pathlib.Path, a Traversable, or a zipfile.Path"""
 AnyPath = Union[PathlibPath, Traversable, ZipfilePath]
+
+"""A pathlib.Path, a Traversable, a zipfile.Path, or a str"""
 AnyPathOrStr = Union[AnyPath, str]
+
+"""A pathlib.Path or a str only
+
+Traversable and zipfile.Path cannot be copied to and do not have .exists(),
+so it's useful to have a type that excludes them.
+"""
+PathOrStr = Union[PathlibPath, str]
 
 
 class Bunch:

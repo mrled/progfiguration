@@ -40,7 +40,7 @@ class AgeKey:
     @classmethod
     def generate(cls) -> "AgeKey":
         result = subprocess.run(["age-keygen"], check=True, capture_output=True)
-        return cls.from_output(result.stdout)
+        return cls.from_output(result.stdout.decode())
 
     @classmethod
     def from_file(cls, path: str) -> "AgeKey":

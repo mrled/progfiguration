@@ -11,10 +11,13 @@ All progfiguration core code should use these functions to access site resources
 
 import hashlib
 import importlib
+from importlib.abc import Loader
+from importlib.machinery import ModuleSpec
 import importlib.resources
 import importlib.util
 import os
 import sys
+from typing import Optional
 
 from progfiguration.progfigtypes import AnyPathOrStr
 
@@ -45,11 +48,16 @@ def import_module_from_filepath(filepath: AnyPathOrStr):
         # We've already imported this one, just return it
         return (sys.modules[module_name], module_name)
 
-    spec = importlib.util.spec_from_file_location(module_name, filepath)
+    spec: Optional[ModuleSpec] = importlib.util.spec_from_file_location(module_name, filepath)
     if spec is None:
         raise ImportError(f"Could not import site package from {filepath}")
+
     module = importlib.util.module_from_spec(spec)
     sys.modules[module_name] = module
-    spec.loader.exec_module(module)
 
+    loader: Optional[Loader] = spec.loader
+    if loader is None:
+        raise ImportError(f"Could not import site package from {filepath}")
+
+    loader.exec_module(module)
     return (module, module_name)

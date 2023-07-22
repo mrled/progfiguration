@@ -16,10 +16,10 @@ import os.path
 import secrets
 import shlex
 import string
-from typing import Any, List, Union
+from typing import Any, List, Optional, Union
 
 from progfiguration import logger
-from progfiguration.cmd import run
+from progfiguration.cmd import magicrun
 
 
 def generate_random_string(length):
@@ -37,15 +37,15 @@ def scp(host: str, sources: Union[str, List[str]], dest: str):
     cmd = ["scp", "-r"]
     cmd += sources
     cmd += [f"{host}:{dest}"]
-    run(cmd)
+    magicrun(cmd)
 
 
 def cpexec(
     host: str,
     source: str,
-    args: List[str] = None,
+    args: Optional[List[str]] = None,
     dest: str = "",
-    interpreter: list[str] = None,
+    interpreter: Optional[List[str]] = None,
     ssh_tty: bool = True,
     ssh_stdin: Any = None,
     keep_remote_file: bool = False,
@@ -89,7 +89,7 @@ def cpexec(
             ssh_cmd += ["-tt"]
         ssh_cmd += [host, remote_cmd]
 
-        execresult = run(ssh_cmd, **ssh_cmd_run_args)
+        execresult = magicrun(ssh_cmd, **ssh_cmd_run_args)
 
         logger.debug(f"Finished ssh command to {host}")
     finally:
@@ -97,6 +97,6 @@ def cpexec(
             print(f"Kept the remote file at {dest}")
         else:
             # We don't need to fuck with ttys/fds here because rm is simple
-            run(["ssh", host, f"rm -f {dest}"])
+            magicrun(["ssh", host, f"rm -f {dest}"])
 
     return execresult

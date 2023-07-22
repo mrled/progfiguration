@@ -8,7 +8,13 @@ import sys
 from progfiguration import logger
 
 
-def run(cmd: str | list, print_output=True, log_output=False, check=True, *args, **kwargs) -> subprocess.Popen:
+class MagicPopen(subprocess.Popen):
+
+    stdout: io.StringIO
+    stderr: io.StringIO
+
+
+def magicrun(cmd: str | list, print_output=True, log_output=False, check=True, *args, **kwargs) -> MagicPopen:
     """Run a command, with superpowers
 
     * cmd: The command to run. If a string, it will be passed to a shell.
@@ -34,7 +40,9 @@ def run(cmd: str | list, print_output=True, log_output=False, check=True, *args,
     shell = isinstance(cmd, str)
 
     logger.debug(f"Running command: {cmd}")
-    process = subprocess.Popen(
+
+    # ignore mypy errors because *args and **kwargs confuses it
+    process = subprocess.Popen(  # type: ignore
         cmd,
         shell=shell,
         bufsize=1,  # Output is line buffered, required to print output in real time
@@ -48,8 +56,11 @@ def run(cmd: str | list, print_output=True, log_output=False, check=True, *args,
     stdoutbuf = io.StringIO()
     stderrbuf = io.StringIO()
 
-    stdout_fileno = process.stdout.fileno()
-    stderr_fileno = process.stderr.fileno()
+    # Ignore mypy errors related to stdout/stderrbuf not being file objects.
+    # We know they're file objects because we set them to subprocess.PIPE.
+
+    stdout_fileno = process.stdout.fileno()  # type: ignore
+    stderr_fileno = process.stderr.fileno()  # type: ignore
 
     # This returns None until the process terminates
     while process.poll() is None:
@@ -67,12 +78,12 @@ def run(cmd: str | list, print_output=True, log_output=False, check=True, *args,
         # and print it to stdout/stderr in real time if print_output is True.
         for stream in readready:
             if stream.fileno() == stdout_fileno:
-                line = process.stdout.readline()
+                line = process.stdout.readline()  # type: ignore
                 stdoutbuf.write(line)
                 if print_output:
                     sys.stdout.write(line)
             elif stream.fileno() == stderr_fileno:
-                line = process.stderr.readline()
+                line = process.stderr.readline()  # type: ignore
                 stderrbuf.write(line)
                 if print_output:
                     sys.stderr.write(line)
@@ -91,10 +102,10 @@ def run(cmd: str | list, print_output=True, log_output=False, check=True, *args,
 
     # We'd like to just seek(0) on the stdout/stderr buffers, but "underlying stream is not seekable",
     # So we create new buffers above, write to them line by line, and replace the old ones with these.
-    process.stdout.close()
+    process.stdout.close()  # type: ignore
     stdoutbuf.seek(0)
     process.stdout = stdoutbuf
-    process.stderr.close()
+    process.stderr.close()  # type: ignore
     stderrbuf.seek(0)
     process.stderr = stderrbuf
 
@@ -116,4 +127,8 @@ def run(cmd: str | list, print_output=True, log_output=False, check=True, *args,
         logger.info(f"stdout: {process.stdout.getvalue()}")
         logger.info(f"stderr: {process.stderr.getvalue()}")
 
-    return process
+    # Now that we've set stdout/err to StringIO objects,
+    # we can return the Popen object as a MagicPopen object.
+    magic_process: MagicPopen = process
+
+    return magic_process

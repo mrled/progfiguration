@@ -1,21 +1,15 @@
 """Command-line scripts (and helpers)"""
 
-import argparse
-import importlib
-import json
+from collections.abc import Callable
 import logging
 import logging.handlers
 import os
-import pathlib
 import pdb
 import sys
 import traceback
-from collections.abc import Callable
-from io import StringIO
-from typing import Dict, List
+from typing import List
 
 from progfiguration import logger
-from progfiguration.util import import_module_from_filepath
 
 
 """Log levels that our command-line programs can configure"""
@@ -32,25 +26,13 @@ progfiguration_log_levels = [
 ]
 
 
-class ProgfigurationTerminalError(Exception):
-    """A terminal error that can be used to print a nice message"""
-
-    def __init__(self, message, returncode):
-        super().__init__(message)
-        self.returncode = returncode
-
-
 def progfiguration_error_handler(func: Callable[[List[str]], int], *arguments: List[str]) -> int:
     """Special error handler
 
-    Wrap the main() function in this to properly handle the following cases:
-
-    * Broken pipes.
-      The EPIPE signal is sent if you run e.g. `script.py | head`.
-      Wrapping the main function with this one exits cleanly if that happens.
-      See <https://docs.python.org/3/library/signal.html#note-on-sigpipe>
-    * Errors with ProgfigurationTerminalError
-      These errors are intended to display nice messages to the user.
+    Wrap the main() function in this to properly handle broken pipes.
+    The EPIPE signal is sent if you run e.g. `script.py | head`.
+    Wrapping the main function with this one exits cleanly if that happens.
+    See <https://docs.python.org/3/library/signal.html#note-on-sigpipe>
     """
     try:
         returncode = func(*arguments)
@@ -61,9 +43,6 @@ def progfiguration_error_handler(func: Callable[[List[str]], int], *arguments: L
         # Convention is 128 + whatever the return code would otherwise be
         returncode = 128 + 1
         sys.exit(returncode)
-    except ProgfigurationTerminalError as pte:
-        print(pte.message)
-        sys.exit(pte.returncode)
 
     return returncode
 
@@ -84,6 +63,7 @@ def idb_excepthook(type, value, tb):
 
 def syslog_excepthook(type, value, tb):
     """Send an unhandled exception to syslog"""
+
     # Note that format_exception() returns
     # "a list of strings, each ending in a newline and some containing internal newlines"
     # <https://docs.python.org/3/library/traceback.html#traceback.format_exception>
@@ -94,6 +74,12 @@ def syslog_excepthook(type, value, tb):
 
 
 def configure_logging(log_stderr: str, log_syslog: str = "NONE") -> None:
+    """Configure logging for the command-line programs
+
+    A convenience function that sets up logging based on the command-line arguments.
+
+    Should only be called once.
+    """
     if log_stderr != "NONE":
         handler_stderr = logging.StreamHandler()
         handler_stderr.setFormatter(logging.Formatter("[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s"))
@@ -105,36 +91,3 @@ def configure_logging(log_stderr: str, log_syslog: str = "NONE") -> None:
         handler_syslog = logging.handlers.SysLogHandler(address="/dev/log")
         handler_syslog.setLevel(log_syslog)
         logger.addHandler(handler_syslog)
-
-
-def get_progfigsite_module_opts() -> argparse.ArgumentParser:
-    # options for finding the progfigsite
-    site_opts = argparse.ArgumentParser(add_help=False)
-    site_grp = site_opts.add_mutually_exclusive_group(required=True)
-    site_grp.add_argument(
-        "--progfigsite-filesystem-path",
-        type=pathlib.Path,
-        help="The filesystem path to a progfigsite package, like /path/to/progfigsite. If neither this nor --progfigsite-python-path is passed, look for a 'progfigsite' package in the Python path.",
-    )
-    site_grp.add_argument(
-        "--progfigsite-python-path",
-        type=str,
-        help="The python path to a progfigsite package, like 'my_progfigsite' or 'one.two.three.progfigsite'. If neither this nor --progfigsite-filesystem-path is passed, look for a 'progfigsite' package in the Python path.",
-    )
-    return site_opts
-
-
-def find_progfigsite_module(parser: argparse.ArgumentParser, parsed: argparse.Namespace):
-    """Find the progfigsite module from the command line arguments"""
-
-    if parsed.progfigsite_filesystem_path:
-        progfigsite_filesystem_path = parsed.progfigsite_filesystem_path
-        progfigsite, progfigsite_module_path = import_module_from_filepath(parsed.progfigsite_filesystem_path)
-    elif parsed.progfigsite_python_path:
-        progfigsite_module_path = parsed.progfigsite_python_path
-        progfigsite = importlib.import_module(progfigsite_module_path)
-        progfigsite_filesystem_path = pathlib.Path(progfigsite.__file__).parent
-    else:
-        parser.error(f"Missing progfigsite path option")
-
-    return (progfigsite, progfigsite_module_path, progfigsite_filesystem_path)

@@ -1,14 +1,19 @@
-"""Applying and working with roles"""
+"""Applying and working with roles
+
+Note that we have to ignore type checking on string references to Inventory here.
+The inventory module imports this module,
+so we cannot import it,
+or we will get a circular import.
+"""
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from importlib.abc import Traversable
 from importlib.resources import files as importlib_resources_files
 from types import ModuleType
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Dict, Optional
 
 from progfiguration import age
-
 from progfiguration.inventory.nodes import InventoryNode
 from progfiguration.localhost import LocalhostLinuxPsyopsOs
 
@@ -50,7 +55,7 @@ class ProgfigurationRole(ABC):
 
     name: str
     localhost: LocalhostLinuxPsyopsOs
-    inventory: "Inventory"
+    inventory: "Inventory"  # type: ignore
     rolepkg: str
 
     # This is just a cache
@@ -73,7 +78,12 @@ class ProgfigurationRole(ABC):
         return self._rolefiles.joinpath(filename)
 
 
-def dereference_rolearg(nodename: str, argument: Any, inventory: "Inventory", secrets: Dict[str, Any]) -> Any:
+def dereference_rolearg(
+    nodename: str,
+    argument: Any,
+    inventory: "Inventory",  # type: ignore
+    secrets: Dict[str, Any],
+) -> Any:
     """Get the final value of a role argument for a node.
 
     Arguments to this method:
@@ -103,12 +113,11 @@ def dereference_rolearg(nodename: str, argument: Any, inventory: "Inventory", se
 
 
 def collect_role_arguments(
-    inventory: "Inventory",
+    inventory: "Inventory",  # type: ignore
     nodename: str,
     node: InventoryNode,
     nodegroups: dict[str, ModuleType],
     rolename: str,
-    role_cls: Type[ProgfigurationRole],
 ):
     """Collect all the arguments for a role
 

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import shutil
 
 
-from progfiguration.cmd import run
+from progfiguration.cmd import magicrun
 from progfiguration.inventory.roles import ProgfigurationRole
 
 
@@ -14,10 +14,10 @@ class Role(ProgfigurationRole):
     timezone: str
 
     def apply(self):
-        run(f"apk add tzdata")
+        magicrun(f"apk add tzdata")
 
         shutil.copyfile(f"/usr/share/zoneinfo/{self.timezone}", "/etc/localtime")
         with open(f"/etc/timezone", "w") as tzfp:
             tzfp.write(self.timezone)
 
-        run("rc-service ntpd restart")
+        magicrun("rc-service ntpd restart")

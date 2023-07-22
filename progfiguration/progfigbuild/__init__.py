@@ -11,7 +11,7 @@ import zipfile
 
 import progfiguration
 from progfiguration import logger
-from progfiguration.cmd import run
+from progfiguration.cmd import magicrun
 from progfiguration.util import import_module_from_filepath
 
 
@@ -48,7 +48,7 @@ def build_progfigsite_zipapp(
     build_date: Optional[datetime] = None,
     progfiguration_package_path: Optional[pathlib.Path] = None,
     compression: int = zipfile.ZIP_STORED,
-) -> pathlib.Path:
+):
     """Build a .pyz zipapp progfigsite package
 
     Args:
@@ -165,38 +165,8 @@ def progfigsite_setuptools_builder(
     """
 
     cmd = ["python", "-m", "build", "-s", "-o", package_out_path.as_posix(), progfigsite_package_path.as_posix()]
-
-    result = run(cmd)
-
-    # from build import ProjectBuilder
-    # from build.env import DefaultIsolatedEnv
-    # import build
-
-    # if config_settings is None:
-    #     config_settings = {}
-
-    # with DefaultIsolatedEnv() as env:
-    #     builder = ProjectBuilder.from_isolated_env(env, progfigsite_package_path.as_posix())
-    #     # first install the build dependencies
-    #     env.install(builder.build_system_requires)
-    #     # then get the extra required dependencies from the backend (which was installed in the call above :P)
-    #     env.install(builder.get_requires_for_build(progfigsite_package_path.as_posix()))
-    #     return builder.build(progfigsite_package_path.as_posix(), package_out_path.as_posix(), config_settings)
-
-    # # result = build.build_package(
-    # #     progfigsite_package_path.as_posix(),
-    # #     package_out_path.as_posix(),
-    # #     ["sdist"],
-    # #     config_settings,
-    # #     isolation,
-    # #     skip_dependency_check,
-    # # )
-
-    # runpy.run_path(
-    #     "build",
-    # )
-
-    return result.stdout
+    result = magicrun(cmd)
+    return result.stdout.read()
 
 
 def build_progfigsite_pip(

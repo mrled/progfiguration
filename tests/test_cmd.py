@@ -8,7 +8,7 @@ from progfiguration import cmd
 class TestRun(unittest.TestCase):
     def test_run_basic_stdout_stderr(self):
         """Test stdout/err redirection"""
-        result = cmd.run(["sh", "-c", "(echo hello); (echo world >&2)"], print_output=False)
+        result = cmd.magicrun(["sh", "-c", "(echo hello); (echo world >&2)"], print_output=False)
         self.assertEqual(result.stdout.read(), "hello\n")
         self.assertEqual(result.stderr.read(), "world\n")
 
@@ -22,7 +22,7 @@ class TestRun(unittest.TestCase):
         errbuf = io.StringIO()
         sys.stderr = errbuf
 
-        result = cmd.run(["sh", "-c", "(echo hello); (echo world >&2)"])
+        result = cmd.magicrun(["sh", "-c", "(echo hello); (echo world >&2)"])
 
         self.assertEqual(result.stdout.read(), "hello\n")
         self.assertEqual(result.stderr.read(), "world\n")
