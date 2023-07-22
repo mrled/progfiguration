@@ -2,6 +2,7 @@
 
 import argparse
 import importlib
+import json
 import logging
 import logging.handlers
 import os
@@ -12,8 +13,6 @@ import traceback
 from collections.abc import Callable
 from io import StringIO
 from typing import Dict, List
-
-import yaml
 
 from progfiguration import logger
 from progfiguration.util import import_module_from_filepath
@@ -106,18 +105,6 @@ def configure_logging(log_stderr: str, log_syslog: str = "NONE") -> None:
         handler_syslog = logging.handlers.SysLogHandler(address="/dev/log")
         handler_syslog.setLevel(log_syslog)
         logger.addHandler(handler_syslog)
-
-
-def yaml_dump_str(data, yaml_dump_kwargs: Dict) -> str:
-    """Get YAML string from data
-
-    Like yaml.dump() except it doesn't save to a file
-    """
-    string_stream = StringIO()
-    yaml.dump(data, string_stream, **yaml_dump_kwargs)
-    yaml_document_string = string_stream.getvalue()
-    string_stream.close()
-    return yaml_document_string
 
 
 def get_progfigsite_module_opts() -> argparse.ArgumentParser:

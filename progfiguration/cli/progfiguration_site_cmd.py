@@ -4,6 +4,7 @@ import argparse
 import datetime
 import importlib
 import importlib.metadata
+import json
 import logging
 import os
 import pathlib
@@ -14,16 +15,13 @@ import time
 from typing import List
 
 import progfiguration
-from progfiguration import logger, progfigbuild, progfigsite_module_path, remotebrute, sitewrapper
+from progfiguration import logger, progfigbuild, remotebrute, sitewrapper
 from progfiguration.cli import (
     configure_logging,
-    find_progfigsite_module,
-    get_progfigsite_module_opts,
     idb_excepthook,
     progfiguration_error_handler,
     progfiguration_log_levels,
     syslog_excepthook,
-    yaml_dump_str,
 )
 from progfiguration.inventory import Inventory
 from progfiguration.progfigsite_validator import validate
@@ -162,19 +160,19 @@ def action_decrypt(inventory: Inventory, nodes: List[str], groups: List[str], co
         print(f"Secrets for node {node}:")
         print("---")
         decrypted_secrets = {k: v.decrypt(inventory.age_path) for k, v in inventory.get_node_secrets(node).items()}
-        print(yaml_dump_str(decrypted_secrets, {"default_style": "|"}))
+        print(json.dumps(decrypted_secrets, indent=2, sort_keys=True))
         print("---")
     for group in groups:
         print(f"Secrets for group {group}:")
         print("---")
         decrypted_secrets = {k: v.decrypt(inventory.age_path) for k, v in inventory.get_group_secrets(group).items()}
-        print(yaml_dump_str(decrypted_secrets, {"default_style": "|"}))
+        print(json.dumps(decrypted_secrets, indent=2, sort_keys=True))
         print("---")
     if controller_key:
         print(f"Secrets for the controller:")
         print("---")
         decrypted_secrets = {k: v.decrypt(inventory.age_path) for k, v in inventory.get_controller_secrets().items()}
-        print(yaml_dump_str(decrypted_secrets, {"default_style": "|"}))
+        print(json.dumps(decrypted_secrets, indent=2, sort_keys=True))
         print("---")
 
 
