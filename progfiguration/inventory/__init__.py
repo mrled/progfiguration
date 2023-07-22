@@ -8,11 +8,10 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any, Dict, List, Optional
 
-from progfiguration import age
+from progfiguration import age, logger, sitewrapper
 from progfiguration.inventory.roles import ProgfigurationRole, collect_role_arguments
 from progfiguration.localhost import LocalhostLinuxPsyopsOs
 from progfiguration.progfigtypes import AnyPathOrStr
-from progfiguration import sitewrapper
 
 
 class Controller:
@@ -127,8 +126,12 @@ class Inventory:
         ]:
             if possible_key and os.path.exists(possible_key):
                 self.age_path = possible_key
+                logger.debug(f"Found age key {self.age_path}")
                 break
+            else:
+                logger.debug(f"No age key found at {possible_key}, continuing...")
         else:
+            logger.debug("No age key found")
             self.age_path = None
 
     @property
