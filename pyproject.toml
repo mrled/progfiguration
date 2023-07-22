@@ -1,5 +1,6 @@
 [build-system]
 requires = [
+    "pdoc3",
     "setuptools",
 ]
 build-backend = "setuptools.build_meta"
@@ -24,6 +25,7 @@ development = [
     "black",
     "build",
     "mypy",
+    "pdoc3",
     "twine",
 ]
 
