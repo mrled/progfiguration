@@ -44,3 +44,4 @@
   * Test that pip packages are doing what I want. Do they have all functionality of old non-lobotomy?
   * Rip out stuff I don't need: mitogen etc
   * Merge lobotomy.
+  * Build a documentation site
