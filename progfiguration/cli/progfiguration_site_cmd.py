@@ -153,22 +153,25 @@ def _action_encrypt(
 
 
 def _action_decrypt(inventory: Inventory, nodes: List[str], groups: List[str], controller_key: bool):
+    age_path = inventory.age_path
+    if not age_path:
+        raise Exception("Could not find age key")
     for node in nodes:
         print(f"Secrets for node {node}:")
         print("---")
-        decrypted_secrets = {k: v.decrypt(inventory.age_path) for k, v in inventory.get_node_secrets(node).items()}
+        decrypted_secrets = {k: v.decrypt(age_path) for k, v in inventory.get_node_secrets(node).items()}
         print(json.dumps(decrypted_secrets, indent=2, sort_keys=True))
         print("---")
     for group in groups:
         print(f"Secrets for group {group}:")
         print("---")
-        decrypted_secrets = {k: v.decrypt(inventory.age_path) for k, v in inventory.get_group_secrets(group).items()}
+        decrypted_secrets = {k: v.decrypt(age_path) for k, v in inventory.get_group_secrets(group).items()}
         print(json.dumps(decrypted_secrets, indent=2, sort_keys=True))
         print("---")
     if controller_key:
         print(f"Secrets for the controller:")
         print("---")
-        decrypted_secrets = {k: v.decrypt(inventory.age_path) for k, v in inventory.get_controller_secrets().items()}
+        decrypted_secrets = {k: v.decrypt(age_path) for k, v in inventory.get_controller_secrets().items()}
         print(json.dumps(decrypted_secrets, indent=2, sort_keys=True))
         print("---")
 
