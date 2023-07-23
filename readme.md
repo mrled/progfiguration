@@ -15,7 +15,7 @@ python3 -m pip install --upgrade pip
 # Install this directory as editable, and include development dependencies
 python3 -m pip install --editable '.[development]'
 # Run the documentation server on port 8000
-pdoc --http :8000 progfiguration &
+pdoc -p 8000 progfiguration &
 # Run unit tests
 python3 -m unittest
 # Run progfiguration itself
@@ -49,7 +49,7 @@ In the same venv as above:
 # Install the example progfigsite
 python3 -m pip install --editable 'tests/data/simple[development]'
 # Run the documentation server for both progfiguration and the example progfigsite
-pdoc --http :8000 progfiguration tests/data/simple/example_site &
+pdoc -p 8000 progfiguration tests/data/simple/example_site &
 # Run the progfigsite itself
 progfigsite --help
 ```
