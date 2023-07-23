@@ -1,55 +1,4 @@
-"""The progfiguration inventory"""
-
-import configparser
-from importlib.abc import Traversable
-import json
-import os
-from pathlib import Path
-from types import ModuleType
-from typing import Any, Dict, List, Optional
-
-from progfiguration import logger, sitewrapper
-from progfiguration.age import AgeKey, AgeSecret, encrypt
-from progfiguration.inventory.roles import ProgfigurationRole, collect_role_arguments
-from progfiguration.localhost import LocalhostLinuxPsyopsOs
-from progfiguration.progfigtypes import AnyPathOrStr
-
-
-class Controller:
-    """A Controller object
-
-    If this program is running on the controller, it includes the private key;
-    otherwise, it just includes the public key.
-    """
-
-    age: Optional[AgeKey]
-    """An age key object, if the private key is available"""
-
-    agepub: str
-    """A string containing the age public key"""
-
-    agepath: Optional[str]
-    """The path to the controller age private key, if available"""
-
-    def __init__(self, agepub: str, privkeypath: str):
-        """Initializer params:
-
-        * `agepub`:         The path to the controller age public key
-        * `privkeypath`:    The path to the controller age private key
-        """
-        if privkeypath and os.path.exists(privkeypath):
-            self.age = AgeKey.from_file(privkeypath)
-        else:
-            self.age = None
-        self.agepub = agepub
-        self.agepath = privkeypath
-
-    def __str__(self):
-        return f"Controller(agepub={self.agepub}, agepath={self.agepath}, age={self.age})"
-
-
-class Inventory:
-    """An site's inventory
+"""The progfiguration inventory
 
     An inventory is the heart of a progfigsite.
     It's composed of the following:
@@ -68,14 +17,28 @@ class Inventory:
     The best way to understand the inventory is to look at an example inventory configuration file.
     Here's the inventory configuration file for `example_site`:
 
-    ```
+    ```ini
     .. include:: ../../tests/data/simple/example_site/inventory.conf
     ```
-    """
+"""
 
-    # The controller age key that can be used to decrypt anything.
-    # When running progfiguration from a node, this is not available.
-    age: Optional[AgeKey]
+import configparser
+from importlib.abc import Traversable
+import json
+import os
+from pathlib import Path
+from types import ModuleType
+from typing import Any, Dict, List, Optional, Union
+
+from progfiguration import logger, sitewrapper
+from progfiguration.age import AgeKey, AgeSecret, encrypt
+from progfiguration.inventory.roles import ProgfigurationRole, collect_role_arguments
+from progfiguration.localhost import LocalhostLinuxPsyopsOs
+from progfiguration.progfigtypes import AnyPathOrStr
+
+
+class Inventory:
+    """An site's inventory"""
 
     def __init__(
         self,
@@ -97,28 +60,32 @@ class Inventory:
         """
 
         if isinstance(invfile, configparser.ConfigParser):
-            self.config = invfile
+            self._config = invfile
         else:
-            self.config = configparser.ConfigParser()
+            self._config = configparser.ConfigParser()
             with invfile.open() as f:
-                self.config.read_file(f)
+                self._config.read_file(f)
 
         self.localhost = LocalhostLinuxPsyopsOs()
+        """A localhost object
 
-        # node_function is a dict where keys are node names and values are function names
+        TODO: probably should not use this
+        """
+
         self.node_function = {}
-        for node, func in self.config.items("node_function_map"):
+        """A dict where keys are node names and values are function names"""
+        for node, func in self._config.items("node_function_map"):
             self.node_function[node] = func
 
-        # function_roles is a dict where keys are function names and value are lists of role names
         self.function_roles = {}
-        for func, roles in self.config.items("function_role_map"):
+        """ a dict where keys are function names and value are lists of role names"""
+        for func, roles in self._config.items("function_role_map"):
             self.function_roles[func] = roles.split()
 
-        # group_members is a dict where keys are group names and values are lists of node names
-        # (Prepend the universal group to the list of groups)
         self.group_members = {"universal": [n for n in self.node_function.keys()]}
-        for group, members in self.config.items("groups"):
+        """a dict where keys are group names and values are lists of node names"""
+        # (Prepend the universal group to the list of groups)
+        for group, members in self._config.items("groups"):
             self.group_members[group] = members.split()
 
         self._node_groups: Dict[str, List[str]] = {}
@@ -134,8 +101,12 @@ class Inventory:
         self._controller_secrets: Dict[str, AgeSecret] = {}
 
         self.controller = Controller(
-            self.config.get("general", "controller_age_pub"), self.config.get("general", "controller_age_path")
+            self._config.get("general", "controller_age_pub"), self._config.get("general", "controller_age_path")
         )
+        """A `Controller`, for keeping track of the age key
+
+        TODO: weird API, maybe get rid of the .controller property
+        """
 
         # Get the age key path for this node, if the node is specified and has a key defined
         current_node_age_key_path = None
@@ -145,27 +116,38 @@ class Inventory:
             except (KeyError, ModuleNotFoundError):
                 pass
 
-        # The path to an age private key, or None if no private key is available.
-        # Lookup order, highest priority first:
-        # * A key passed to the class initializer directly, if present
-        # * The controller key, if available
-        # * The key for the current node, if running from a node with an available key
-        # * None
-        for possible_key in [
-            age_privkey,
-            self.controller.agepath,
-            current_node_age_key_path,
-            self.config.get("general", "node_fallback_age_path"),
-        ]:
-            if possible_key and os.path.exists(possible_key):
-                self.age_path = possible_key
-                logger.debug(f"Found age key {self.age_path}")
-                break
+        def maybe_get_age_path() -> Optional[str]:
+            """Find the age path to a private key if possible
+
+            Lookup order, highest priority first:
+            * A key passed to the class initializer directly, if present
+            * The controller key, if available
+            * The key for the current node, if running from a node with an available key
+            * None
+            """
+            for possible_key in [
+                age_privkey,
+                self.controller.agepath,
+                current_node_age_key_path,
+                self._config.get("general", "node_fallback_age_path"),
+            ]:
+                if possible_key and os.path.exists(possible_key):
+                    logger.debug(f"Found age key {self.age_path}")
+                    return possible_key
+                else:
+                    logger.debug(f"No age key found at {possible_key}, continuing...")
             else:
-                logger.debug(f"No age key found at {possible_key}, continuing...")
-        else:
-            logger.debug("No age key found")
-            self.age_path = None
+                logger.debug("No age key found")
+                return None
+
+        self.age_path: Union[str, None] = maybe_get_age_path()
+        """The path to the age private key currently in scope
+
+        If one cannot be found, this will be None.
+
+        Depending on context, this might be the controller key, an individual node's key,
+        or one passed in from the  command line.
+        """
 
     @property
     def groups(self) -> List[str]:
@@ -245,15 +227,15 @@ class Inventory:
         return self._role_modules[name]
 
     def node_role(self, nodename: str, rolename: str) -> ProgfigurationRole:
-        """A dict of {nodename: {rolename: ProgfigurationRole}}
+        """A dict of `{nodename: {rolename: ProgfigurationRole}}`
 
-        Get an instantiated ProgfigurationRole object for a given node and role.
+        Get an instantiated `progfiguration.inventory.roles.ProgfigurationRole` object for a given node and role.
 
         We collect all arguments required to instantiate the role,
         including the superclass arguments like rolepkg and localhost,
-        as well as role-specific arguments accepted by the given ProgfigurationRole subclass
+        as well as role-specific arguments accepted by the given `ProgfigurationRole` subclass
         and defined as a default argument or in the group or node argument dicts.
-        The result is ready to .apply() or .results().
+        You can then call `.apply()` or `.results()` on the role.
 
         Results are cached for subsequent calls.
         """
@@ -402,3 +384,36 @@ class Inventory:
                 self.set_controller_secret(name, encrypted_value)
 
         return (encrypted_value, pubkeys)
+
+
+class Controller:
+    """A Controller object
+
+    If this program is running on the controller, it includes the private key;
+    otherwise, it just includes the public key.
+    """
+
+    age: Optional[AgeKey]
+    """An age key object, if the private key is available"""
+
+    agepub: str
+    """A string containing the age public key"""
+
+    agepath: Optional[str]
+    """The path to the controller age private key, if available"""
+
+    def __init__(self, agepub: str, privkeypath: str):
+        """Initializer params:
+
+        * `agepub`:         The path to the controller age public key
+        * `privkeypath`:    The path to the controller age private key
+        """
+        if privkeypath and os.path.exists(privkeypath):
+            self.age = AgeKey.from_file(privkeypath)
+        else:
+            self.age = None
+        self.agepub = agepub
+        self.agepath = privkeypath
+
+    def __str__(self):
+        return f"Controller(agepub={self.agepub}, agepath={self.agepath}, age={self.age})"
