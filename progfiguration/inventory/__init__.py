@@ -33,7 +33,7 @@ from typing import Any, Dict, List, Optional, Union
 from progfiguration import logger, sitewrapper
 from progfiguration.age import AgeKey, AgeSecret, encrypt
 from progfiguration.inventory.roles import ProgfigurationRole, collect_role_arguments
-from progfiguration.localhost import LocalhostLinuxPsyopsOs
+from progfiguration.localhost import LocalhostLinux
 from progfiguration.progfigtypes import AnyPathOrStr
 
 
@@ -66,7 +66,7 @@ class Inventory:
             with invfile.open() as f:
                 self._config.read_file(f)
 
-        self.localhost = LocalhostLinuxPsyopsOs()
+        self.localhost = LocalhostLinux()
         """A localhost object
 
         TODO: probably should not use this

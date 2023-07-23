@@ -34,6 +34,7 @@
 * Currently `progfiguration build pyz ...` copies the running progfiguration into the file.
   Consider adding support for downloading a fresh copy from pypi,
   in case the user does something weird with their current version.
+* Let nodes set a Localhost class
 * Before first release
   * Update example sites
     * Use example_site as an example, NNSS can hold more complicated test only stuff

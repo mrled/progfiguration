@@ -15,7 +15,7 @@ from typing import Any, Dict, Optional
 
 from progfiguration import age
 from progfiguration.inventory.nodes import InventoryNode
-from progfiguration.localhost import LocalhostLinuxPsyopsOs
+from progfiguration.localhost import LocalhostLinux
 
 
 @dataclass
@@ -54,7 +54,7 @@ class ProgfigurationRole(ABC):
     """
 
     name: str
-    localhost: LocalhostLinuxPsyopsOs
+    localhost: LocalhostLinux
     inventory: "Inventory"  # type: ignore
     rolepkg: str
 

@@ -307,21 +307,3 @@ class LocalhostLinux:
                 raise Exception(
                     f"Failed to write sudoers file {path}: validation failed with code {validation.returncode}"
                 )
-
-
-class LocalhostLinuxPsyopsOs(LocalhostLinux):
-    """An interface to localhost running psyopsOS"""
-
-    @property
-    def alpine_release_str(self) -> str:
-        return self.get_file_contents("/etc/alpine-release")
-
-    @property
-    def alpine_release(self) -> List[int]:
-        return [int(n) for n in self.alpine_release_str.split(".")]
-
-    @property
-    def alpine_release_v(self) -> str:
-        """If /etc/alpine-release is '3.16.0', this returns 'v3.16'."""
-        maj, min, _ = self.alpine_release
-        return f"v{maj}.{min}"
