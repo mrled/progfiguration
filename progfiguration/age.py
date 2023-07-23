@@ -1,4 +1,8 @@
-"""A wrapper for the age binary to encrypt and decrypt secret values"""
+"""A wrapper for the age binary to encrypt and decrypt secret values
+
+Progfiguration uses age for secret management.
+All nodes must have an age keypair.
+"""
 
 from dataclasses import dataclass
 import datetime
