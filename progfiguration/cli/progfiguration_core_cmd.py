@@ -5,12 +5,12 @@ import importlib
 import importlib.metadata
 import pathlib
 import sys
-from typing import List
 
 import progfiguration
 from progfiguration import progfigbuild
-from progfiguration.cli import (
+from progfiguration.cli.util import (
     configure_logging,
+    get_command_help,
     idb_excepthook,
     progfiguration_error_handler,
     progfiguration_log_levels,
@@ -19,7 +19,7 @@ from progfiguration.progfigsite_validator import validate
 from progfiguration.util import import_module_from_filepath
 
 
-def find_progfigsite_module(parser: argparse.ArgumentParser, parsed: argparse.Namespace):
+def _find_progfigsite_module(parser: argparse.ArgumentParser, parsed: argparse.Namespace):
     """Find the progfigsite module from the command line arguments"""
 
     if parsed.progfigsite_filesystem_path:
@@ -35,7 +35,7 @@ def find_progfigsite_module(parser: argparse.ArgumentParser, parsed: argparse.Na
     return (progfigsite, progfigsite_module_path, progfigsite_filesystem_path)
 
 
-def action_version_core():
+def _action_version_core():
     """Retrieve the version of progfiguration core"""
 
     coreversion = importlib.metadata.version("progfiguration")
@@ -47,7 +47,7 @@ def action_version_core():
     print("\n".join(result))
 
 
-def action_validate(module_path: str):
+def _action_validate(module_path: str):
     """Validate a progfigsite module
 
     Arguments:
@@ -62,7 +62,7 @@ def action_validate(module_path: str):
         print(attrib.errstr)
 
 
-def parseargs(arguments: List[str]):
+def _make_parser():
     parser = argparse.ArgumentParser("psyopsOS programmatic configuration")
 
     group_onerr = parser.add_mutually_exclusive_group()
@@ -129,22 +129,22 @@ def parseargs(arguments: List[str]):
         "validate", parents=[site_opts], description="Validate the progfigsite that it matches the required API"
     )
 
-    # Parse and return
-    parsed = parser.parse_args(arguments)
-    return parser, parsed
+    # Return
+    return parser
 
 
-def main_implementation(*arguments):
-    parser, parsed = parseargs(arguments[1:])
+def _main_implementation(*arguments):
+    parser = _make_parser()
+    parsed = parser.parse_args(arguments[1:])
 
     if parsed.debug:
         sys.excepthook = idb_excepthook
     configure_logging(parsed.log_stderr)
 
     if parsed.action == "version":
-        action_version_core()
+        _action_version_core()
     elif parsed.action == "build":
-        progfigsite, progfigsite_modpath, progfigsite_fspath = find_progfigsite_module(parser, parsed)
+        progfigsite, progfigsite_modpath, progfigsite_fspath = _find_progfigsite_module(parser, parsed)
         # TODO: how will sites extend this?
         if parsed.buildaction == "pyz":
             progfigbuild.build_progfigsite_zipapp(progfigsite_fspath, parsed.pyzfile)
@@ -155,11 +155,31 @@ def main_implementation(*arguments):
         else:
             parser.error(f"Unknown buildaction {parsed.buildaction}")
     elif parsed.action == "validate":
-        progfigsite, progfigsite_modpath, progfigsite_fspath = find_progfigsite_module(parser, parsed)
-        action_validate(progfigsite_modpath)
+        progfigsite, progfigsite_modpath, progfigsite_fspath = _find_progfigsite_module(parser, parsed)
+        _action_validate(progfigsite_modpath)
     else:
         parser.error(f"Unknown action {parsed.action}")
 
 
 def main():
-    progfiguration_error_handler(main_implementation, *sys.argv)
+    """The main entry point for the progfiguration command-line interface"""
+    progfiguration_error_handler(_main_implementation, *sys.argv)
+
+
+__doc__ = f"""
+The command-line interface to progfiguration core.
+
+This command is installed with the progfiguration package.
+When packaging a progfigsite in a pyz, it is not available.
+
+This command can perform general progfiguration related tasks that don't need a site,
+as well as tasks that validate or build site packages.
+
+## Command line help
+
+The program's command-line help is reproduced here:
+
+```text
+{get_command_help("progfiguration", _make_parser())}
+```
+"""

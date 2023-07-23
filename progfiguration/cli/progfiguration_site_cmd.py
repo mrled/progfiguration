@@ -16,8 +16,10 @@ from typing import List, Optional
 
 import progfiguration
 from progfiguration import logger, progfigbuild, remotebrute, sitewrapper
-from progfiguration.cli import (
+from progfiguration.cli.util import (
+    CommaSeparatedStrList,
     configure_logging,
+    get_command_help,
     idb_excepthook,
     progfiguration_error_handler,
     progfiguration_log_levels,
@@ -27,12 +29,7 @@ from progfiguration.inventory import Inventory
 from progfiguration.progfigsite_validator import validate
 
 
-def CommaSeparatedStrList(cssl: str) -> List[str]:
-    """Convert a string with commas into a list of strings"""
-    return cssl.split(",")
-
-
-def action_version_core():
+def _action_version_core():
     """Retrieve the version of progfiguration core"""
 
     coreversion = importlib.metadata.version("progfiguration")
@@ -44,7 +41,7 @@ def action_version_core():
     print("\n".join(result))
 
 
-def action_version_all(inventory: Inventory):
+def _action_version_all(inventory: Inventory):
     """Retrieve the version of progfiguration core and the progfigsite"""
 
     progfigsite = sitewrapper.get_progfigsite()
@@ -66,11 +63,11 @@ def action_version_all(inventory: Inventory):
         f"    version: {builddate}",
     ]
 
-    action_version_core()
+    _action_version_core()
     print("\n".join(result))
 
 
-def action_apply(inventory: Inventory, nodename: str, roles: Optional[List[str]] = None, force: bool = False):
+def _action_apply(inventory: Inventory, nodename: str, roles: Optional[List[str]] = None, force: bool = False):
     """Apply configuration for the node 'nodename' to localhost"""
 
     if roles is None:
@@ -98,7 +95,7 @@ def action_apply(inventory: Inventory, nodename: str, roles: Optional[List[str]]
     logging.info(f"Finished running all roles")
 
 
-def action_list(inventory: Inventory, collection: str):
+def _action_list(inventory: Inventory, collection: str):
     if collection == "nodes":
         for node in inventory.nodes:
             print(node)
@@ -112,7 +109,7 @@ def action_list(inventory: Inventory, collection: str):
         raise Exception(f"Unknown collection {collection}")
 
 
-def action_info(inventory: Inventory, nodes: List[str], groups: List[str], functions: List[str]):
+def _action_info(inventory: Inventory, nodes: List[str], groups: List[str], functions: List[str]):
     if not any([nodes, groups, functions]):
         print("Request info on a node, group, or function. (See also the 'list' subcommand.)")
     for nodename in nodes:
@@ -137,7 +134,7 @@ def action_info(inventory: Inventory, nodes: List[str], groups: List[str], funct
         print(f"  Roles: {function_roles}")
 
 
-def action_encrypt(
+def _action_encrypt(
     inventory: Inventory,
     name: str,
     value: str,
@@ -155,7 +152,7 @@ def action_encrypt(
         print(encrypted_value)
 
 
-def action_decrypt(inventory: Inventory, nodes: List[str], groups: List[str], controller_key: bool):
+def _action_decrypt(inventory: Inventory, nodes: List[str], groups: List[str], controller_key: bool):
     for node in nodes:
         print(f"Secrets for node {node}:")
         print("---")
@@ -176,7 +173,7 @@ def action_decrypt(inventory: Inventory, nodes: List[str], groups: List[str], co
         print("---")
 
 
-def action_deploy_apply(
+def _action_deploy_apply(
     inventory: Inventory,
     nodenames: List[str],
     groupnames: List[str],
@@ -239,7 +236,7 @@ def action_deploy_apply(
             print(f"  {error['node']}: {error['error']}")
 
 
-def action_deploy_copy(
+def _action_deploy_copy(
     inventory: Inventory,
     nodenames: List[str],
     groupnames: List[str],
@@ -258,7 +255,7 @@ def action_deploy_copy(
             remotebrute.scp(f"{node.user}@{node.address}", pyzfile.as_posix(), remotepath)
 
 
-def action_validate():
+def _action_validate():
     validation = validate(progfiguration.progfigsite_module_path)
     if validation.is_valid:
         print(f"Progfigsite (Python path: '{progfiguration.progfigsite_module_path}') is valid.")
@@ -270,7 +267,7 @@ def action_validate():
         print(attrib.errstr)
 
 
-def parseargs(arguments: List[str]):
+def _make_parser():
     parser = argparse.ArgumentParser("psyopsOS programmatic configuration")
 
     group_onerr = parser.add_mutually_exclusive_group()
@@ -435,13 +432,13 @@ def parseargs(arguments: List[str]):
         description="Open a debugger on localhost.",
     )
 
-    # Parse and return
-    parsed = parser.parse_args(arguments)
-    return parser, parsed
+    # Return
+    return parser
 
 
-def main_implementation(*arguments):
-    parser, parsed = parseargs(arguments[1:])
+def _main_implementation(*arguments):
+    parser = _make_parser()
+    parsed = parser.parse_args(arguments[1:])
 
     if parsed.debug:
         sys.excepthook = idb_excepthook
@@ -473,14 +470,14 @@ def main_implementation(*arguments):
             print(attrib.errstr)
 
     if parsed.action == "version":
-        action_version_all(inventory)
+        _action_version_all(inventory)
     elif parsed.action == "apply":
-        action_apply(inventory, parsed.nodename, roles=parsed.roles, force=parsed.force_apply)
+        _action_apply(inventory, parsed.nodename, roles=parsed.roles, force=parsed.force_apply)
     elif parsed.action == "deploy":
         if not parsed.nodes and not parsed.groups:
             parser.error("You must pass at least one of --nodes or --groups")
         if parsed.deploy_action == "apply":
-            action_deploy_apply(
+            _action_deploy_apply(
                 inventory,
                 parsed.nodes,
                 parsed.groups,
@@ -490,14 +487,14 @@ def main_implementation(*arguments):
                 keep_remote_file=parsed.keep_remote_file,
             )
         elif parsed.deploy_action == "copy":
-            action_deploy_copy(inventory, parsed.nodes, parsed.groups, parsed.destination)
+            _action_deploy_copy(inventory, parsed.nodes, parsed.groups, parsed.destination)
             print(f"Copied to remote host(s) at {parsed.destination}")
         else:
             parser.error(f"Unknown deploy action {parsed.deploy_action}")
     elif parsed.action == "list":
-        action_list(inventory, parsed.collection)
+        _action_list(inventory, parsed.collection)
     elif parsed.action == "info":
-        action_info(inventory, parsed.nodes, parsed.groups, parsed.functions)
+        _action_info(inventory, parsed.nodes, parsed.groups, parsed.functions)
     elif parsed.action == "encrypt":
         if not parsed.nodes and not parsed.groups and not parsed.controller:
             parser.error("You must pass at least one of --nodes, --groups, or --controller")
@@ -508,7 +505,7 @@ def main_implementation(*arguments):
                 value = fp.read()
         else:
             value = parsed.value
-        action_encrypt(
+        _action_encrypt(
             inventory,
             parsed.save_as or "",
             value,
@@ -521,18 +518,54 @@ def main_implementation(*arguments):
     elif parsed.action == "decrypt":
         if not parsed.nodes and not parsed.groups and not parsed.controller:
             parser.error("You must pass at least one of --nodes, --groups, or --controller")
-        action_decrypt(inventory, parsed.nodes, parsed.groups, parsed.controller)
+        _action_decrypt(inventory, parsed.nodes, parsed.groups, parsed.controller)
     elif parsed.action == "validate":
         # We always validate but this shows a nice message even if validation succeeds
-        action_validate()
+        _action_validate()
     else:
         parser.error(f"Unknown action {parsed.action}")
 
 
 def main(progfigsite_modpath: str):
-    """The main function for the progfiguration site command
+    """The main function for the progfigsite command-line interface
+
+    While this file exists in the core progfiguration package,
+    it is not installed as a command-line script there.
+    Instead, progfigsite packages are expected to add a shim file that calls this function,
+    and configure their Python project to install that shim file as a command-line script.
+
+    This function expects an argument that is the Python module path to the progfigsite package.
+    For instance, if the progfigsite package is installed as 'my_progfigsite',
+    then this argument should be 'my_progfigsite'.
+    This package is expected to be installed in the same Python environment as the progfiguration package.
+    Building a pip package with `progfiguration build pip`
+    will use that shim file to call this function.
+    Building a pyz package with `progfiguration build pyz`
+    will install the site package as `progfigsite` in the pyz regardless of what the site package is called,
+    and will call this function with `progfigsite` as the argument.
 
     TODO: document how the modpath thing works
     """
     progfiguration.progfigsite_module_path = progfigsite_modpath
-    progfiguration_error_handler(main_implementation, sys.argv)
+    progfiguration_error_handler(_main_implementation, sys.argv)
+
+
+__doc__ = f"""
+The command-line interface for a progfigsite.
+
+This command is installed with a progfigsite package.
+When packaging a progfigsite in a pyz,
+running the pyz will run this command.
+
+This command can interact with site nodes,
+encrypt and decrypt secrets (if an appropriate private key is available),
+and apply a node's roles to the local machine.
+
+## Command line help
+
+The program's command-line help is reproduced here:
+
+```text
+{get_command_help("progfigsite", _make_parser())}
+```
+"""
