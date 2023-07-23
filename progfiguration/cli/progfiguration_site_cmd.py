@@ -268,7 +268,7 @@ def _action_validate():
 
 
 def _make_parser():
-    parser = argparse.ArgumentParser("psyopsOS programmatic configuration")
+    parser = argparse.ArgumentParser("progfiguration site management tool")
 
     group_onerr = parser.add_mutually_exclusive_group()
     group_onerr.add_argument(

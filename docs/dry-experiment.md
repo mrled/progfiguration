@@ -2,7 +2,14 @@
 
 I don't like repeating myself to computers.
 
-How can we avoid this in progfiguration?
+I ran a brief experiment here trying to avoid repeating paths.
+I ultimately decided that the cure was much more complex than the repetition,
+so I decided to leave it.
+The experiment is documented below.
+
+## The conditions
+
+How can we avoid repetition in progfiguration?
 
 * `RoleResultReference` objects could use the value from `result()` on a `ProgfigurationRole`
   This is still explicit - a role that needs an output from another role still accepts a parameter for it, unlike a globals scheme.

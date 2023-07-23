@@ -44,7 +44,6 @@
   * Get APK working so I can use this myself...
   * Test that pip packages are doing what I want. Do they have all functionality of old non-lobotomy?
   * Merge lobotomy.
-  * Excise all mentions of psyops / psyopsOS
   * Build a documentation site
 * Make the inventory an API. Don't require a specific file, but require a class implementation.
   * Provide an easy to use configparser implementation

@@ -1,4 +1,4 @@
-"""psyopsOS progfiguration module"""
+"""progfiguration root module"""
 
 import logging
 

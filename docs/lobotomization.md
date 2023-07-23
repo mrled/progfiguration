@@ -12,19 +12,8 @@ the Ansible project is to a given organization's ansible repository as core prog
 
 ## Lobotomization todo:
 
-* Create an example site directory
 * Re-base psyops progfiguration site repo on this repo
-* Scrub references to psyops from this repo
 * Organize documentation so that it makes sense when vendored
-* Instead of installing multiple scripts as `console_scripts`,
-  provide a `site` subcommand and allow installing site-specific functionality
-  as sub-sub-commands there.
-* Maintain a progfiguration verion separate from the site version,
-  and report them to the user in a way that makes sense.
-    * Probably the progfiguration version should _not_
-      be part of the site configuration package version,
-      because if it were, users could never downgrade.
-    * Move/update version.py in this repo in the process
 * Write documentation
     * Provide pydoc for everything in progfiguration core
     * Document the modules more generally,
