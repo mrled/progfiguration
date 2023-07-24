@@ -24,7 +24,7 @@ jobs:
           python-version: '3.11'
 
       - run: pip install -e '.[ghpages-builder]'
-      - run: pdoc -o docs/
+      - run: pdoc -o docs/ progfiguration tests/data/simple/example_site
 
       - uses: actions/upload-pages-artifact@v1
         with:
