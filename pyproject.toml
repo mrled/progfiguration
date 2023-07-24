@@ -21,12 +21,19 @@ email = "me@micahrl.com"
 progfiguration = "progfiguration.cli.progfiguration_core_cmd:main"
 
 [project.optional-dependencies]
+
+# Used for local development
 development = [
     "black",
     "build",
     "mypy",
     "pdoc",
     "twine",
+]
+
+# Used by our Github Actions workflow to autopublish documentation
+ghpages-builder = [
+    "pdoc",
 ]
 
 [project.urls]
