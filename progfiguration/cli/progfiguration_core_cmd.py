@@ -65,8 +65,7 @@ def _action_validate(module_path: str):
 def _make_parser():
     parser = argparse.ArgumentParser("progfiguration core management tool")
 
-    group_onerr = parser.add_mutually_exclusive_group()
-    group_onerr.add_argument(
+    parser.add_argument(
         "--debug",
         "-d",
         action="store_true",
