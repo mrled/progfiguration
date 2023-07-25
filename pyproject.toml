@@ -29,6 +29,7 @@ development = [
     "furo", # Sphinx theme
     "mypy",
     "sphinx",
+    "sphinx-autoapi",
     "sphinx-autobuild",
     "twine",
 ]
@@ -37,6 +38,7 @@ development = [
 ghpages-builder = [
     "furo",
     "sphinx",
+    "sphinx-autoapi",
 ]
 
 [project.urls]
