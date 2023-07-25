@@ -28,6 +28,7 @@ development = [
     "build",
     "furo", # Sphinx theme
     "mypy",
+    "myst_parser", # markdown support in Sphinx
     "sphinx",
     "sphinx-autoapi",
     "sphinx-autobuild",
@@ -37,6 +38,7 @@ development = [
 # Used by our Github Actions workflow to autopublish documentation
 ghpages-builder = [
     "furo",
+    "myst_parser",
     "sphinx",
     "sphinx-autoapi",
 ]
