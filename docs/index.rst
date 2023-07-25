@@ -18,6 +18,7 @@ It's *infrastructure as code*, but like, actual *code*.
    :caption: Contents:
 
    getting-started/index.rst
+   commands/index.rst
    design/index.rst
    experiments/index.rst
    lore/index.rst

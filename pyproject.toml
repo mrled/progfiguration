@@ -30,6 +30,7 @@ development = [
     "mypy",
     "myst_parser", # markdown support in Sphinx
     "sphinx",
+    "sphinx-argparse",
     "sphinx-autoapi",
     "sphinx-autobuild",
     "twine",
@@ -40,6 +41,7 @@ ghpages-builder = [
     "furo",
     "myst_parser",
     "sphinx",
+    "sphinx-argparse",
     "sphinx-autoapi",
 ]
 

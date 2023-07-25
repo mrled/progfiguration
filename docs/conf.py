@@ -36,6 +36,8 @@ extensions = [
     "autoapi.extension",
     # Markdown support
     "myst_parser",
+    # Argparse autogeneration
+    "sphinxarg.ext",
 ]
 
 

@@ -1,5 +1,5 @@
 Appendix
-=======
+========
 
 Miscellany that doesn't fit anywhere else.
 
