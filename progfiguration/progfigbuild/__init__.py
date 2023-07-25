@@ -49,22 +49,20 @@ def build_progfigsite_zipapp(
 ):
     """Build a .pyz zipapp progfigsite package
 
-    Args:
-        progfigsite_filesystem_path: The path to the progfigsite package, eg "/path/to/progfigsite"
-        package_out_path: The path where the zipfile will be written.
-        build_date: The build date to embed in the zipapp.
-            If None, the current UTC time will be used.
-        progfiguration_package_path: The path to the progfiguration package, eg "/path/to/progfiguration"
-            If None, the progfiguration package will be copied from the Python path.
-            This will only work if progfiguration is installed via pip
-            (probably in a venv, possibly editable with 'pip install -e')...
-            it won't work if you're running progfiguration itself from a zipapp for some reason.
-        compression: The compression level to use for the zipapp file.
-            This can be zipfile.ZIP_STORED (no compression) or zipfile.ZIP_DEFLATED (deflate compression).
-            ZIP_STORED (the default) is faster.
+    :param progfigsite_filesystem_path: The path to the progfigsite package, eg "/path/to/progfigsite".
+    :param package_out_path: The path where the zipfile will be written.
+    :param build_date: The build date to embed in the zipapp.
+        If None, the current UTC time will be used.
+    :param progfiguration_package_path: The path to the progfiguration package, eg "/path/to/progfiguration".
+        If None, the progfiguration package will be copied from the Python path.
+        This will only work if progfiguration is installed via pip
+        (probably in a venv, possibly editable with 'pip install -e')...
+        it won't work if you're running progfiguration itself from a zipapp for some reason.
+    :param compression: The compression level to use for the zipapp file.
+        This can be zipfile.ZIP_STORED (no compression) or zipfile.ZIP_DEFLATED (deflate compression).
+        ZIP_STORED (the default) is faster.
 
-    Returns:
-        The path to the zipapp file, eg "/path/to/my_progfigsite.pyz"
+    :return: The path to the zipapp file, eg "/path/to/my_progfigsite.pyz".
 
     What this function does:
 
@@ -78,7 +76,7 @@ def build_progfigsite_zipapp(
     <https://github.com/python/cpython/blob/3.11/Lib/zipapp.py>
 
     We don't use the zipapp code itself because we want more control over what goes into the zipfile,
-    like ignoring __pycache__, *.dist-info, etc.
+    like ignoring __pycache__, \*.dist-info, etc.
 
     We don't need the ProgfigsitePythonPackagePreparer context manager here,
     because we don't need to inject build data into the filesystem before building the zipapp.
@@ -182,16 +180,16 @@ class ProgfigsitePythonPackagePreparer:
 
     You can use this to build a pip package with build and setuptools like this:
 
-    ```python
-    with ProgfigsitePythonPackagePreparer("/path/to/progfigsite") as preparer:
-        result = subprocess.run(
-            ["python", "-m", "build", "-s", "-o", preparer.package_out_path.as_posix(), preparer.progfigsite_project_path.as_posix()],
-            check=True,
-            capture_output=True,
-            cwd=preparer.progfigsite_project_path,
-        )
-    built_package_path = result.stdout.read()
-    ```
+    .. code-block:: python
+
+        with ProgfigsitePythonPackagePreparer("/path/to/progfigsite") as preparer:
+            result = subprocess.run(
+                ["python", "-m", "build", "-s", "-o", preparer.package_out_path.as_posix(), preparer.progfigsite_project_path.as_posix()],
+                check=True,
+                capture_output=True,
+                cwd=preparer.progfigsite_project_path,
+            )
+        built_package_path = result.stdout.read()
 
     See the implementation of `build_progfigsite_pip()` for a more complete example.
 
@@ -212,22 +210,22 @@ class ProgfigsitePythonPackagePreparer:
         keep_injected_files: bool = False,
     ):
         """
-        Args:
-            progfigsite_filesystem_path: The path to the progfigsite package, eg "/path/to/progfigsite/src".
-            build_date: The build date to inject into the package.
-                If None, the current date will be used.
-            progfiguration_package_path: The path to the progfiguration package, eg "/path/to/progfiguration".
-                If None, the progfiguration package will be copied from the Python path.
-                This will only work if progfiguration is installed to the Python path
-                (probably by pip in a venv, and possibly editable with 'pip install -e').
-            injections: Build data we will inject into the filesystem before building the pip package.
-                These injections can go anywhere in the filesystem --
-                they aren't limited to the progfigsite package.
-                You can inject files into the project directory (containing the pyproject.toml),
-                the package directory (containing the actual Python package),
-                or maybe even somewhere else entirely.
-            keep_injected_files: If True, the injected files will be kept after the package is built.
-                You will need to remove them manually. Intended for debugging.
+
+        :param progfigsite_filesystem_path: The path to the progfigsite package, eg "/path/to/progfigsite/src".
+        :param build_date: The build date to inject into the package.
+            If None, the current date will be used.
+        :param progfiguration_package_path: The path to the progfiguration package, eg "/path/to/progfiguration".
+            If None, the progfiguration package will be copied from the Python path.
+            This will only work if progfiguration is installed to the Python path
+            (probably by pip in a venv, and possibly editable with 'pip install -e').
+        :param injections: Build data we will inject into the filesystem before building the pip package.
+            These injections can go anywhere in the filesystem --
+            they aren't limited to the progfigsite package.
+            You can inject files into the project directory (containing the pyproject.toml),
+            the package directory (containing the actual Python package),
+            or maybe even somewhere else entirely.
+        :param keep_injected_files: If True, the injected files will be kept after the package is built.
+            You will need to remove them manually. Intended for debugging.
         """
 
         self.progfigsite_filesystem_path = progfigsite_filesystem_path
@@ -357,22 +355,20 @@ def build_progfigsite_pip(
 ) -> pathlib.Path:
     """Build a pip package
 
-    Args:
-        progfigsite_filesystem_path: The path to the progfigsite package, eg "/path/to/progfigsite"
-        package_out_path: The path where the zipfile will be written.
-        build_date: The build date to inject into the package.
-            If None, the current date will be used.
-        progfiguration_package_path: The path to the progfiguration package, eg "/path/to/progfiguration"
-            If None, the progfiguration package will be copied from the Python path.
-            This will only work if progfiguration is installed via pip
-            (probably in a venv, possibly editable with 'pip install -e')...
-            it won't work if you're running progfiguration itself from a zipapp for some reason.
-        keep_injected_files: If True, the injected files will be kept after the package is built.
-            You will need to remove them manually.
-            Intended for debugging.
+    :param progfigsite_filesystem_path: The path to the progfigsite package, eg "/path/to/progfigsite".
+    :param package_out_path: The path where the zipfile will be written.
+    :param build_date: The build date to inject into the package.
+        If None, the current date will be used.
+    :param progfiguration_package_path: The path to the progfiguration package, eg "/path/to/progfiguration".
+        If None, the progfiguration package will be copied from the Python path.
+        This will only work if progfiguration is installed via pip
+        (probably in a venv, possibly editable with 'pip install -e')...
+        it won't work if you're running progfiguration itself from a zipapp for some reason.
+    :param keep_injected_files: If True, the injected files will be kept after the package is built.
+        You will need to remove them manually.
+        Intended for debugging.
 
-    Returns:
-        The path to the pip package, eg "/path/to/my_progfigsite/dist/my_progfigsite-0.1.0.tar.gz"
+    :return: The path to the pip package, eg "/path/to/my_progfigsite/dist/my_progfigsite-0.1.0.tar.gz"
     """
 
     with ProgfigsitePythonPackagePreparer(
