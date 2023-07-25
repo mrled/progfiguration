@@ -14,8 +14,6 @@ python3 -m venv venv
 python3 -m pip install --upgrade pip
 # Install this directory as editable, and include development dependencies
 python3 -m pip install --editable '.[development]'
-# Run the documentation server on port 8000
-pdoc -p 8000 progfiguration &
 # Run unit tests
 python3 -m unittest
 # Run progfiguration itself
@@ -30,7 +28,14 @@ We only actually need to build a source version of the package,
 because progfiguration expects that your progfigsite package will pull in the source code.
 We avoid building the binary version because it takes longer.
 
-The pdoc webserver will live reload as you make changes.
+### Building the documentation
+
+```sh
+# Build the docs once, without running a webserver
+sphinx-build -b html docs/ docs/_build/html
+# Build the docs whenever a change is detected, and run a webserver that supports automatic live reload
+sphinx-autobuild docs docs/_build/html &
+```
 
 ## Testing
 
@@ -48,8 +53,6 @@ In the same venv as above:
 ```sh
 # Install the example progfigsite
 python3 -m pip install --editable 'tests/data/simple[development]'
-# Run the documentation server for both progfiguration and the example progfigsite
-pdoc -p 8000 progfiguration tests/data/simple/example_site &
 # Run the progfigsite itself
 progfigsite --help
 ```

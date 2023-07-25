@@ -26,14 +26,17 @@ progfiguration = "progfiguration.cli.progfiguration_core_cmd:main"
 development = [
     "black",
     "build",
+    "furo", # Sphinx theme
     "mypy",
-    "pdoc",
+    "sphinx",
+    "sphinx-autobuild",
     "twine",
 ]
 
 # Used by our Github Actions workflow to autopublish documentation
 ghpages-builder = [
-    "pdoc",
+    "furo",
+    "sphinx",
 ]
 
 [project.urls]
