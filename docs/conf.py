@@ -45,6 +45,17 @@ exclude_patterns = [".gitignore", "_build", "Thumbs.db", ".DS_Store"]
 # Where autoapi finds the source code to document.
 autoapi_dirs = [_package_progfiguration.as_posix(), _package_example_site.as_posix()]
 
+# By default autoapi documents imported members as if they are part of the module they're imported into.
+# That's, dumb
+autoapi_options = [
+    "members",
+    "private-members",
+    "show-inheritance",
+    "show-module-summary",
+    "special-members",
+    "undoc-members",
+]
+
 
 html_static_path = ["_static"]
 
