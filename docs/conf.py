@@ -42,7 +42,16 @@ extensions = [
 
 
 templates_path = ["_templates"]
-exclude_patterns = [".gitignore", "_build", "Thumbs.db", ".DS_Store"]
+exclude_patterns = [
+    "*.egg-info",
+    "*venv*",
+    ".DS_Store",
+    ".github",
+    ".gitignore",
+    "Thumbs.db",
+    "dist",
+    "_build",
+]
 
 # Where autoapi finds the source code to document.
 autoapi_dirs = [_package_progfiguration.as_posix(), _package_example_site.as_posix()]
