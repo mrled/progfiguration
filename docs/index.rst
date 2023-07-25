@@ -17,7 +17,11 @@ It's *infrastructure as code*, but like, actual *code*.
    :maxdepth: 2
    :caption: Contents:
 
-   sphinx
+   getting-started/index.rst
+   design/index.rst
+   experiments/index.rst
+   lore/index.rst
+   appendix/index.rst
 
 
 Indices and tables

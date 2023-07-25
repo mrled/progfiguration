@@ -1,4 +1,4 @@
-# Don't Repeat Yourself
+# DRYing with a settings role
 
 I don't like repeating myself to computers.
 

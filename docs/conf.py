@@ -34,6 +34,8 @@ extensions = [
     # Autoapi generates docs for everything it can find in the source code.
     # (Sphinx's autodoc only generates docs for things that are explicitly imported in the docs.)
     "autoapi.extension",
+    # Markdown support
+    "myst_parser",
 ]
 
 
