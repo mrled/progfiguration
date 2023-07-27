@@ -11,3 +11,4 @@ Progfiguration design
     versioning.md
     inventory-format.md
     remoting.md
+    vendoring-core.rst

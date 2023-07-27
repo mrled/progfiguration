@@ -13,45 +13,16 @@ It's *infrastructure as code*, but like, actual *code*.
 
 Where other configuration management tools require learning a new abstraction on top of the configuration changes you want to make,
 ``progfiguration`` lets you *just write Python* to configure your infrastructure.
-You can write a role, which applies to a server, like this:
+It provides:
 
-.. code-block:: python
-
-    from dataclasses import dataclass
-    from pathlib import Path
-    import textwrap
-
-    from progfiguration.cmd import magicrun
-    from progfiguration.inventory.roles import ProgfigurationRole
-
-    @dataclass(kw_only=True)
-    class Role(ProgfigurationRole):
-
-        role_root_dir: Path
-        username: str = "service-user"
-        groupname: str = "service-group"
-
-        @property
-        def servicedir(self):
-            return self.role_root_dir / "your-service"
-
-        def apply(self):
-            magicrun("dnf install -y your-service")
-            self.localhost.makedirs(self.servicedir, "root", "root", 0o755)
-            service_cfg = textwrap.dedent(
-                f"""\
-                    user = {username}
-                    group = {groupname}
-                    config = however you configure this thing, idk man its ur service
-                """
-            )
-            self.localhost.set_file_contents(self.servicedir / "config", "your-service config", "root", "root", 0o644)
-            magicrun("systemctl enable your-service")
-
-        def results(self):
-            return {
-                "servicedir": self.servicedir,
-            }
+*   A way to write code to configure your infrastructure.
+*   A simple standard library for functions like writing to files idempotently.
+*   An inventory configuration format.
+*   A core implementation free of third-party Python dependencies
+    (it relies on `Age <https://github.com/FiloSottile/age>`_ for encryption
+    and SSH for deployment).
+*   A command-line interface for running your configuration.
+*   A nice package building experience that assmebles your code into a single executable.
 
 The whole point of ``progfiguration`` is that your configuration is just Python code.
 You can use any Python library you want, and you can use any Python code you want.
@@ -63,7 +34,6 @@ Do you...
 * ...hate running widely available stable software supported by well-funded corporations and large communities?
 
 ``progfiguration`` **is for you!**
-
 
 .. This `toctree` directive is required for the docs to build.
     Every file in the `docs/` directory must be listed here,
@@ -83,11 +53,12 @@ Table of Contents
    for-ansible-users/index.rst
    experiments/index.rst
    lore/index.rst
+   legacy/index.rst
    appendix/index.rst
 
 
 Indices
--------
+^^^^^^^
 
 * :ref:`Module index <modindex>`, containing documentation for every Python module
 * :ref:`Complete index <genindex>`, containing a flat list of every function, variable, class, module, etc on a single page

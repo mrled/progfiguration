@@ -5,4 +5,5 @@ Getting started
     :maxdepth: 1
     :caption: Contents:
 
-    installing.md
+    new-site.rst
+    examples.rst
