@@ -8,7 +8,6 @@ Progfiguration design
     initial-questions.md
     why.md
     roles.md
-    progfigsite-packages.md
     versioning.md
     inventory-format.md
     remoting.md

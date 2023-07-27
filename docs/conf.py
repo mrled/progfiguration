@@ -31,6 +31,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.doctest",
     "sphinx.ext.duration",
+    "sphinx.ext.intersphinx",
     # Autoapi generates docs for everything it can find in the source code.
     # (Sphinx's autodoc only generates docs for things that are explicitly imported in the docs.)
     "autoapi.extension",
@@ -52,6 +53,11 @@ exclude_patterns = [
     "dist",
     "_build",
 ]
+
+# Link to other projects' documentation
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+}
 
 # Where autoapi finds the source code to document.
 autoapi_dirs = [_package_progfiguration.as_posix(), _package_example_site.as_posix()]
