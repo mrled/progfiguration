@@ -112,7 +112,7 @@ class Inventory:
         current_node_age_key_path = None
         if current_node is not None:
             try:
-                current_node_age_key_path = self.node(current_node).age_key_path
+                current_node_age_key_path = self.node(current_node).node.age_key_path
             except (KeyError, ModuleNotFoundError):
                 pass
 
