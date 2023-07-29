@@ -18,10 +18,6 @@ python3 -m pip install --editable '.[development]'
 python3 -m unittest
 # Run progfiguration itself
 progfiguration --help
-# Build a source-only distribution of the package
-python3 -m build -s
-# Upload it to PyPI
-twine upload dist/*
 ```
 
 We only actually need to build a source version of the package,
@@ -56,3 +52,30 @@ python3 -m pip install --editable 'tests/data/simple[development]'
 # Run the progfigsite itself
 progfigsite --help
 ```
+
+## Making a release
+
+1.  Check out the `master` branch.
+    Make sure your checkout is clean, with all changes committed to git and pushed to Github
+2.  Set the version in `pyproject.toml`.
+    Don't commit the change yet.
+    We'll read this file to determine the version to tag in git and push to PyPI.
+    *   This will require Python 3.11 because we parse the TOML file directly with `tomllib`.
+    *   We can't use `progfiguration version` for this because it will return the version as it was at install time.
+3.  Run the following:
+
+```sh
+version="$(python -c 'import tomllib; f=open("./pyproject.toml", "rb"); proj=tomllib.load(f); print(proj["project"]["version"])')"
+
+git commit pyproject.toml -m "Release version $version"
+
+git tag "v${version}" master
+git push origin "v${version}"
+
+# Build a source-only distribution of the package
+python3 -m build -s
+# Upload it to PyPI
+twine upload "dist/progfiguration-${version}.tar.gz"
+```
+
+The documentation will be updated with the lastest version number and content as well via Github Actions.
