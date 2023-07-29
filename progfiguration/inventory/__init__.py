@@ -132,7 +132,7 @@ class Inventory:
                 self._config.get("general", "node_fallback_age_path"),
             ]:
                 if possible_key and os.path.exists(possible_key):
-                    logger.debug(f"Found age key {self.age_path}")
+                    logger.debug(f"Found age key {possible_key}")
                     return possible_key
                 else:
                     logger.debug(f"No age key found at {possible_key}, continuing...")
