@@ -35,16 +35,19 @@ def _find_progfigsite_module(parser: argparse.ArgumentParser, parsed: argparse.N
     return (progfigsite, progfigsite_module_path, progfigsite_filesystem_path)
 
 
-def _action_version_core():
+def _action_version_core(quiet: bool = False):
     """Retrieve the version of progfiguration core"""
 
     coreversion = importlib.metadata.version("progfiguration")
-    result = [
-        f"progfiguration core:",
-        f"    path: {pathlib.Path(progfiguration.__file__).parent}",
-        f"    version: {coreversion}",
-    ]
-    print("\n".join(result))
+    if quiet:
+        print(coreversion)
+    else:
+        result = [
+            f"progfiguration core:",
+            f"    path: {pathlib.Path(progfiguration.__file__).parent}",
+            f"    version: {coreversion}",
+        ]
+        print("\n".join(result))
 
 
 def _action_validate(module_path: str):
@@ -96,7 +99,8 @@ def _make_parser():
     subparsers = parser.add_subparsers(dest="action", required=True)
 
     # version-core subcommand
-    svn_core = subparsers.add_parser("version", description="Show progfiguration core version")
+    svn = subparsers.add_parser("version", description="Show progfiguration core version")
+    svn.add_argument("--quiet", "-q", action="store_true", help="Only print the version string")
 
     # build subcommand
     sub_build = subparsers.add_parser("build", parents=[site_opts], description="Build the package")
@@ -141,7 +145,7 @@ def _main_implementation(*arguments):
     configure_logging(parsed.log_stderr)
 
     if parsed.action == "version":
-        _action_version_core()
+        _action_version_core(quiet=parsed.quiet)
     elif parsed.action == "build":
         progfigsite, progfigsite_modpath, progfigsite_fspath = _find_progfigsite_module(parser, parsed)
         # TODO: how will sites extend this?
