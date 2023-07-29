@@ -1,5 +1,5 @@
 [build-system]
-requires = ["pdoc", "setuptools"]
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
