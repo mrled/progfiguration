@@ -1,15 +1,12 @@
 [build-system]
-requires = [
-    "pdoc",
-    "setuptools",
-]
+requires = ["pdoc", "setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "progfiguration"
 version = "0.0.2a3"
 description = "PROGramatic conFIGURATION for your infrastructure"
-license = {text = "MIT"}
+license = { text = "MIT" }
 readme = "readme.md"
 requires-python = ">=3.10"
 
@@ -26,9 +23,9 @@ progfiguration = "progfiguration.cli.progfiguration_core_cmd:main"
 development = [
     "black",
     "build",
-    "furo", # Sphinx theme
+    "furo",             # Sphinx theme
     "mypy",
-    "myst_parser", # markdown support in Sphinx
+    "myst_parser",      # markdown support in Sphinx
     "sphinx",
     "sphinx-argparse",
     "sphinx-autoapi",
