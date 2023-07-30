@@ -111,6 +111,22 @@ def magicrun(cmd: str | list, print_output=True, log_output=False, check=True, *
             else:
                 raise Exception(f"Unknown exception in select result. Fileno: {stream.fileno()}")
 
+    # Check for any remaining output after the process has exited.
+    # Without this, the last line of output may not be printed,
+    # if output is buffered (very normal)
+    # and the process doesn't explictly flush upon exit
+    # (also very normal, and will definitely happen if the process crashes or gets KILLed).
+    for stream in [process.stdout, process.stderr]:
+        for line in stream.readlines():
+            if stream.fileno() == stdout_fileno:
+                stdoutbuf.write(line)
+                if print_output:
+                    sys.stdout.write(line)
+            elif stream.fileno() == stderr_fileno:
+                stderrbuf.write(line)
+                if print_output:
+                    sys.stderr.write(line)
+
     # We'd like to just seek(0) on the stdout/stderr buffers, but "underlying stream is not seekable",
     # So we create new buffers above, write to them line by line, and replace the old ones with these.
     process.stdout.close()  # type: ignore
