@@ -377,7 +377,6 @@ def build_progfigsite_pip(
         progfiguration_package_path=progfiguration_package_path,
         keep_injected_files=keep_injected_files,
     ) as preparer:
-        # built = builder_function(preparer.progfigsite_project_path, package_out_path)
         cmd = [
             "python",
             "-m",
