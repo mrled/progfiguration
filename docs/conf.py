@@ -5,6 +5,7 @@
 
 # Imports
 
+import importlib.metadata
 from pathlib import Path
 
 
@@ -13,6 +14,7 @@ from pathlib import Path
 _project_root = Path(__file__).parent.parent
 _package_progfiguration = _project_root / "progfiguration"
 _package_example_site = _project_root / "tests" / "data" / "simple" / "example_site"
+_package_nnss_site = _project_root / "tests" / "data" / "nnss" / "nnss_progfigsite"
 
 
 # -- Project information -----------------------------------------------------
@@ -22,7 +24,8 @@ _package_example_site = _project_root / "tests" / "data" / "simple" / "example_s
 project = "progfiguration"
 copyright = "2023, Micah R Ledbetter"
 author = "Micah R Ledbetter"
-release = "0.0.2a3"
+version = importlib.metadata.version("progfiguration")
+release = version
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -60,7 +63,11 @@ intersphinx_mapping = {
 }
 
 # Where autoapi finds the source code to document.
-autoapi_dirs = [_package_progfiguration.as_posix(), _package_example_site.as_posix()]
+autoapi_dirs = [
+    _package_progfiguration.as_posix(),
+    _package_example_site.as_posix(),
+    _package_nnss_site.as_posix(),
+]
 
 # By default autoapi documents imported members as if they are part of the module they're imported into.
 # That's, dumb
