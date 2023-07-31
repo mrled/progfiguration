@@ -10,7 +10,6 @@ import progfiguration
 from progfiguration import progfigbuild
 from progfiguration.cli.util import (
     configure_logging,
-    get_command_help,
     idb_excepthook,
     progfiguration_error_handler,
     progfiguration_log_levels,
@@ -167,22 +166,3 @@ def _main_implementation(*arguments):
 def main():
     """The main entry point for the progfiguration command-line interface"""
     progfiguration_error_handler(_main_implementation, *sys.argv)
-
-
-__doc__ = f"""
-The command-line interface to progfiguration core.
-
-This command is installed with the progfiguration package.
-When packaging a progfigsite in a pyz, it is not available.
-
-This command can perform general progfiguration related tasks that don't need a site,
-as well as tasks that validate or build site packages.
-
-## Command line help
-
-The program's command-line help is reproduced here:
-
-```text
-{get_command_help("progfiguration", _make_parser())}
-```
-"""

@@ -43,6 +43,4 @@ Some things worth noting about roles:
     **This result cannot rely on ``apply()`` having been called.**
     Yes, arguably this is a bad name.
 
-TODO: change the name of ``.result()`` to something less confusing.
-
 TODO: show good and bad examples of ``.result()`` methods.

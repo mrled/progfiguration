@@ -60,8 +60,6 @@ pip packages, and zipapp packages.
 Building ``pip`` packages
 -------------------------
 
-TODO: pip packages not actually supported yet
-
 Pip itself needs no introduction.
 We keep the ability to build pip packages in progfiguration core,
 rather than delegating it to progfigsite implementations,
@@ -73,6 +71,12 @@ for two reasons:
 2.  It's the easiest way to build distribution-specific packages.
     RPMs can be built from Python build instructions,
     and so can APKs.
+
+We have special support for build pip packages with
+:class:`progfiguration.progfigbuild.ProgfigsitePythonPackagePreparer`,
+a context manager that you can use for building custom site packages in your own code.
+It's used internally in :meth:`progfiguration.progfigbuild.build_progfigsite_pip`
+as a way to build a vanilla pip package.
 
 Building ``zipapp`` packages
 ----------------------------
@@ -93,6 +97,7 @@ and see the code in :mod:`progfiguration.progfigbuild`.
 Building other package types
 ----------------------------
 
-TODO: Include examples of building other package types like RPMs
-
-TODO: Link to psyops progfigsite with APK example
+The ``pip`` package builder is useful for building distribution-specific packages too.
+You can see an example of it being used to to build an APK package for Alpine Linux in the
+`progfiguration-blacksite-buildapk command <https://github.com/mrled/psyops/blob/master/progfiguration_blacksite/progfiguration_blacksite/cli/progfigsite_buildapk_cmd.py>`_.
+You might extend this to build an RPM or whatever is appropriate for your environment.

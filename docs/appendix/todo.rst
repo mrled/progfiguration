@@ -7,7 +7,7 @@ To do
 
         * How sitewrapper works and what it's for
         * Importing a package from a filesystem path
-        * The old `progfiguration_build.py` script, which could be called from CI and was also imported by path insite progfiguration_cli
+        * The old ``progfiguration_build.py`` script, which could be called from CI and was also imported by path insite progfiguration_cli
           (since deprecated since lobotomy and moving to progfigbuild; see git history)
 
     * zipapp
@@ -43,13 +43,13 @@ To do
         * Lobotomized into core and progfigsite
 
 * Make sure progfiguration core works on all in-support Python 3 verions
-* Currently `progfiguration build pyz ...` copies the running progfiguration into the file.
+* Currently ``progfiguration build pyz ...`` copies the running progfiguration into the file.
   Consider adding support for downloading a fresh copy from pypi,
   in case the user does something weird with their current version.
-* Let nodes set a Localhost class
-* Move localhost stuff to a module, don't use a class. I don't think I get any benefits from it being a class. If it really needs to be one, consider a global singleton if I can. Making you instantiate `Localhost()` in multiple places is silly.
 * Before first release
 
+  * Move localhost stuff to a module, don't use a class. I don't think I get any benefits from it being a class. If it really needs to be one, consider a global singleton if I can. Making you instantiate ``Localhost()`` in multiple places is silly.
+  * Change the name of ``.results`` so that it's less confusing.
   * Update example sites
 
     * Use example_site as an example, NNSS can hold more complicated test only stuff

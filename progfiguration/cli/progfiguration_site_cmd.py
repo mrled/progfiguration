@@ -19,7 +19,6 @@ from progfiguration import logger, progfigbuild, remotebrute, sitewrapper
 from progfiguration.cli.util import (
     CommaSeparatedStrList,
     configure_logging,
-    get_command_help,
     idb_excepthook,
     progfiguration_error_handler,
     progfiguration_log_levels,
@@ -559,24 +558,3 @@ def main(progfigsite_modpath: str):
     # mypy flags this for no reason and I can't figure out why, YOLO
     # > Argument 2 to "progfiguration_error_handler" has incompatible type "*list[str]"; expected "list[str]"  [arg-type]mypy(error)
     progfiguration_error_handler(_main_implementation, *sys.argv)  # type: ignore
-
-
-__doc__ = f"""
-The command-line interface for a progfigsite.
-
-This command is installed with a progfigsite package.
-When packaging a progfigsite in a pyz,
-running the pyz will run this command.
-
-This command can interact with site nodes,
-encrypt and decrypt secrets (if an appropriate private key is available),
-and apply a node's roles to the local machine.
-
-## Command line help
-
-The program's command-line help is reproduced here:
-
-```text
-{get_command_help("progfigsite", _make_parser())}
-```
-"""

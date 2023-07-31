@@ -3,6 +3,9 @@ progfigsite command
 
 Once you have created a progfiguration site (see :ref:`progfiguration-getting-started`),
 you can use the configured ``progfigsite`` command to interact with it.
+This command can apply configuration to site nodes/groups/functions,
+encrypt and decrypt secrets (if an appropriate private key is available),
+and apply a node's roles to the local machine.
 
 In order to use this command, you need to add a shim file to your site's Python package,
 typically in ``<package>/cli/progfigsite_shim.py``,
@@ -16,6 +19,8 @@ Note that your progfigsite's ``pyproject.toml`` can call the command anything it
 The default name is ``progfigsite``,
 but you may wish to rename it to something that fits your site's name better.
 See the ``[project.scripts]`` table in ``pyproject.toml`` to change this.
+
+This is also the command that is run when you run a progfigsite pyz.
 
 .. code-block:: console
 

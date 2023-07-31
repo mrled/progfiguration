@@ -105,50 +105,6 @@ def configure_logging(log_stderr: str, log_syslog: str = "NONE") -> None:
         logger.addHandler(handler_syslog)
 
 
-def get_command_help(name: str, parser: argparse.ArgumentParser, wrap: int = 80, wrap_indent: int = 8):
-    """Generate a docstring for an argparse parser that shows the help for the parser and all subparsers.
-    Based on an idea from <https://github.com/pdoc3/pdoc/issues/89>
-    Arguments:
-    * `name`: The name of the program
-    * `parser`: The parser
-    * `wrap`: The number of characters to wrap the help text to (0 to disable)
-    * `wrap_indent`: The number of characters to indent the wrapped text
-    """
-
-    def get_parser_help_recursive(parser: argparse.ArgumentParser, cmd: str = "", root: bool = True):
-        docstring = ""
-        if not root:
-            docstring += "\n" + "_" * 72 + "\n\n"
-        docstring += f"> {cmd} --help\n"
-        docstring += parser.format_help()
-
-        for action in parser._actions:
-            if isinstance(action, argparse._SubParsersAction):
-                for subcmd, subparser in action.choices.items():
-                    docstring += get_parser_help_recursive(subparser, f"{cmd} {subcmd}", root=False)
-        return docstring
-
-    docstring = get_parser_help_recursive(parser, name)
-
-    if wrap > 0:
-        wrapped = []
-        # From the textwrap docs:
-        # > If replace_whitespace is false,
-        # > newlines may appear in the middle of a line and cause strange output.
-        # > For this reason, text should be split into paragraphs
-        # > (using str.splitlines() or similar) which are wrapped separately.
-        for line in docstring.splitlines():
-            if line:
-                wrapped += textwrap.wrap(
-                    line, width=wrap, replace_whitespace=False, subsequent_indent=" " * wrap_indent
-                )
-            else:
-                wrapped += [""]
-        return "\n".join(wrapped)
-    else:
-        return docstring
-
-
 def CommaSeparatedStrList(cssl: str) -> List[str]:
     """Convert a string with commas into a list of strings
 

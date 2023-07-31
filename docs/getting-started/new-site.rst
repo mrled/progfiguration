@@ -56,4 +56,3 @@ See also :doc:`/progfigsite/index`.
     *   If you deploy a pip file manually, you can apply it with ``progfigsite apply NODENAME``.
     *   You can write custom build code for building RPMs or other package types.
         See an example in the `psyops progfigsite <https://github.com/mrled/psyops/blob/master/progfigsite/progfigsite/cli/progfigsite_buildapk_cmd.py>`_
-        TODO: document custom build code.

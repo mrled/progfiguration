@@ -51,9 +51,9 @@ Table of Contents
    progfigsite/index.rst
    design/index.rst
    for-ansible-users/index.rst
+   advanced/index.rst
    experiments/index.rst
    lore/index.rst
-   legacy/index.rst
    appendix/index.rst
 
 
