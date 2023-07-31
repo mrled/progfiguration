@@ -51,6 +51,27 @@ This seems to say that only literals like numbers or strings are supported.
 `ast.literal_eval()` will not run a function.
 In practice, though, this doesn't seem to be what setuptools actually uses to handle dynamic versions in `pyproject.toml`.
 
+## What's it doing in the source code
+
+In [config/expand.py](https://github.com/pypa/setuptools/blob/main/setuptools/config/expand.py#L194),
+we can see:
+
+```python3
+    try:
+        return getattr(StaticModule(module_name, spec), attr_name)
+    except Exception:
+        # fallback to evaluate module
+        module = _load_spec(spec, module_name)
+        return getattr(module, attr_name)
+```
+
+The docstring for that function says
+
+> This function will try to read the attributed statically first
+> (via :func:`ast.literal_eval`), and only evaluate the module if it fails.
+
+So it's specifically built to do this, but it's not the preferred way.
+
 ## Used in previous versions with setup.cfg
 
 When progfiguration was first written,
