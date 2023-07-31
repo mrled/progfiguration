@@ -89,10 +89,19 @@ def build_progfigsite_zipapp(
     if build_date is None:
         build_date = datetime.utcnow()
 
+    # We need to use the same module path that the progfigsite uses.
+    # Meaning, if the progfigsite is a module name "example_site",
+    # we need to add it to a directory of the same name in the zipfile.
+    # This is because the site will have "from example_site import ..." statements.
+    #
+    # TODO: Not sure what to do if the progfigsite is a dotted package name like "example.site".
+    # That is not a common use case, but might happen because of the --progfigsite-python-path option.
+    site_zip_directory = progfiguration.progfigsite_module_path
+
     main_py = textwrap.dedent(
-        r"""
+        f"""
         from progfiguration.cli import progfiguration_site_cmd
-        progfiguration_site_cmd.main("progfigsite")
+        progfiguration_site_cmd.main("{site_zip_directory}")
         """
     )
 
@@ -131,7 +140,7 @@ def build_progfigsite_zipapp(
                 # Place the progfigsite package inside a subdirectory called 'progfigsite'.
                 # This ignores the actual name of the package,
                 # and allows progfiguration to find it when run from the zipfile.
-                z.write(child, "progfigsite/" + child_relname.as_posix())
+                z.write(child, site_zip_directory + "/" + child_relname.as_posix())
 
             # Copy the progfiguration package into the zipfile
             for child in progfiguration_package_path.rglob("*"):
@@ -141,7 +150,7 @@ def build_progfigsite_zipapp(
                 z.write(child, "progfiguration/" + child_relname.as_posix())
 
             # Inject build date file
-            z.writestr("progfigsite/builddata/version.py", builddata_version_py.encode("utf-8"))
+            z.writestr(site_zip_directory + "/builddata/version.py", builddata_version_py.encode("utf-8"))
 
             # Add the __main__.py file to the zipfile root, which is required for zipapps
             z.writestr("__main__.py", main_py.encode("utf-8"))
