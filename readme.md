@@ -57,7 +57,7 @@ progfigsite --help
 
 1.  Check out the `master` branch.
     Make sure your checkout is clean, with all changes committed to git and pushed to Github
-2.  Set the version in `pyproject.toml`.
+2.  Set the version in `pyproject.toml` and update `docs/appendix/changelog.rst`.
     Don't commit the change yet.
     We'll read this file to determine the version to tag in git and push to PyPI.
     *   This will require Python 3.11 because we parse the TOML file directly with `tomllib`.
