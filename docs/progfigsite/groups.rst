@@ -32,7 +32,7 @@ For instance, the node defined in :mod:`example_site.groups.group1`:
    :language: python
 
 Group secret files
------------------
+------------------
 
 If a group has secrets encrypted with ``progfiguration encrypt``,
 they will be stored in a file named ``<group name>.secrets.json``
