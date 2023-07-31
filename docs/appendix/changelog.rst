@@ -6,6 +6,10 @@ WIP
 
 * Fix vendored progfiguration error
 * Fix progfigsite package names for zipapp
+* Remove old dynamic argparse ``__doc__``  strings from commands
+  (this is handled by Sphinx now)
+* Have docs retrieve version from the package metadata
+* Documentation improvements
 
 `0.0.2a8`
 ---------
