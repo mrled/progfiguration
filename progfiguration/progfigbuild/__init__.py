@@ -377,14 +377,15 @@ def build_progfigsite_pip(
         progfiguration_package_path=progfiguration_package_path,
         keep_injected_files=keep_injected_files,
     ) as preparer:
+        # TODO: there isn't a universal way to find the "right" python here, but do better than this
+        # try sys.executable, then python3, then python.
         cmd = [
             "python",
             "-m",
             "build",
-            "-s",
             "-o",
             package_out_path.as_posix(),
-            preparer.progfigsite_package_path.as_posix(),
+            preparer.progfigsite_project_path.as_posix(),
         ]
         result = magicrun(cmd)
     return pathlib.Path(result.stdout.read())
