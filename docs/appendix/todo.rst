@@ -88,3 +88,7 @@ To do
       * But if I were setting up a complex system of VPCs, EC2 instances, IAM roles, etc, I'd probably look to the AWS API before too very long. I've done 5-10 2k line cloudformation files to set up infrastructure.
 
     * Ansible, Terraform, Cloudformation all are easy to hire for
+
+* Find a way to automatically link functions to their code implementation.
+  I really liked this from pdoc.
+  I think some Sphinx themes have it?
