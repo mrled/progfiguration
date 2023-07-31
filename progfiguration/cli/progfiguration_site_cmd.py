@@ -32,7 +32,12 @@ from progfiguration.progfigsite_validator import validate
 def _action_version_core():
     """Retrieve the version of progfiguration core"""
 
-    coreversion = importlib.metadata.version("progfiguration")
+    try:
+        coreversion = importlib.metadata.version("progfiguration")
+    except importlib.metadata.PackageNotFoundError:
+        # This happens if progfiguration was vendored
+        # TODO: Handle vendored progfiguration version more gracefully
+        coreversion = "vendored"
     result = [
         f"progfiguration core:",
         f"    path: {pathlib.Path(progfiguration.__file__).parent}",
