@@ -25,7 +25,6 @@ development = [
     "build",
     "furo",             # Sphinx theme
     "mypy",
-    "myst_parser",      # markdown support in Sphinx
     "sphinx",
     "sphinx-argparse",
     "sphinx-autoapi",

@@ -7,4 +7,4 @@ This documentation needs to be refactored elsewhere.
     :maxdepth: 1
     :caption: Contents:
 
-    installing.md
+    installing.rst

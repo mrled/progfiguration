@@ -7,6 +7,6 @@ These are experiments we ran to test out various ideas.
     :maxdepth: 1
     :caption: Contents:
 
-    setuptools-dynamic-version/readme.md
-    age-scaling.md
-    dry-settings-role.md
+    setuptools-dynamic-version/readme.rst
+    age-scaling.rst
+    dry-settings-role.rst

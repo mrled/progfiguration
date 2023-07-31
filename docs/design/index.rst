@@ -5,10 +5,10 @@ Progfiguration design
     :maxdepth: 2
     :caption: Contents:
 
-    initial-questions.md
-    why.md
-    roles.md
-    versioning.md
-    inventory-format.md
-    remoting.md
+    initial-questions.rst
+    why.rst
+    roles.rst
+    versioning.rst
+    inventory-format.rst
+    remoting.rst
     vendoring-core.rst
