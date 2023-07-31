@@ -550,7 +550,10 @@ def main(progfigsite_modpath: str):
     TODO: document how the modpath thing works
     """
     progfiguration.progfigsite_module_path = progfigsite_modpath
-    progfiguration_error_handler(_main_implementation, *sys.argv)
+
+    # mypy flags this for no reason and I can't figure out why, YOLO
+    # > Argument 2 to "progfiguration_error_handler" has incompatible type "*list[str]"; expected "list[str]"  [arg-type]mypy(error)
+    progfiguration_error_handler(_main_implementation, *sys.argv)  # type: ignore
 
 
 __doc__ = f"""
