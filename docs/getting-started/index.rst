@@ -1,3 +1,6 @@
+.. _progfiguration-getting-started:
+
+
 Getting started
 ===============
 

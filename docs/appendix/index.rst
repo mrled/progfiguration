@@ -7,6 +7,6 @@ Miscellany that doesn't fit anywhere else.
     :maxdepth: 1
     :caption: Contents:
 
-    todo.md
-    changelog.md
+    todo.rst
+    changelog.rst
     sphinx.rst

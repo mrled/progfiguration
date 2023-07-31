@@ -7,4 +7,4 @@ Lore is the most important part of any project.
     :maxdepth: 1
     :caption: Contents:
 
-    lobotomization.md
+    lobotomization.rst
