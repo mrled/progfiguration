@@ -29,7 +29,7 @@ with the name ``Role``.
 For instance, the node defined in :mod:`example_site.roles.settz`,
 which set's a node's timezone:
 
-.. literalinclude:: ../../tests/data/simple/example_site/roles/settz.py
+.. literalinclude:: ../../../tests/data/simple/example_site/roles/settz.py
    :language: python
 
 Some things worth noting about roles:

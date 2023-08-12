@@ -6,7 +6,7 @@ The file should be in :mod:`configparser` format.
 
 Here's an example from :mod:`example_site`:
 
-.. literalinclude:: ../../tests/data/simple/example_site/inventory.conf
+.. literalinclude:: ../../../tests/data/simple/example_site/inventory.conf
    :language: ini
 
 Functions

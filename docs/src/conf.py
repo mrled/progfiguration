@@ -11,7 +11,7 @@ from pathlib import Path
 
 # Paths
 
-_project_root = Path(__file__).parent.parent
+_project_root = Path(__file__).parent.parent.parent
 _package_progfiguration = _project_root / "progfiguration"
 _package_example_site = _project_root / "tests" / "data" / "simple" / "example_site"
 _package_nnss_site = _project_root / "tests" / "data" / "nnss" / "nnss_progfigsite"

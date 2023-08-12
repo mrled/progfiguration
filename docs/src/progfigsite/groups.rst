@@ -28,7 +28,7 @@ so the only thing inside each group is a mapping of group names to variable valu
 
 For instance, the node defined in :mod:`example_site.groups.group1`:
 
-.. literalinclude:: ../../tests/data/simple/example_site/groups/group1.py
+.. literalinclude:: ../../../tests/data/simple/example_site/groups/group1.py
    :language: python
 
 Group secret files

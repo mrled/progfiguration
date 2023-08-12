@@ -23,7 +23,7 @@ Each node file should contain a class named ``node`` that inherits from
 
 For instance, the node defined in :mod:`example_site.nodes.node1`:
 
-.. literalinclude:: ../../tests/data/simple/example_site/nodes/node1.py
+.. literalinclude:: ../../../tests/data/simple/example_site/nodes/node1.py
    :language: python
 
 Node secret files
