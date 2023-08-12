@@ -19,6 +19,11 @@ class LocalhostLinux:
     """An interface to localhost running Linux.
 
     Maintains a cache of files it has read before.
+
+    Generally, roles should use the ``.localhost`` attribute of a
+    `progfiguration.inventory.Inventory` object,
+    rather than instantiating this class themselves.
+    That said, nothing bad will happen with multiple instances of this class.
     """
 
     def __init__(self, nodename="localhost"):

@@ -56,7 +56,6 @@ To do
   in case the user does something weird with their current version.
 
 * Before first release
-    * Move localhost stuff to a module, don't use a class. I don't think I get any benefits from it being a class. If it really needs to be one, consider a global singleton if I can. Making you instantiate ``Localhost()`` in multiple places is silly.
     * Change the name of ``.results`` so that it's less confusing.
 
     * Update example sites
