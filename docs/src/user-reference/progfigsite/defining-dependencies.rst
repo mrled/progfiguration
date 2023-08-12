@@ -5,7 +5,7 @@ Progfiguration core has no runtime dependencies,
 and packages of it are always self-contained.
 
 Progfigsite packages reference progfiguration core modules.
-When building progfigsite packages with ``progfiguration build`` (see :doc:`/commands/progfiguration`),
+When building progfigsite packages with ``progfiguration build`` (see :doc:`/user-reference/commands/progfiguration`),
 progfigsite packages include progfiguration core in the :doc:`autovendor` so they are self-contained.
 
 You can also build progfigsite packages without a vendored progfiguration core

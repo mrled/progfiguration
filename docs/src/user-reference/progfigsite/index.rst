@@ -1,3 +1,5 @@
+.. _progfigsite:
+
 ``progfigsite`` packages
 ========================
 
@@ -28,4 +30,4 @@ They must contain certain members (subpackages, modules, functions, and variable
     builddata.rst
 
     development.rst
-    dependencies.rst
+    defining-dependencies.rst

@@ -81,4 +81,10 @@ autoapi_options = [
 
 html_static_path = ["_static"]
 
+# Theme
 html_theme = "furo"
+html_theme_options = {
+    "source_repository": "https://github.com/mrled/progfiguration/",
+    "source_branch": "master",
+    "source_directory": "docs/src/",
+}

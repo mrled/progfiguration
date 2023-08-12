@@ -6,9 +6,7 @@ Progfiguration design
     :caption: Contents:
 
     initial-questions.rst
+    hypotheses.rst
     why.rst
-    roles.rst
-    versioning.rst
-    inventory-format.rst
     remoting.rst
     vendoring-core.rst

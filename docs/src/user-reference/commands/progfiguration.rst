@@ -3,7 +3,7 @@ progfiguration core command
 
 The core ``progfiguration`` command performs some miscellaneous tasks.
 Normal interaction with progfiguration typically happens with the
-:doc:`progfigsite command </commands/progfigsite>` instead.
+:doc:`progfigsite command </user-reference/commands/progfigsite>` instead.
 
 Command-line help
 -----------------

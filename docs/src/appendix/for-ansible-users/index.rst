@@ -1,5 +1,12 @@
+.. _for-ansible-users:
+
 ``progfiguration`` for Ansible users
 ====================================
+
+.. note::
+
+    This section of documentation is a work in progress.
+    When it's complete, its location may change.
 
 Ansible is a natural comparison point for ``progfiguration``.
 

@@ -17,7 +17,7 @@ Using it is completely optional.)
 * Cannot contain logic like ``if`` or ``for`` statements, or include other templates.
 * Require all variables to be passed in explicitly.
   It is always clear what variables are used by a template, and what their source is.
-  (This is an intentional design decision; see :doc:`/for-ansible-users/variables`.)
+  (This is an intentional design decision; see :doc:`/appendix/for-ansible-users/variables`.)
 
 jinja2 templates used by Ansible:
 

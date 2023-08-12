@@ -28,8 +28,8 @@ so the only thing inside each group is a mapping of group names to variable valu
 
 For instance, the node defined in :mod:`example_site.groups.group1`:
 
-.. literalinclude:: ../../../tests/data/simple/example_site/groups/group1.py
-   :language: python
+.. literalinclude:: ../../../..//tests/data/simple/example_site/groups/group1.py
+    :language: python
 
 Group secret files
 ------------------
@@ -37,3 +37,18 @@ Group secret files
 If a group has secrets encrypted with ``progfiguration encrypt``,
 they will be stored in a file named ``<group name>.secrets.json``
 in the ``groups`` package.
+
+.. note:: Groups do not have their own encryption keys.
+
+    Group secrets are encrypted with the public key of each member node.
+
+    When you add a node to a group with existing secrets,
+    you must re-encrypt the secrets file so that it can be decrypted by the new node.
+    You can do this with ``progfigsite decrypt ... | progfigsite encrypt ...``.
+    TODO: Add a single command to re-encrypt a group's secrets.
+
+The ``universal`` group
+-----------------------
+
+The ``universal`` group is a special group that all nodes are members of.
+It is used to define variables and secrets that are common to all nodes.

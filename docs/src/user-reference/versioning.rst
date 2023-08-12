@@ -1,5 +1,5 @@
-Versioning progfiguration and progfigsite packages
-==================================================
+Versioning
+==========
 
 Progfiguration is versioned directly, by setting a version in
 pyproject.toml.
@@ -16,7 +16,7 @@ core is not part of the package version at all. If it were, you would
 not be able to download progfiguration core in a new version of the
 progfigsite package.
 
-Progfigiste packages also must implement ``get_version() -> str``,
+Progfigisite packages also must implement ``get_version() -> str``,
 which should try to retrieve a version from ``progfigsite.builddata.version``
 if that module exists,
 and otherwise fall back to some arbitrary very low fallback version number, like ``0.0.1a1``.

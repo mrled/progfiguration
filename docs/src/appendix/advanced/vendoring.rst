@@ -8,7 +8,7 @@ it automatically vendors ``progfiguration`` core into
 ``progfigsite.autovendor.progfiguration``.
 
 It is recommended that site-specific vendored dependencies be placed somewhere under
-:doc:`/progfigsite/sitelib` and imported from there.
+:doc:`/user-reference/progfigsite/sitelib` and imported from there.
 
 When to vendor?
 ---------------

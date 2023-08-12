@@ -9,4 +9,4 @@ Getting started
     :caption: Contents:
 
     new-site.rst
-    examples.rst
+    why-use-progfiguration.rst

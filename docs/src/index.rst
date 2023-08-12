@@ -27,6 +27,8 @@ It provides:
 The whole point of ``progfiguration`` is that your configuration is just Python code.
 You can use any Python library you want, and you can use any Python code you want.
 
+And you don't have to fight the declarative model when all you want to do is set an intermediate value to a variable or write a loop.
+
 Do you...
 
 * ...want to write a for loop in your configuration management?
@@ -35,25 +37,35 @@ Do you...
 
 ``progfiguration`` **is for you!**
 
-.. This `toctree` directive is required for the docs to build.
-    Every file in the `docs/` directory must be listed here,
-    or in a `toctree` directive in one of the files listed here.
+A guided tour of the documentation
+----------------------------------
+
+To get started, read the :ref:`getting started guide <getting-started>`.
+It will walk you through installing ``progfiguration`` and building out your *site*,
+which is the directory (usually in a Git repository) that contains your inventory.
+When you're exploring, you might be interested in the :ref:`command help <commands>` reference,
+and the :ref:`progfigsite API <progfigsite>` that lists your site package must implement.
+You might also want to read :ref:`Progfiguration for Ansible users <for-ansible-users>`,
+if you're familiar with Ansible,
+and/or :ref:`whyuse` for some scenarios that ``progfiguration`` was designed to handle well.
+
+Progfiguration is, above even being a configuration management tool,
+an experiment to test :ref:`hypotheses` about configuration management, infrastructure as code, and programming in general.
 
 Table of Contents
 -----------------
+
+.. This `toctree` directive is required for the docs to build.
+    Every file in the `docs/` directory must be listed here,
+    or in a `toctree` directive in one of the files listed here.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
    getting-started/index.rst
-   commands/index.rst
-   progfigsite/index.rst
+   user-reference/index.rst
    design/index.rst
-   for-ansible-users/index.rst
-   advanced/index.rst
-   experiments/index.rst
-   lore/index.rst
    appendix/index.rst
 
 
