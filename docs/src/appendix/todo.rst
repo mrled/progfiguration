@@ -2,9 +2,7 @@ To do
 =====
 
 * Add a "tricks" section of the docs
-
     * Dynamic module lookup (sitewraper.py)
-
         * How sitewrapper works and what it's for
         * Importing a package from a filesystem path
         * The old ``progfiguration_build.py`` script, which could be called from CI and was also imported by path insite progfiguration_cli
@@ -17,7 +15,6 @@ To do
     * Data files in the Python stdlib: json, csv, configfile, and even TOML in Python 3.11+, also TOML in recent pip and setuptools
       (h/t <https://til.simonwillison.net/python/pyproject>)
     * Ode to Python stdlib
-
         * Data files (per above)
         * unittest module is good enough to start with
         * When do we allow dependencies?
@@ -28,7 +25,6 @@ To do
 
     * Vendoring (implementation TBD)
     * Python string.template, including custom subclasses
-
         * Can you avoid a full featured templating dependency like jinja?
           I do miss conditionals, but...
 
@@ -37,9 +33,7 @@ To do
 * Add a "lore" section of the docs
 
   Lore is the most important part of any project.
-
     * History:
-
         * Built for psyopsOS
         * Made more general
         * Lobotomized into core and progfigsite
@@ -60,46 +54,42 @@ To do
 * Currently ``progfiguration build pyz ...`` copies the running progfiguration into the file.
   Consider adding support for downloading a fresh copy from pypi,
   in case the user does something weird with their current version.
+
 * Before first release
+    * Move localhost stuff to a module, don't use a class. I don't think I get any benefits from it being a class. If it really needs to be one, consider a global singleton if I can. Making you instantiate ``Localhost()`` in multiple places is silly.
+    * Change the name of ``.results`` so that it's less confusing.
 
-  * Move localhost stuff to a module, don't use a class. I don't think I get any benefits from it being a class. If it really needs to be one, consider a global singleton if I can. Making you instantiate ``Localhost()`` in multiple places is silly.
-  * Change the name of ``.results`` so that it's less confusing.
-  * Update example sites
+    * Update example sites
+        * Use example_site as an example, NNSS can hold more complicated test only stuff
+        * Maybe make an example template site, and/or add that functionality to the commandline
+        * Test the recent site version stuff with unit tests
 
-    * Use example_site as an example, NNSS can hold more complicated test only stuff
-    * Maybe make an example template site, and/or add that functionality to the commandline
-    * Test the recent site version stuff with unit tests
-
-  * **make a first release**
+    * **make a first release**
 
 * Make the inventory an API.
+    Previously, the inventory was a YAML document.
+    Now, it is expected to be parsable by ``configparser``, which allows us
+    to use just the standard library.
+    In the future, define an inventory abstract class, and allow the progfigsite to implement it.
+    Provide an easy to use configparser implementation
 
-  Previously, the inventory was a YAML document.
-  Now, it is expected to be parsable by ``configparser``, which allows us
-  to use just the standard library.
-  In the future, define an inventory abstract class, and allow the progfigsite to implement it.
-  Provide an easy to use configparser implementation
+    That would let the progfigsite depend on any format it wants, including:
+        - YAML, which I still prefer over most options
+        - configparser format, built in to Python
+        - JSON, which is a pain to use but built in to Python
+        - Raw Python, which has a nice alignment with the raw Python node/group modules
+        - TOML, which is built in to Python 11, and also into pip which is ubiquitous even on older Python versions
+        - Some external program that generates any of the above -- especially JSON
+        - ... whatever
 
-  That would let the progfigsite depend on
-  any format it wants, including:
-
-  - YAML, which I still prefer over most options
-  - configparser format, built in to Python
-  - JSON, which is a pain to use but built in to Python
-  - Raw Python, which has a nice alignment with the raw Python node/group modules
-  - TOML, which is built in to Python 11, and also into pip which is ubiquitous even on older Python versions
-  - Some external program that generates any of the above -- especially JSON
-  - ... whatever
-
-  This implements our values of keeping the core progfiguration module
-  simple, free of dependencies, and easy for sites to extend.
+    This implements our values of keeping the core progfiguration module
+    simple, free of dependencies, and easy for sites to extend.
 
 * Can I make sphinx-autobuild faster? Waiting 5+ seconds on every single file save is _horrible_.
+
 * Add a philosophy section, or include all of this in the design section:
-
-  * The Python stdlib is one of its strengths, how can we stay within it as much as possible
-
-    * Reference the section in "tricks", or just m ove that stuff here
+    * The Python stdlib is one of its strengths, how can we stay within it as much as possible
+        * Reference the section in "tricks", or just m ove that stuff here
 
 * Find a way to automatically link functions to their code implementation.
   I really liked this from pdoc.
