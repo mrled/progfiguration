@@ -35,7 +35,6 @@ which set's a node's timezone:
 
 Some things worth noting about roles:
 
-*   See also: :doc:`/user-reference/role-arguments`.
 *   In the :doc:`/user-reference/progfigsite/inventory`,
     roles are assigned to functions, and functions are assigned to nodes.
 *   They *must* be annotated with ``@dataclass(kw_only=True)``
@@ -60,8 +59,24 @@ Some things worth noting about roles:
     factor out code that is shared by ``apply()`` and ``results()``, and no
     ability to cache. However, in exchange, the implementation is simpler.
 
-Example ``.results()`` methods
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Writing roles
+-------------
+
+Progfiguration core has some functionality designed to make it easier to write roles.
+
+*   :mod:`progfiguration.localhost`
+    has some helper functions for interacting with the local system,
+    like :func:`progfiguration.localhost.LocalhostLinux.cp` for copying a file.
+*   It provides :func:`progfiguration.localhost.LocalhostLinux.temple` for a simple string template.
+    This is not as advanced as full templating engines like ``jinja2``,
+    as it just provides very simple token replacement,
+    but it is sufficient for simple tasks.
+
+These helpers are supposed to be very simple and limited in scope.
+Users are encouraged to write their own helpers inside :doc:`/user-reference/progfigsite/sitelib`.
+
+Role results
+------------
 
 All ``results()`` methods should be idempotent,
 and should not rely on ``apply()`` having been called.
@@ -119,3 +134,99 @@ And instead do something like:
                     # The homedir is defined statically so it can be returned in results()
                     "homedir": self.homedir,
                 }
+
+
+Role arguments
+--------------
+
+Roles may accept arguments.
+When a role is applied to a node,
+progfiguration looks up possible arguments in the following order:
+
+1.  The default value for the argument, if one is provided by the role itself.
+2.  The ``universal`` group.
+3.  All other groups the node is a member of, in undetermined order.
+    *Take care not to rely on the order of groups!*
+    Defining the same argument in multiple groups is a footgun.
+    TODO: Warn about this.
+4.  The node itself.
+
+Here's an example role:
+
+.. code:: python
+
+    # progfigsite.roles.example_role
+
+    @dataclass(kw_only=True)
+    class Role(ProgfigurationRole):
+
+        username: str
+        password: str
+
+        # ...
+
+A group could set the username:
+
+.. code:: python
+
+    # progfigsite.groups.universal
+
+    group = Bunch(
+        roles=Bunch(
+            example_role={
+                "username": "mr_the_plague",
+            }
+        ),
+    )
+
+And each node could set a separate password:
+
+.. code:: python
+
+    # progfigsite.nodes.the_gibson
+
+    node = InventoryNode(
+        # ...
+        roles=Bunch(
+            example_role={
+                "password": "love-sex-secret-god",
+            },
+        ),
+    )
+
+Role result reference arguments
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Role arguments can reference data from the results of another role.
+(Take care that role "results" may be requested before the role is applied,
+see :doc:`/user-reference/progfigsite/roles`.)
+You can set :class:`progfiguration.inventory.roles.RoleResultReference` role arguments
+to retrieve the result of one role when passing an argument to another role.
+
+.. code:: python
+
+    node = InventoryNode(
+        # ...
+        roles=Bunch(
+            example_role={
+                "something": RoleResultReference("other_role", "result_field")
+            },
+        ),
+    )
+
+Secret reference arguments
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can also retrieve a secret from the encrypted secret store using
+:class:`progfiguration.age.AgeSecretReference`.
+
+.. code:: python
+
+    node = InventoryNode(
+        # ...
+        roles=Bunch(
+            example_role={
+                "password": AgeSecretReference("secret_name")
+            },
+        ),
+    )

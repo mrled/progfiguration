@@ -11,7 +11,8 @@ which uses ``{$}`` for variable substitution rather than the default ``$``,
 which is a nicer fit for shell scripts.
 Using it is completely optional.)
 
-`string.Template` templates used by progfiguration:
+`string.Template` templates used by progfiguration
+--------------------------------------------------
 
 * Require no third-party dependencies.
 * Cannot contain logic like ``if`` or ``for`` statements, or include other templates.
@@ -19,7 +20,13 @@ Using it is completely optional.)
   It is always clear what variables are used by a template, and what their source is.
   (This is an intentional design decision; see :doc:`/appendix/for-ansible-users/variables`.)
 
-jinja2 templates used by Ansible:
+The vanilla :class:`string.Template` class is available in the standard library.
+We also provide a tiny subclass :class:`progfiguration.temple.Temple`,
+which uses ``{$}`` for variable substitution rather than the default ``$``,
+which is a nicer fit for shell scripts.
+
+jinja2 templates used by Ansible
+--------------------------------
 
 * Require a third-party dependency.
 * Can contain logic like ``if`` or ``for`` statements, and include other templates.

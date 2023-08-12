@@ -12,6 +12,5 @@ User Reference
     commands/index.rst
     progfigsite/index.rst
     progfigsite-examples.rst
-    role-arguments.rst
+    packaging.rst
     versioning.rst
-    recommendations.rst

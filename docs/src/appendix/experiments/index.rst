@@ -10,3 +10,4 @@ These are experiments we ran to test out various ideas.
     setuptools-dynamic-version/readme.rst
     age-scaling.rst
     dry-settings-role.rst
+    remoting.rst

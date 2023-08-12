@@ -31,8 +31,7 @@ And you don't have to fight the declarative model when all you want to do is set
 
 Do you...
 
-* ...want to write a for loop in your configuration management?
-* ...wish you could write a real program, even multiple lines, when toiling in the YAML mines?
+* ...wish you could write a real program, even multiple lines, instead of toiling in the YAML mines?
 * ...hate running widely available stable software supported by well-funded corporations and large communities?
 
 ``progfiguration`` **is for you!**
@@ -40,17 +39,15 @@ Do you...
 A guided tour of the documentation
 ----------------------------------
 
-To get started, read the :ref:`getting started guide <getting-started>`.
+Read :ref:`progfiguration-getting-started` first.
 It will walk you through installing ``progfiguration`` and building out your *site*,
 which is the directory (usually in a Git repository) that contains your inventory.
 When you're exploring, you might be interested in the :ref:`command help <commands>` reference,
 and the :ref:`progfigsite API <progfigsite>` that lists your site package must implement.
-You might also want to read :ref:`Progfiguration for Ansible users <for-ansible-users>`,
-if you're familiar with Ansible,
-and/or :ref:`whyuse` for some scenarios that ``progfiguration`` was designed to handle well.
-
-Progfiguration is, above even being a configuration management tool,
-an experiment to test :ref:`hypotheses` about configuration management, infrastructure as code, and programming in general.
+You might also want to read :ref:`for-ansible-users`,
+if you're familiar with Ansible.
+See :ref:`whyuse` for some scenarios that ``progfiguration`` was designed to handle well,
+and :ref:`progfiguration-design` to read about design principles and hypotheses.
 
 Table of Contents
 -----------------
