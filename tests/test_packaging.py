@@ -30,7 +30,7 @@ class TestRun(PdbTestCase):
         nnss = NnssTestData()
         with tempfile.TemporaryDirectory() as tmpdir:
             pyzfile = pathlib.Path(tmpdir) / "test.pyz"
-            progfigbuild.build_progfigsite_zipapp(pyzfile)
+            progfigbuild.build_progfigsite_zipapp(nnss.nnss_progfigsite_path, pyzfile)
             self.assertTrue(pyzfile.exists())
             result = subprocess.run([str(pyzfile), "version"], check=True, capture_output=True)
             stdout = result.stdout.decode("utf-8").strip()
