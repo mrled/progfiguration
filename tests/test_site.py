@@ -17,7 +17,7 @@ class TestRun(PdbTestCase):
         """Test that all roles can be instantiated
 
         Instantiation requires decrypting secrets (which requires the controller age),
-        and properly dereferencing secrets and role results.
+        and properly dereferencing secrets and role calculations.
         """
 
         for nodename in self.nnss.inventory.nodes:

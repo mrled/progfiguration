@@ -235,7 +235,7 @@ class Inventory:
         including the superclass arguments like rolepkg and localhost,
         as well as role-specific arguments accepted by the given `ProgfigurationRole` subclass
         and defined as a default argument or in the group or node argument dicts.
-        You can then call `.apply()` or `.results()` on the role.
+        You can then call `.apply()` or `.calculations()` on the role.
 
         Results are cached for subsequent calls.
         """

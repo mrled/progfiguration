@@ -1,6 +1,12 @@
 DRYing with a settings role
 ===========================
 
+Update 20230812: we have renamed role "results" to role "calculations".
+This makes it more clear that calculations are not simply results from running "apply()",
+and makes it make more sense when it's explained that
+calculations should be small and easy to compute
+and should not assume that apply() haas been run.
+
 I don’t like repeating myself to computers.
 
 I ran a brief experiment here trying to avoid repeating paths. I

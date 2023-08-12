@@ -56,8 +56,6 @@ To do
   in case the user does something weird with their current version.
 
 * Before first release
-    * Change the name of ``.results`` so that it's less confusing.
-
     * Update example sites
         * Use example_site as an example, NNSS can hold more complicated test only stuff
         * Maybe make an example template site, and/or add that functionality to the commandline

@@ -19,14 +19,14 @@ from progfiguration.localhost import LocalhostLinux
 
 
 @dataclass
-class RoleResultReference:
-    """A reference to a result from a role
+class RoleCalculationReference:
+    """A reference to a calculation from a role
 
-    This is used to allow roles to reference results from other roles
+    This is used to allow roles to reference calculations from other roles
     """
 
     role: str
-    result: str
+    calcname: str
 
 
 @dataclass(kw_only=True)
@@ -47,12 +47,18 @@ class ProgfigurationRole(ABC):
 
     Optional methods:
 
-    * results(): Return a dict of results that may be used by other roles
-
-    Note that you cannot override properties in a subclass of a dataclass.
-    Take care when adding new attributes here.
+    * calculations(): Return a dict of data the role can calculate
+      from its arguments and internal state before it is applied.
+      This data can be referenced by other roles.
+      For instance, a role that creates a user
+      might calculate the user's homedir path like '/home/username',
+      and return a calculation like {'homedir': '/home/username'}.
+      The user may or may not have been created when it returns this data,
+      and the path may or may not exist until the role actually runs.
     """
 
+    # Note that you cannot override properties in a subclass of a dataclass.
+    # Take care when adding new attributes here.
     name: str
     localhost: LocalhostLinux
     inventory: "Inventory"  # type: ignore
@@ -65,7 +71,7 @@ class ProgfigurationRole(ABC):
     def apply(self, **kwargs):
         pass
 
-    def results(self, **kwargs):
+    def calculations(self):
         return {}
 
     def role_file(self, filename: str) -> Traversable:
@@ -97,7 +103,7 @@ def dereference_rolearg(
     Role arguments are often used as-is, but some kinds of arguments are special:
 
     * age.AgeSecretReference: Decrypt the secret using the age key
-    * RoleResultReference: Get the result from the referenced role
+    * RoleCalculationReference: Get the calculation from the referenced role
 
     This function retrieves the final value from these special argument types.
     Arguments that do not match one of these types are just returned as-is.
@@ -107,8 +113,8 @@ def dereference_rolearg(
     if isinstance(argument, age.AgeSecretReference):
         secret = secrets[argument.name]
         value = secret.decrypt(inventory.age_path)
-    elif isinstance(argument, RoleResultReference):
-        value = inventory.node_role(nodename, argument.role).results()[argument.result]
+    elif isinstance(argument, RoleCalculationReference):
+        value = inventory.node_role(nodename, argument.role).calculations()[argument.calcname]
     return value
 
 

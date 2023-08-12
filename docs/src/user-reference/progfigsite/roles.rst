@@ -42,22 +42,23 @@ Some things worth noting about roles:
     which may be defined on nodes and/or groups.
 *   The ``apply()`` function contains the logic for applying the role to a node.
     It can reference fields.
-*   An optional ``results()`` function can be defined to return a dict of values.
-    **This ``results()`` function cannot rely on ``apply()`` having been called.**
-    Yes, arguably this is a bad name.
+*   An optional ``calculations()`` function can be defined to return a dict of values.
+    These values are available to other roles as role calculation references.
+    **This ``calculations()`` function cannot rely on ``apply()`` having been called.**
 
-.. note:: The design of the ``results()`` function.
+.. note:: The design of the ``calculations()`` function.
 
-    This function should return *easy to calculate* values. This is a
-    judgement call, but note that other roles may reference the results
-    multiple times.
+    This function should return *easy to calculate* values.
+    This is a judgement call,
+    but note that other roles may reference the calculations multiple times.
 
-    In the design of this API, I considered allowing ``apply()`` to return
-    results directly, and possibly caching them for later use. The
-    complexity of that design caused me to reject it, at least for now.
-    Instead, the ``results()`` design has some tradeoffs, like needing to
-    factor out code that is shared by ``apply()`` and ``results()``, and no
-    ability to cache. However, in exchange, the implementation is simpler.
+    In the design of this API,
+    we considered allowing ``apply()`` to return results directly,
+    but the complexity was reason to reject it.
+    Instead, the ``calculations()`` design has some tradeoffs,
+    like needing to factor out code that is shared by ``apply()`` and ``calculations()``,
+    and no ability to cache.
+    However, in exchange, the implementation is simpler.
 
 Writing roles
 -------------
@@ -75,10 +76,10 @@ Progfiguration core has some functionality designed to make it easier to write r
 These helpers are supposed to be very simple and limited in scope.
 Users are encouraged to write their own helpers inside :doc:`/user-reference/progfigsite/sitelib`.
 
-Role results
-------------
+Role calculations
+-----------------
 
-All ``results()`` methods should be idempotent,
+All ``calculations()`` methods should be idempotent,
 and should not rely on ``apply()`` having been called.
 This means that you must **avoid** doing something like this:
 
@@ -98,15 +99,15 @@ This means that you must **avoid** doing something like this:
         def apply(self):
             self.localhost.users.add_service_account(self.username, self.username, home=True)
 
-        def results(self):
+        def calculations(self):
             return {
-                # Homedir is returned in results():
+                # Homedir is returned in calculations():
                 "homedir": self.homedir,
             }
 
 And instead do something like:
 
-1.  Decide not to return the homedir in ``results()`` at all.
+1.  Decide not to return the homedir in ``calculations()`` at all.
     Instead, you might return the username,
     and let the caller look up the homedir if they need it.
 
@@ -129,9 +130,9 @@ And instead do something like:
                 # we pass the homedir location directly.
                 self.localhost.users.add_service_account(self.username, self.username, home=self.homedir)
 
-            def results(self):
+            def calculations(self):
                 return {
-                    # The homedir is defined statically so it can be returned in results()
+                    # The homedir is defined statically so it can be returned in calculations()
                     "homedir": self.homedir,
                 }
 
@@ -194,14 +195,14 @@ And each node could set a separate password:
         ),
     )
 
-Role result reference arguments
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Role calculation reference arguments
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Role arguments can reference data from the results of another role.
-(Take care that role "results" may be requested before the role is applied,
+Role arguments can reference data from the calculations of another role.
+(Take care that role calculations may be requested before the role is applied,
 see :doc:`/user-reference/progfigsite/roles`.)
-You can set :class:`progfiguration.inventory.roles.RoleResultReference` role arguments
-to retrieve the result of one role when passing an argument to another role.
+You can set :class:`progfiguration.inventory.roles.RoleCalculationReference` role arguments
+to retrieve a calculation from one role when passing an argument to another role.
 
 .. code:: python
 
@@ -209,7 +210,7 @@ to retrieve the result of one role when passing an argument to another role.
         # ...
         roles=Bunch(
             example_role={
-                "something": RoleResultReference("other_role", "result_field")
+                "something": RoleCalculationReference("other_role", "calculation_name")
             },
         ),
     )
