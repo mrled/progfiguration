@@ -36,6 +36,14 @@ Do you...
 
 ``progfiguration`` **is for you!**
 
+Availability
+------------
+
+*   The source code is available on GitHub at `mrled/progfiguration <https://github.com/mrled/progfiguration>`_.
+*   Releases are on PyPI as `progfiguration <https://pypi.org/project/progfiguration/>`_.
+*   Progfiguration is available under the `MIT license <https://github.com/mrled/progfiguration/blob/master/LICENSE>`_.
+*   Written by `Micah R Ledbetter <http://me.micahrl.com>`_.
+
 A guided tour of the documentation
 ----------------------------------
 
