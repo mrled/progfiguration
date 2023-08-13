@@ -4,6 +4,9 @@ Changelog
 WIP
 ---
 
+`0.0.2`
+-------
+
 * Fix vendored progfiguration error
 * Fix progfigsite package names for zipapp
 * Remove old dynamic argparse ``__doc__``  strings from commands

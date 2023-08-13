@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "progfiguration"
-version = "0.0.2a9"
+version = "0.0.2"
 description = "PROGramatic conFIGURATION for your infrastructure"
 license = { text = "MIT" }
 readme = "readme.md"
