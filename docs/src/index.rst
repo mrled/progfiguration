@@ -44,6 +44,10 @@ Availability
 *   Progfiguration is available under the `MIT license <https://github.com/mrled/progfiguration/blob/master/LICENSE>`_.
 *   Written by `Micah R Ledbetter <http://me.micahrl.com>`_.
 
+Patches and bug reports are welcome!
+If you use ``progfiguration`` for your own infrastructure, I'd love to hear about it,
+and you're welcome to add yourself to the :doc:`list of users </appendix/users>` list.
+
 A guided tour of the documentation
 ----------------------------------
 

@@ -9,6 +9,4 @@ Example ``progfigsite`` packages
     Another site we use for testing, which has a much more fun name.
     `Nevada National Security Site on GitHub <https://github.com/mrled/progfiguration/tree/master/tests/data/nnss/nnss_progfigsite>`_
 
-``PSYOPS BLACKSITE``
-    What the author uses for his own personal infrastructure.
-    `progfiguration_blacksite on GitHub <https://github.com/mrled/psyops/tree/master/progfiguration_blacksite>`_
+You may also be interested in the :doc:`/appendix/users`.
