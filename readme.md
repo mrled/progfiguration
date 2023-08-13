@@ -67,7 +67,7 @@ progfigsite --help
 ```sh
 version="$(python -c 'import tomllib; f=open("./pyproject.toml", "rb"); proj=tomllib.load(f); print(proj["project"]["version"])')"
 
-git commit pyproject.toml docs/appendix/changelog.rst -m "Release version $version"
+git commit pyproject.toml docs/src/appendix/changelog.rst -m "Release version $version"
 
 git tag "v${version}" master
 git push origin "v${version}"
