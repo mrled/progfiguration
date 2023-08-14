@@ -9,4 +9,6 @@ Getting started
     :caption: Contents:
 
     new-site.rst
-    why-use-progfiguration.rst
+    create-nodes-groups.rst
+    create-role.rst
+    build-deploy.rst

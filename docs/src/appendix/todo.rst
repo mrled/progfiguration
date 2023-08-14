@@ -82,6 +82,13 @@ To do
     This implements our values of keeping the core progfiguration module
     simple, free of dependencies, and easy for sites to extend.
 
+* Make a base RoleArgumentReference class, automatically dereference subclasses
+  * This is a prerequisite for extensible encryption
+  * Would also let you get role argument values from anywhere with an API, or from a file, or whatever you want.
+
+* Make encryption extensible
+  * Allow sites to implement their own secrets management, encryption, etc.
+
 * Can I make sphinx-autobuild faster? Waiting 5+ seconds on every single file save is _horrible_.
 
 * Add a philosophy section, or include all of this in the design section:
@@ -103,3 +110,18 @@ To do
   When we need to do something like create Route53 records,
   there is no host to deploy the package to,
   but we should be able to run it on the controller.
+
+* Add Fathom to the docs site
+  ``<script src="https://cdn.usefathom.com/script.js" data-site="HKQHARKR" defer></script>``
+
+* Contrast *declarativity* with *idempotency*.
+  Idempotency is important in system configuration,
+  but you don't need a declarative document to achieve it.
+  * Ansible examples that show that declarativity isn't enough:
+    You always need to ensure a service is started when the role is done,
+    but if you changed any files,
+    you need to stop it first.
+    A truly declarative system would not concern itself with restarts.
+  * When you use Ansible escape hatches into imperativity like ``shell`` tasks,
+    or writing your own modules,
+    you have to ensure idempotency yourself.

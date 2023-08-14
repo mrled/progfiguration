@@ -3,6 +3,8 @@ Appendix
 
 Miscellany that doesn't fit anywhere else.
 
+Some items here may be incomplete works in progress.
+
 .. toctree::
     :maxdepth: 1
     :caption: Contents:

@@ -2,14 +2,17 @@
 # The controller has an age key which can be used to decrypt any secret.
 # When this file is not present, progfiguration will still work,
 # but activities that require the secret key will throw errors.
-controller_age_path = /path/to/controller.age
+# (This is a path on the controller.)
+controller_age_path = {$}controller_age_path
 
 # We must hard code the public key in this file as well,
 # so that it is available even when we aren't running on the controller.
-controller_age_pub = paste the public key here
+# (This is a string of the public key.)
+controller_age_pub = {$}controller_age_pub
 
 # The default/fallback location for the age key on each node.
-node_fallback_age_path = /path/to/node.age
+# (This is not a path on the controller.)
+node_fallback_age_path = /etc/progfiguration/node.age
 
 ####
 # Assign group membership
@@ -18,6 +21,10 @@ node_fallback_age_path = /path/to/node.age
 group1 = node1
 
 # group2 = node1 node2 node3
+# group3 =
+#   node4
+#   node5
+#   node6
 
 ####
 # Assign each node to a function.
@@ -32,6 +39,10 @@ node1 = func1
 [function_role_map]
 func1 = settz
 # func2 = settz otherrole asdf etc
+# func3 =
+#   settz
+#   role47
+#   etc2
 
 # TODO: fall back to this role so that we don't have to place new nodes in role_function_map
 # and they will still come up.

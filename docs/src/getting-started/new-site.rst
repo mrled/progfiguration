@@ -21,39 +21,71 @@ See also :doc:`/user-reference/progfigsite/index`.
                 --path ./progfigsite \
                 --name progfigsite \
                 --description "This is a new progfigsite" \
+                --controller-age-key-path ./progfigsite.controller.age
 
-3.  Modify the copied example to match your infrastructure.
+    This creates a new directory ``progfigsite`` (based on the --path you provided),
+    and the ``age`` key for the :ref:`progfigsite-controller`.
 
-    *   Generate a new Age controller key for your site.
-        Store the key somewhere safe!
+    Here's a table of the contents of the ``./progfigsite`` directory:
 
-        .. code-block:: bash
+    +-------------------------------------------+-----------------------------------------------+
+    | File                                      | Description                                   |
+    +===========================================+===============================================+
+    | ``pyproject.toml``                        | A Python project file.                        |
+    +-------------------------------------------+-----------------------------------------------+
+    | ``progfigsite/``                          | The root of the actual Python package.        |
+    |                                           | (The same name as the parent, e.g.            |
+    |                                           | ``progfigsite/progfigsite/``.                 |
+    +-------------------------------------------+-----------------------------------------------+
+    | ``progfigsite/__init__.py``               | The root package exports some version         |
+    |                                           | information.                                  |
+    +-------------------------------------------+-----------------------------------------------+
+    | ``progfigsite/inventory.conf``            | An inventory file for the site.               |
+    +-------------------------------------------+-----------------------------------------------+
+    | ``progfigsite/cli/``                      | A Python package for command line scripts.    |
+    +-------------------------------------------+-----------------------------------------------+
+    | ``progfigsite/cli/progfigsite_shim.py``   | The file that is installed as the             |
+    |                                           | ``progfigsite`` script.                       |
+    +-------------------------------------------+-----------------------------------------------+
+    | ``progfigsite/nodes/``                    | A directory for node definitions.             |
+    +-------------------------------------------+-----------------------------------------------+
+    | ``progfigsite/nodes/node1.py``            | An example node.                              |
+    +-------------------------------------------+-----------------------------------------------+
+    | ``progfigsite/groups/``                   | A directory for group definitions.            |
+    +-------------------------------------------+-----------------------------------------------+
+    | ``progfigsite/groups/universal.py``       | The universal group file.                     |
+    +-------------------------------------------+-----------------------------------------------+
+    | ``progfigsite/groups/group1.py``          | An example group.                             |
+    +-------------------------------------------+-----------------------------------------------+
+    | ``progfigsite/roles/``                    | A directory for role definitions.             |
+    +-------------------------------------------+-----------------------------------------------+
+    | ``progfigsite/roles/role1.py``            | An example role.                              |
+    +-------------------------------------------+-----------------------------------------------+
+    | ``progfigsite/sitelib/``                  | Site-specific utility functions etc.          |
+    +-------------------------------------------+-----------------------------------------------+
+    | ``progfigsite/autovendor/``               | Used to statically include libraries in the   |
+    |                                           | site package.                                 |
+    +-------------------------------------------+-----------------------------------------------+
+    | ``progfigsite/builddata/``                | Used to inject data and build time like the   |
+    |                                           | build date.                                   |
+    +-------------------------------------------+-----------------------------------------------+
 
-            age-keygen -o /path/to/controller.age
+    Not included in the table are a readme file and some empty ``__init__.py`` files
+    which make directories into Python packages.
 
-    *   Update :doc:`the inventory file </user-reference/progfigsite/inventory>` ``progfigsite/inventory.conf`` to contain the path to the controller key and its public key value.
-    *   Define your :doc:`nodes </user-reference/progfigsite/nodes>` and :doc:`groups </user-reference/progfigsite/groups>` in ``progfigsite/inventory.conf``.
-    *   Create files for your nodes and groups in ``progfigsite/nodes/`` and ``progfigsite/groups``.
-    *   Create Age keys for each node.
-        The keys should be copied to the nodes securely.
-        Nodes can set their ``age_key_path`` property to the path to their key.
-        The inventory configuration file can set ``node_fallback_age_path`` for a default location.
-    *   Encrypt any secrets for nodes or groups with ``progfiguration encrypt``.
-    *   Define your :doc:`roles </user-reference/progfigsite/roles>` in ``progfigsite/roles/``.
-    *   Define functions in ``progfigsite/inventory.conf`` by setting ``node_function_map`` and ``function_role_map``.
-    *   If you use any :doc:`third party dependencies </user-reference/progfigsite/defining-dependencies>`,
-        set them in ``pyproject.toml`` if appropriate.
+3.  Store your controller's age key securely.
 
-4.  Install your progfigsite package
+    As noted above, we saved the controller's age key to the current directory.
+    You should store it somewhere both secure and backed up.
+    This might be somewhere in your home directory,
+    in a secret store like ``gopass``,
+    or wherever makes sense for your controller and your threat model.
 
-    *   If you use any third party dependencies, install them into your venv.
-    *   Install your progfigsite as editable with ``pip install -e progfigsite``
+    If you move it, make sure that the ``general.controller_age_path``
+    configuration key contains the new location.
 
-5.  Build and deploy your site
+4.  Install your progfigsite package to the venv.
 
-    *   ``progfiguration deploy`` will assemble your site into a zipapp and copy it over SSH to the node.
-    *   ``progfiguration build`` can assemble zipapp or pip packages for manual deployment.
-    *   If you deploy a zipapp manually, you can apply it with ``/path/to/progfigsite-version.pyz apply NODENAME``.
-    *   If you deploy a pip file manually, you can apply it with ``progfigsite apply NODENAME``.
-    *   You can write custom build code for building RPMs or other package types.
-        See an example in the `psyops progfigsite <https://github.com/mrled/psyops/blob/master/progfigsite/progfigsite/cli/progfigsite_buildapk_cmd.py>`_
+    Run ``pip install -e progfigsite``.
+    This is required to get the ``progfigsite`` command added to your ``$PATH``,
+    which we'll be using in later steps of this guide.

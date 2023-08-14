@@ -9,6 +9,7 @@ User Reference
     :caption: Contents:
 
     concepts.rst
+    why-use-progfiguration.rst
     commands/index.rst
     progfigsite/index.rst
     progfigsite-examples.rst

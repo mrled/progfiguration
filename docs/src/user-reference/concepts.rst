@@ -7,6 +7,7 @@ Important concepts
 Progfiguration sites (``progfigsite``\ s)
     A package containing all the code specific to a single site.
 
+.. _progfigsite-controller:
 The controller
     This is the machine that contains a master Age key and can connect to all the nodes in the inventory.
 
@@ -35,6 +36,19 @@ Roles
     Roles commonly contain data files to install on the node as well.
     See :doc:`/user-reference/progfigsite/roles`.
 
+.. _progfigsite-concept-role-references:
+Role references
+    Most role arguments are simple Python objects, like strings, ints, or :ref:`pathlib.Path` objects.
+    Role references are special arguments that are used to dynamically find argument values at runtime.
+    Currently, progfiguration understands two kinds of references:
+    `progfiguration.inventory.roles.RoleCalculationReference`,
+    which refers to the results of role calculations
+    (see :doc:`/user-reference/progfigsite/roles` for more on calculations),
+    and `progfiguration.age.AgeSecretReference`,
+    which refers to secret values.
+    Role references are dereferenced at runtime.
+
+.. _progfigsite-concept-function:
 Functions
     A function is a mapping of a node to a set of roles.
     Functions are defined inside the inventory config file only

@@ -4,6 +4,8 @@
 import importlib.resources
 import pathlib
 from typing import Optional
+from progfiguration.age import AgeKey
+from progfiguration.cmd import magicrun
 
 from progfiguration.temple import Temple
 
@@ -55,7 +57,7 @@ def make_package_dir(
     return path
 
 
-def make_progfigsite(name: str, path: pathlib.Path, description: str):
+def make_progfigsite(name: str, path: pathlib.Path, description: str, controller_age_path: pathlib.Path):
     """Create a new progfigsite package
 
     Arguments:
@@ -65,12 +67,18 @@ def make_progfigsite(name: str, path: pathlib.Path, description: str):
 
     if path.exists():
         raise RuntimeError(f"Path {path} already exists")
+    if controller_age_path.exists():
+        raise RuntimeError(f"Controller age key path {controller_age_path} already exists")
+
+    controller_age = AgeKey.generate(path=controller_age_path)
 
     pyprojdir = path
 
     pyprojdir.mkdir(parents=True)
     write_file_from_template(
-        "pyproject.toml.temple", pyprojdir / "pyproject.toml", {"name": name, "description": description}
+        "pyproject.toml.temple",
+        pyprojdir / "pyproject.toml",
+        {"name": name, "description": description},
     )
     write_file_from_template("readme.md.temple", pyprojdir / "readme.md", {"name": name})
 
@@ -78,6 +86,14 @@ def make_progfigsite(name: str, path: pathlib.Path, description: str):
         pyprojdir / name,
         init_temple_name="progfigsite-init.py.temple",
         init_temple_args={"name": name, "description": description},
+    )
+    write_file_from_template(
+        "inventory.conf.temple",
+        rootpkg / "inventory.conf",
+        {
+            "controller_age_path": controller_age_path.as_posix(),
+            "controller_age_pub": controller_age.public,
+        },
     )
 
     clidir = make_package_dir(rootpkg / "cli", init_contents='"""Command line utilities for the progfigsite."""\n')

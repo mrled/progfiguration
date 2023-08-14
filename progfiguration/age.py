@@ -6,8 +6,9 @@ All nodes must have an age keypair.
 
 from dataclasses import dataclass
 import datetime
+import pathlib
 import subprocess
-from typing import List
+from typing import List, Optional
 
 
 class AgeParseException(Exception):
@@ -55,10 +56,15 @@ class AgeKey:
         return cls(secret, public, created)
 
     @classmethod
-    def generate(cls) -> "AgeKey":
+    def generate(cls, path: Optional[pathlib.Path] = None) -> "AgeKey":
         """Generate a new age keypair using the age-keygen binary"""
         result = subprocess.run(["age-keygen"], check=True, capture_output=True)
-        return cls.from_output(result.stdout.decode())
+        output = result.stdout.decode()
+        newkey = cls.from_output(output)
+        if path:
+            with path.open("w") as fp:
+                fp.write(output)
+        return newkey
 
     @classmethod
     def from_file(cls, path: str) -> "AgeKey":

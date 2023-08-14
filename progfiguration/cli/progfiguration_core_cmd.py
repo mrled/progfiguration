@@ -150,6 +150,11 @@ def _make_parser():
         default="A progfigsite package",
         help="The description of the progfigsite package to create. Defaults to '%(default)s'.",
     )
+    sub_newsite.add_argument(
+        "--controller-age-key-path",
+        type=pathlib.Path,
+        help="The path to the controller age key. Defaults to 'SITENAME.controller.age' in the current directory. Make sure this is stored securely!",
+    )
 
     # Return
     return parser
@@ -181,7 +186,9 @@ def _main_implementation(*arguments):
         _action_validate(progfigsite_modpath)
     elif parsed.action == "newsite":
         path = parsed.path or pathlib.Path(parsed.name)
-        make_progfigsite(parsed.name, path, parsed.description)
+        controllerage = parsed.controller_age_key_path or pathlib.Path(f"{parsed.name}.controller.age")
+        controllerage = controllerage.resolve()
+        make_progfigsite(parsed.name, path, parsed.description, controllerage)
         rootpkg = path / parsed.name
         print(
             textwrap.dedent(
