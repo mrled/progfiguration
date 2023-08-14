@@ -12,14 +12,15 @@ See also :doc:`/user-reference/progfigsite/index`.
             pip install -U pip
             pip install progfiguration
 
-2.  Copy the example site.
-
-    We also delete the example Age key, since it is not a unique secret!
+2.  Create a new site from scratch.
+    The name of your package is arbitrary, you can use anything you like.
 
         .. code-block:: bash
 
-            cp -r venv/lib/python3.*/site-packages/progfiguration/tests/data/simple/example_site progfigsite
-            rm progfigsite/controller.age
+            progfiguration newsite \
+                --path ./progfigsite \
+                --name progfigsite \
+                --description "This is a new progfigsite" \
 
 3.  Modify the copied example to match your infrastructure.
 

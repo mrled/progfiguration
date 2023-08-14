@@ -1,0 +1,37 @@
+[project]
+name = "{$}name"
+dynamic = ["version"]
+description = "{$}description"
+readme = "readme.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+progfigsite = "{$}name.cli.progfigsite_shim:main"
+
+[project.optional-dependencies]
+development = [
+    # Progfiguration itself
+    "progfiguration",
+
+    # Development tools
+    "black",
+    "build",
+    "mypy",
+    "twine",
+]
+
+[build-system]
+requires = [
+    "setuptools",
+]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-data]
+example_site = ["*"]
+
+[tool.setuptools.dynamic]
+version = {attr = "{$}name.get_version"}
+
+[tool.black]
+line-length = 120

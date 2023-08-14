@@ -4,6 +4,8 @@ Changelog
 WIP
 ---
 
+* Add ``progfiguration newsite`` command for creating a new site.
+
 `0.0.2`
 -------
 

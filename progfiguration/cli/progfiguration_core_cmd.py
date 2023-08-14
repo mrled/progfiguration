@@ -5,6 +5,7 @@ import importlib
 import importlib.metadata
 import pathlib
 import sys
+import textwrap
 
 import progfiguration
 from progfiguration import progfigbuild
@@ -14,6 +15,7 @@ from progfiguration.cli.util import (
     progfiguration_error_handler,
     progfiguration_log_levels,
 )
+from progfiguration.newsite import make_progfigsite
 from progfiguration.progfigsite_validator import validate
 from progfiguration.util import import_module_from_filepath
 
@@ -131,6 +133,24 @@ def _make_parser():
         "validate", parents=[site_opts], description="Validate the progfigsite that it matches the required API"
     )
 
+    # newsite subcommand
+    sub_newsite = subparsers.add_parser("newsite", description="Create a new progfigsite package")
+    sub_newsite.add_argument(
+        "--name",
+        default="progfigsite",
+        help="The name of the progfigsite package to create. Defaults to '%(default)s'.",
+    )
+    sub_newsite.add_argument(
+        "--path",
+        type=pathlib.Path,
+        help="The path to create the progfigsite package in. Defaults to a directory named after the --name argument in the current directory.",
+    )
+    sub_newsite.add_argument(
+        "--description",
+        default="A progfigsite package",
+        help="The description of the progfigsite package to create. Defaults to '%(default)s'.",
+    )
+
     # Return
     return parser
 
@@ -159,6 +179,22 @@ def _main_implementation(*arguments):
     elif parsed.action == "validate":
         progfigsite, progfigsite_modpath, progfigsite_fspath = _find_progfigsite_module(parser, parsed)
         _action_validate(progfigsite_modpath)
+    elif parsed.action == "newsite":
+        path = parsed.path or pathlib.Path(parsed.name)
+        make_progfigsite(parsed.name, path, parsed.description)
+        rootpkg = path / parsed.name
+        print(
+            textwrap.dedent(
+                f"""\
+                Created new progfigsite package '{parsed.name}' at '{path}'. Next steps:
+
+                    * Run `progfiguration validate --progfigsite-filesystem-path {rootpkg}` to validate the package.
+                    * Edit '{rootpkg}/inventory.conf' to include your hosts, roles, groups, and functions.
+                    * Create node and group files in '{rootpkg}/nodes' and '{rootpkg}/groups'.
+                    * Write your roles in '{rootpkg}/roles'.
+                """
+            )
+        )
     else:
         parser.error(f"Unknown action {parsed.action}")
 
