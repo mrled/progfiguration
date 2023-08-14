@@ -1,4 +1,4 @@
-"""My home k3s cluster"""
+"""Example group"""
 
 from progfiguration.progfigtypes import Bunch
 

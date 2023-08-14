@@ -48,7 +48,7 @@ def get_version() -> str:
     """
 
     try:
-        from progfiguration_blacksite.builddata import version  # type: ignore
+        from example_site.builddata import version  # type: ignore
 
         return version.version
     except Exception as exc:
