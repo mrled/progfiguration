@@ -11,15 +11,51 @@ from dataclasses import dataclass
 from importlib.abc import Traversable
 from importlib.resources import files as importlib_resources_files
 from types import ModuleType
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
-from progfiguration import age
 from progfiguration.inventory.nodes import InventoryNode
 from progfiguration.localhost import LocalhostLinux
 
 
+class RoleArgumentReference(ABC):
+    """A special kind of role argument that is dereferenced at runtime.
+
+    This is used to allow roles to reference arguments from other roles
+
+    Role arguments are often used as-is, but some kinds of arguments are references.
+    A reference is any object that has a dereference() method.
+    Some examples from progfiguration core:
+
+    * age.AgeSecretReference: Decrypt the secret using the age key
+    * RoleCalculationReference: Get the calculation from the referenced role
+
+    Sites can define their own argument references.
+
+    Custom argument references to not need to inherit from this class,
+    but they must have a dereference() method with the same signature.
+    """
+
+    @abstractmethod
+    def dereference(
+        self,
+        nodename: str,
+        inventory: "Inventory",  # type: ignore
+    ) -> Any:
+        """Get the final value of a role argument for a node.
+
+        Arguments to this method:
+
+        * nodename:     The name of the node that the argument is being applied to
+        * inventory:    The inventory object
+
+        This function must retrieve or calculate the final value
+        from its internal data and these arguments.
+        """
+        pass
+
+
 @dataclass
-class RoleCalculationReference:
+class RoleCalculationReference(RoleArgumentReference):
     """A reference to a calculation from a role
 
     This is used to allow roles to reference calculations from other roles
@@ -27,6 +63,13 @@ class RoleCalculationReference:
 
     role: str
     calcname: str
+
+    def dereference(
+        self,
+        nodename: str,
+        inventory: "Inventory",  # type: ignore
+    ) -> Any:
+        return inventory.node_role(nodename, self.role).calculations()[self.calcname]
 
 
 @dataclass(kw_only=True)
@@ -84,40 +127,6 @@ class ProgfigurationRole(ABC):
         return self._rolefiles.joinpath(filename)
 
 
-def dereference_rolearg(
-    nodename: str,
-    argument: Any,
-    inventory: "Inventory",  # type: ignore
-    secrets: Dict[str, Any],
-) -> Any:
-    """Get the final value of a role argument for a node.
-
-    Arguments to this method:
-
-    * nodename:     The name of the node that the argument is being applied to
-    * argument:     The role argument to get the final value of
-    * inventory:    The inventory object
-    * secrets:      A dict containing secrets we can decrypt
-                    This might be from inventory.get_group_secrets(groupname) or inventory.get_node_secrets(nodename)
-
-    Role arguments are often used as-is, but some kinds of arguments are special:
-
-    * age.AgeSecretReference: Decrypt the secret using the age key
-    * RoleCalculationReference: Get the calculation from the referenced role
-
-    This function retrieves the final value from these special argument types.
-    Arguments that do not match one of these types are just returned as-is.
-    """
-
-    value = argument
-    if isinstance(argument, age.AgeSecretReference):
-        secret = secrets[argument.name]
-        value = secret.decrypt(inventory.age_path)
-    elif isinstance(argument, RoleCalculationReference):
-        value = inventory.node_role(nodename, argument.role).calculations()[argument.calcname]
-    return value
-
-
 def collect_role_arguments(
     inventory: "Inventory",  # type: ignore
     nodename: str,
@@ -133,6 +142,8 @@ def collect_role_arguments(
     * Arguments from the universal group
     * Arguments from other groups (in an undefined order)
     * Arguments from the node itself
+
+    Dereference any arg refs.
     """
     groupmods = {}
     for groupname in inventory.node_groups[nodename]:
@@ -143,11 +154,15 @@ def collect_role_arguments(
     for groupname, gmod in nodegroups.items():
         group_rolevars = getattr(gmod.group.roles, rolename, {})
         for key, value in group_rolevars.items():
-            roleargs[key] = dereference_rolearg(nodename, value, inventory, inventory.get_group_secrets(groupname))
+            roleargs[key] = value
 
     # Apply any role arguments from the node itself
     node_rolevars = getattr(node.roles, rolename, {})
     for key, value in node_rolevars.items():
-        roleargs[key] = dereference_rolearg(nodename, value, inventory, inventory.get_node_secrets(nodename))
+        roleargs[key] = value
+
+    for key, value in roleargs.items():
+        if hasattr(value, "dereference"):
+            roleargs[key] = value.dereference(nodename, value, inventory)
 
     return roleargs

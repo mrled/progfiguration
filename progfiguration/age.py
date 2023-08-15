@@ -8,7 +8,9 @@ from dataclasses import dataclass
 import datetime
 import pathlib
 import subprocess
-from typing import List, Optional
+from typing import Any, List, Optional
+
+from progfiguration.inventory.roles import RoleArgumentReference
 
 
 class AgeParseException(Exception):
@@ -94,7 +96,7 @@ class AgeSecret:
 
 
 @dataclass
-class AgeSecretReference:
+class AgeSecretReference(RoleArgumentReference):
     """A reference to a secret by name
 
     This is a wrapper type that allows us to pass around a reference to a secret
@@ -103,6 +105,15 @@ class AgeSecretReference:
 
     name: str
     """The name of the secret"""
+
+    def dereference(
+        self,
+        nodename: str,
+        inventory: "Inventory",  # type: ignore
+    ) -> Any:
+        secret = inventory.get_inherited_node_secrets(nodename)[self.name]
+        value = secret.decrypt(inventory.age_path)
+        return value
 
 
 def encrypt(value: str, pubkeys: List[str]):

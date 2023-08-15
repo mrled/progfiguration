@@ -295,7 +295,10 @@ class Inventory:
             return {}
 
     def get_node_secrets(self, nodename: str) -> Dict[str, AgeSecret]:
-        """A Dict of secrets for a given node"""
+        """A Dict of secrets for a given node
+
+        Returns just the node's secrets, not taking into account any groups it may be a member of.
+        """
         if nodename not in self._node_secrets:
             self._node_secrets[nodename] = self.get_secrets(self.node_secrets_file(nodename))
         return self._node_secrets[nodename]
@@ -305,6 +308,14 @@ class Inventory:
         if groupname not in self._group_secrets:
             self._group_secrets[groupname] = self.get_secrets(self.group_secrets_file(groupname))
         return self._group_secrets[groupname]
+
+    def get_inherited_node_secrets(self, nodename: str) -> Dict[str, AgeSecret]:
+        """A Dict of secrets for a given node, including secrets inherited from groups."""
+        secrets = {}
+        for group in self.node_groups[nodename]:
+            secrets.update(self.get_group_secrets(group))
+        secrets = self.get_node_secrets(nodename)
+        return secrets
 
     def get_controller_secrets(self) -> Dict[str, Any]:
         """A Dict of secrets for the controller"""

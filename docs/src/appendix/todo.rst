@@ -74,10 +74,6 @@ To do
     This implements our values of keeping the core progfiguration module
     simple, free of dependencies, and easy for sites to extend.
 
-* Make a base RoleArgumentReference class, automatically dereference subclasses
-  * This is a prerequisite for extensible encryption
-  * Would also let you get role argument values from anywhere with an API, or from a file, or whatever you want.
-
 * Make encryption extensible
   * Allow sites to implement their own secrets management, encryption, etc.
 
