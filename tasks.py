@@ -14,15 +14,21 @@ def tests(ctx, slow=False):
 
 
 @invoke.task
+def docsclean(ctx):
+    """Clean the documentation build directory"""
+    ctx.run("rm -rf docs/_build")
+
+
+@invoke.task
 def docsdev(ctx):
     """Run a local development server for the documentation, and rebuild on changes"""
-    ctx.run("sphinx-autobuild docs docs/_build/html &")
+    ctx.run("sphinx-autobuild docs/src docs/_build/html")
 
 
 @invoke.task
 def docsbuild(ctx):
     """Build the documentation and exit"""
-    ctx.run("sphinx-build docs docs/_build/html")
+    ctx.run("sphinx-build docs/src docs/_build/html")
 
 
 @invoke.task
