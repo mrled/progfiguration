@@ -6,11 +6,9 @@ and role arguments and secrets from the universal group always apply first,
 while other groups have no guarantee of order.
 """
 
-from progfiguration.progfigtypes import Bunch
-
-group = Bunch(
+group = dict(
     testattribute="test value",
-    roles=Bunch(
+    roles=dict(
         settz={
             "timezone": "US/Eastern",
         },

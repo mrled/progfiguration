@@ -1,9 +1,7 @@
 """Example group"""
 
-from progfiguration.progfigtypes import Bunch
-
-group = Bunch(
-    roles=Bunch(
+group = dict(
+    roles=dict(
         settz={
             "timezone": "UTC",
         }

@@ -1,9 +1,7 @@
 """Nodes managed by progfiguration"""
 
 from dataclasses import dataclass
-from typing import Optional
-
-from progfiguration.progfigtypes import Bunch
+from typing import Any, Dict, Optional
 
 
 @dataclass
@@ -24,7 +22,7 @@ class InventoryNode:
     ssh_host_fingerprint: str
     psy0mac: str
     serial: str
-    roles: Bunch
+    roles: Dict[str, Any]
     network_interfaces: Optional[str] = None
     age_key_path: Optional[str] = None
 

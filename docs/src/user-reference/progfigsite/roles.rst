@@ -172,8 +172,8 @@ A group could set the username:
 
     # progfigsite.groups.universal
 
-    group = Bunch(
-        roles=Bunch(
+    group = dict(
+        roles=dict(
             example_role={
                 "username": "mr_the_plague",
             }
@@ -188,7 +188,7 @@ And each node could set a separate password:
 
     node = InventoryNode(
         # ...
-        roles=Bunch(
+        roles=dict(
             example_role={
                 "password": "love-sex-secret-god",
             },
@@ -208,7 +208,7 @@ to retrieve a calculation from one role when passing an argument to another role
 
     node = InventoryNode(
         # ...
-        roles=Bunch(
+        roles=dict(
             example_role={
                 "something": RoleCalculationReference("other_role", "calculation_name")
             },
@@ -225,7 +225,7 @@ You can also retrieve a secret from the encrypted secret store using
 
     node = InventoryNode(
         # ...
-        roles=Bunch(
+        roles=dict(
             example_role={
                 "password": AgeSecretReference("secret_name")
             },

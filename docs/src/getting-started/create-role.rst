@@ -111,7 +111,6 @@ You could set the username and password like this in a role:
 
     from progfiguration.age import AgeSecretReference
     from progfiguration.inventory.nodes import InventoryNode
-    from progfiguration.progfigtypes import Bunch
 
     node = InventoryNode(
         address="node1.example.com",
@@ -122,7 +121,7 @@ You could set the username and password like this in a role:
         ssh_host_fingerprint="",
         psy0mac="",
         serial="",
-        roles=Bunch(
+        roles=dict(
             create_service_account={
                 "username": "testuser",
                 "password": "p@ssw0rd!",
@@ -155,7 +154,7 @@ we can use a role argument reference to have it decrypted at runtime.
     node = InventoryNode(
         address="node1.example.com",
         # ...
-        roles=Bunch(
+        roles=dict(
             create_service_account={
                 "username": "testuser",
                 "password": AgeSecretReference("service_account_password"),

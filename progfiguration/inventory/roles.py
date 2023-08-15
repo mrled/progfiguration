@@ -152,12 +152,12 @@ def collect_role_arguments(
     roleargs = {}
 
     for groupname, gmod in nodegroups.items():
-        group_rolevars = getattr(gmod.group.roles, rolename, {})
+        group_rolevars = gmod.group["roles"].get(rolename, {})
         for key, value in group_rolevars.items():
             roleargs[key] = value
 
     # Apply any role arguments from the node itself
-    node_rolevars = getattr(node.roles, rolename, {})
+    node_rolevars = node.roles.get(rolename, {})
     for key, value in node_rolevars.items():
         roleargs[key] = value
 

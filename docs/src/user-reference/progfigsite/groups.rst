@@ -21,8 +21,7 @@ Note that all nodes are members of the ``universal`` group.
 Group files
 -----------
 
-Each group file should contain a class named ``group`` that is an instance of
-:class:`progfiguration.progfigtypes.Bunch`.
+Each group file should contain a dict named ``group``.
 Groups are only used for variable definitions,
 so the only thing inside each group is a mapping of group names to variable values.
 
