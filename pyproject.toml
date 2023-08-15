@@ -24,6 +24,7 @@ development = [
     "black",
     "build",
     "furo",             # Sphinx theme
+    "invoke",
     "mypy",
     "sphinx",
     "sphinx-argparse",
