@@ -23,7 +23,7 @@ See also :doc:`/user-reference/progfigsite/index`.
                 --description "This is a new progfigsite" \
                 --controller-age-key-path ./progfigsite.controller.age
 
-    This creates a new directory ``progfigsite`` (based on the --path you provided),
+    This creates a new directory ``progfigsite`` (based on the ``--path`` you provided),
     and the ``age`` key for the :ref:`progfigsite-concept-controller`.
 
     Here's a table of the contents of the ``./progfigsite`` directory:

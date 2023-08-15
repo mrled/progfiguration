@@ -50,5 +50,7 @@ Sites must define a few members in their root package ``__init__.py``:
             except ImportError:
                 return "0.0.1a0"
 
+Here is an exmple from :mod:`example_site`.
 
-See :mod:`example_site.__init__` for a complete example.
+.. literalinclude:: ../../../../tests/data/simple/example_site/__init__.py
+   :language: python

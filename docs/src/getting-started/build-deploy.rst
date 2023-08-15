@@ -48,7 +48,7 @@ Custom build code
 Progfiguration is designed to support custom packages,
 like RPMs or APKs.
 See an example in the
-`psyops progfigsite <https://github.com/mrled/psyops/blob/master/progfigsite/progfigsite/cli/progfigsite_buildapk_cmd.py>`_
+`psyops progfigsite <https://github.com/mrled/psyops/blob/master/progfiguration_blacksite/progfiguration_blacksite/cli/progfigsite_buildapk_cmd.py>`_.
 
 Next steps
 ----------

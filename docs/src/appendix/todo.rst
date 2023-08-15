@@ -113,3 +113,5 @@ To do
     * When you use Ansible escape hatches into imperativity like ``shell`` tasks
       or writing your own modules,
       you have to ensure idempotency yourself.
+
+*   Clean up junk in InventoryNode. Document all its properties. Add a dict property like .site_data or something like that.

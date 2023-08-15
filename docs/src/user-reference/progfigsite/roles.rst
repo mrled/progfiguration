@@ -44,7 +44,7 @@ Some things worth noting about roles:
     It can reference fields.
 *   An optional ``calculations()`` function can be defined to return a dict of values.
     These values are available to other roles as role calculation references.
-    **This ``calculations()`` function cannot rely on ``apply()`` having been called.**
+    **The calculations() function cannot rely on apply() having been called.**
 
 .. note:: The design of the ``calculations()`` function.
 

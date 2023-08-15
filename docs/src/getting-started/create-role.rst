@@ -24,7 +24,7 @@ Adding a role to the inventory
 
 Like nodes and groups, roles must also be added to the inventory.
 In order for a role to be applied to a node,
-the role and the node must be connected via a :ref:`function <progfigsite-concept-function>`
+the role and the node must be connected via a :ref:`function <progfigsite-concept-function>`.
 
 1.  The **role** must be part of a function in the ``function_role_map``.
     One role might belong to several functions,
@@ -40,8 +40,8 @@ Each function can then apply whatever roles it likes.
 .. code:: ini
 
     [general]
-    controller_age_path = {$}controller_age_path
-    controller_age_pub = {$}controller_age_pub
+    controller_age_path = /path/to/controller.age
+    controller_age_pub = ...
     node_fallback_age_path = /etc/progfiguration/node.age
 
     [groups]
@@ -65,7 +65,7 @@ Each function can then apply whatever roles it likes.
 Role references and secrets
 ---------------------------
 
-Not found in site created by ``progfiguration newsite``
+Not found in our site created by ``progfiguration newsite``
 are :ref:`role references <progfigsite-concept-role-references>`,
 which are special arguments that are dereferenced at runtime.
 We use role references,
@@ -136,7 +136,7 @@ we can run:
 
 .. code:: shell
 
-    progfigsite encrypt --node node1 --value "p@ssw0rd" --save-as service_account_password
+    progfigsite encrypt --node node1 --value "p@ssw0rd!" --save-as service_account_password
 
 This will encrypt the secret with Age and
 store the results in ``progfigsite/nodes/node1.secrets.json``,

@@ -17,8 +17,6 @@ Encrypting secrets for nodes
 
 One thing that ``progfiguration newsite`` does not do is create Age keys for each node,
 which allows us to store encrypted secrets for the node.
-Per :doc:`/getting-started/new-site`,
-each node needs an Age key.
 For each node:
 
 1.  Create a key with ``age-keygen``.

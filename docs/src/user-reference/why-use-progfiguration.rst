@@ -23,7 +23,7 @@ Why use progfiguration?
 * It's fast to deploy.
   ``progfigsite deploy``
   will package up the site, copy it to the hosts you specify, and run it.
-  It's faster thn building a Pip package or running an Ansible role.
+  It's faster than building a Pip package or running an Ansible role.
 
 * It is deployable as a single file.
   Once you've written your configuration, build it with ``progfiguration build pyz``,
@@ -37,7 +37,7 @@ Why use progfiguration?
   TODO: allow installing ``age`` from the executable.
 
 * It's designed to maximize user flexibility.
-  Instead of or in addition to using generate single-file executables,
+  Instead of or in addition to using single-file executables,
   you can build Pip packages or OS packages like RPMs and deploy that way.
   Roles offer the full power of Python.
   You can eschew built-in conveniences and conventions and write your own.

@@ -16,10 +16,3 @@ Unlike groups and nodes, functions don't have an object associated with them.
 Functions play a similar role to :doc:`playbooks in Ansible </appendix/for-ansible-users/functions>`.
 A function is mapped to a list of nodes and a list of roles.
 When a node is provisioned, the roles associated with the function are applied to the node.
-
-
-
-
-
-
-=

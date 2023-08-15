@@ -17,7 +17,6 @@ It provides:
 
 *   A way to write code to configure your infrastructure.
 *   A simple standard library for functions like writing to files idempotently.
-*   An inventory configuration format.
 *   A core implementation free of third-party Python dependencies
     (it relies on `Age <https://github.com/FiloSottile/age>`_ for encryption
     and SSH for deployment).
