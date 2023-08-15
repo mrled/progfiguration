@@ -4,6 +4,18 @@ Changelog
 WIP
 ---
 
+... nothing yet ...
+
+`0.0.4`
+-------
+
+* Use PyInvoke for development.
+* Add analytics to the docs site.
+* Make role reference arguments extensible.
+  This will enable extensible Inventory configuration and encryption systems in the future.
+* Remove Bunch and just use the simple dict.
+* Fix various bugs.
+
 `0.0.3`
 -------
 
