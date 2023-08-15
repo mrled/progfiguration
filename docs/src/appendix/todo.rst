@@ -115,13 +115,13 @@ To do
   ``<script src="https://cdn.usefathom.com/script.js" data-site="HKQHARKR" defer></script>``
 
 * Contrast *declarativity* with *idempotency*.
-  Idempotency is important in system configuration,
+  Idempotency is important in system,
   but you don't need a declarative document to achieve it.
-  * Ansible examples that show that declarativity isn't enough:
-    You always need to ensure a service is started when the role is done,
-    but if you changed any files,
-    you need to stop it first.
-    A truly declarative system would not concern itself with restarts.
-  * When you use Ansible escape hatches into imperativity like ``shell`` tasks,
-    or writing your own modules,
-    you have to ensure idempotency yourself.
+    * Ansible examples that show that declarativity isn't enough:
+      You always need to ensure a service is started when the role is done,
+      but if you changed any files,
+      you need to stop it first.
+      A truly declarative system would not concern itself with restarts.
+    * When you use Ansible escape hatches into imperativity like ``shell`` tasks,
+      or writing your own modules,
+      you have to ensure idempotency yourself.

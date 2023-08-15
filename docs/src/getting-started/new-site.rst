@@ -24,7 +24,7 @@ See also :doc:`/user-reference/progfigsite/index`.
                 --controller-age-key-path ./progfigsite.controller.age
 
     This creates a new directory ``progfigsite`` (based on the --path you provided),
-    and the ``age`` key for the :ref:`progfigsite-controller`.
+    and the ``age`` key for the :ref:`progfigsite-concept-controller`.
 
     Here's a table of the contents of the ``./progfigsite`` directory:
 
