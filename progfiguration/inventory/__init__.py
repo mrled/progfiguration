@@ -314,7 +314,7 @@ class Inventory:
         secrets = {}
         for group in self.node_groups[nodename]:
             secrets.update(self.get_group_secrets(group))
-        secrets = self.get_node_secrets(nodename)
+        secrets.update(self.get_node_secrets(nodename))
         return secrets
 
     def get_controller_secrets(self) -> Dict[str, Any]:
