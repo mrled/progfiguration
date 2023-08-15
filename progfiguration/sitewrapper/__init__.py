@@ -119,4 +119,9 @@ def get_progfigsite_path() -> Path:
     Returns:
         The path to the progfigsite package, as a string.
     """
-    return Path(get_progfigsite().__file__).parent.resolve()
+    progfigsite_module = get_progfigsite()
+    if progfigsite_module.__file__ is None:
+        raise ProgfigsiteModuleNotFoundError(
+            f"Was able to import progfigsite module at {progfiguration.progfigsite_module_path}, but its __file__ attribute is None."
+        )
+    return Path(progfigsite_module.__file__).parent.resolve()
