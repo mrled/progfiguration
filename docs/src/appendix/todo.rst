@@ -55,14 +55,6 @@ To do
   Consider adding support for downloading a fresh copy from pypi,
   in case the user does something weird with their current version.
 
-* Before first release
-    * Update example sites
-        * Use example_site as an example, NNSS can hold more complicated test only stuff
-        * Maybe make an example template site, and/or add that functionality to the commandline
-        * Test the recent site version stuff with unit tests
-
-    * **make a first release**
-
 * Make the inventory an API.
     Previously, the inventory was a YAML document.
     Now, it is expected to be parsable by ``configparser``, which allows us
@@ -111,17 +103,17 @@ To do
   there is no host to deploy the package to,
   but we should be able to run it on the controller.
 
-* Add Fathom to the docs site
-  ``<script src="https://cdn.usefathom.com/script.js" data-site="HKQHARKR" defer></script>``
+*   Contrast *declarativity* with *idempotency*.
 
-* Contrast *declarativity* with *idempotency*.
-  Idempotency is important in system,
-  but you don't need a declarative document to achieve it.
-    * Ansible examples that show that declarativity isn't enough:
+    Idempotency is important in system,
+    but you don't need a declarative document to achieve it.
+    * Ansible examples that show that declarativity isn't enough...
+
       You always need to ensure a service is started when the role is done,
       but if you changed any files,
       you need to stop it first.
       A truly declarative system would not concern itself with restarts.
-    * When you use Ansible escape hatches into imperativity like ``shell`` tasks,
+
+    * When you use Ansible escape hatches into imperativity like ``shell`` tasks
       or writing your own modules,
       you have to ensure idempotency yourself.

@@ -80,6 +80,7 @@ autoapi_options = [
 
 
 html_static_path = ["_static"]
+templates_path = ["_templates"]
 
 # Theme
 html_theme = "furo"

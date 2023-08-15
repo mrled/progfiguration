@@ -50,6 +50,7 @@ Role
     See :doc:`/user-reference/progfigsite/roles`.
 
 .. _progfigsite-concept-role-references:
+
 Role reference
     Most role arguments are simple Python objects, like strings, ints, or :class:`pathlib.Path` objects.
     Role references are special arguments that are used to dynamically find argument values at runtime.
