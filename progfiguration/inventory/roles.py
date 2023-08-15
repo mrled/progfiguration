@@ -163,6 +163,6 @@ def collect_role_arguments(
 
     for key, value in roleargs.items():
         if hasattr(value, "dereference"):
-            roleargs[key] = value.dereference(nodename, value, inventory)
+            roleargs[key] = value.dereference(nodename, inventory)
 
     return roleargs
