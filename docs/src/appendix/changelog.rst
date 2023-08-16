@@ -6,6 +6,11 @@ WIP
 
 ... nothing yet ...
 
+`0.0.5`
+-------
+
+* Clean up ``InventoryNode`` class from leftover coupling to psyopsOS
+
 `0.0.4`
 -------
 
