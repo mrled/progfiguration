@@ -463,7 +463,6 @@ def _main_implementation(*arguments):
 
     inventory = Inventory(
         sitewrapper.site_submodule_resource("", "inventory.conf"),
-        progfiguration.progfigsite_module_path,
         age_privkey=parsed.age_private_key,
         current_node=nodename,
     )
