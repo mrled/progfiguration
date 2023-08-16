@@ -34,13 +34,7 @@ development = [
 ]
 
 # Used by our Github Actions workflow to autopublish documentation
-ghpages-builder = [
-    "furo",
-    "myst_parser",
-    "sphinx",
-    "sphinx-argparse",
-    "sphinx-autoapi",
-]
+ghpages-builder = ["furo", "sphinx", "sphinx-argparse", "sphinx-autoapi"]
 
 [project.urls]
 Homepage = "https://github.com/mrled/progfiguration"
