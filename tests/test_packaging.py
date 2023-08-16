@@ -1,8 +1,8 @@
 import pathlib
-import subprocess
 import tempfile
 
-from progfiguration import progfigbuild, sitewrapper
+from progfiguration import progfigbuild
+from progfiguration.cmd import magicrun
 
 from tests import PdbTestCase, pdbexc, skipUnlessAnyEnv
 from tests.data import NnssTestData
@@ -32,7 +32,8 @@ class TestRun(PdbTestCase):
             pyzfile = pathlib.Path(tmpdir) / "test.pyz"
             progfigbuild.build_progfigsite_zipapp(nnss.nnss_progfigsite_path, pyzfile)
             self.assertTrue(pyzfile.exists())
-            result = subprocess.run([str(pyzfile), "version"], check=True, capture_output=True)
+            # result = subprocess.run([str(pyzfile), "version"], check=True, capture_output=True)
+            result = magicrun([str(pyzfile), "version"])
             stdout = result.stdout.decode("utf-8").strip()
             self.assertTrue("progfiguration core" in stdout)
             self.assertTrue("Nevada Test Site" in stdout)
