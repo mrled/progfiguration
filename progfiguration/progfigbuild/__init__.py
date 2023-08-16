@@ -6,7 +6,7 @@ from datetime import datetime
 import pathlib
 import stat
 import textwrap
-from typing import Callable, List, Optional
+from typing import List, Optional
 import zipfile
 
 import progfiguration
@@ -282,8 +282,10 @@ class ProgfigsitePythonPackagePreparer:
         See also: `progfigsite_filesystem_path`.
         """
 
-        self.progfiguration_autovendored_path = progfigsite_filesystem_path / "autovendor" / "progfiguration"
-        """The filesystem path to the progfiguration package inside the progfigsite package
+        self.progfiguration_staticinclude_path = (
+            progfigsite_filesystem_path / "builddata" / "staticinclude" / "progfiguration"
+        )
+        """The filesystem path to the progfiguration core package inside the progfigsite package
 
         We inject a symlink to the progfiguration package into the progfigsite package
         so that progfiguration can find it when run from the pip package.
@@ -312,10 +314,11 @@ class ProgfigsitePythonPackagePreparer:
     def __enter__(self):
 
         # Inject build data into the packages
-        logger.debug(f"Injecting progfiguration symlink {self.progfiguration_autovendored_path}...")
-        if self.progfiguration_autovendored_path.exists():
-            self.progfiguration_autovendored_path.unlink()
-        self.progfiguration_autovendored_path.symlink_to(self.progfiguration_package_path)
+        logger.debug(f"Injecting progfiguration symlink {self.progfiguration_staticinclude_path}...")
+        if self.progfiguration_staticinclude_path.exists():
+            self.progfiguration_staticinclude_path.unlink()
+        self.progfiguration_staticinclude_path.parent.mkdir(parents=True, exist_ok=True)
+        self.progfiguration_staticinclude_path.symlink_to(self.progfiguration_package_path)
         for injection in self.injections:
             with injection.path.open("w") as fp:
                 logger.debug(f"Injecting {injection.path}...")
@@ -329,16 +332,16 @@ class ProgfigsitePythonPackagePreparer:
         # Clean up the injected files
         if self.keep_injected_files:
             logger.warning("Keeping injected files for debugging...")
-            logger.debug(f"- {self.progfiguration_autovendored_path}")
+            logger.debug(f"- {self.progfiguration_staticinclude_path}")
             for injection in self.injections:
                 logger.debug(f"- {injection.path}")
         else:
             try:
-                self.progfiguration_autovendored_path.unlink()
-                logger.debug(f"Unlinked progfiguration symlink {self.progfiguration_autovendored_path}...")
+                self.progfiguration_staticinclude_path.unlink()
+                logger.debug(f"Unlinked progfiguration symlink {self.progfiguration_staticinclude_path}...")
             except Exception:
-                self.failed_unlinks.append(self.progfiguration_autovendored_path)
-                logger.debug(f"Failed to unlink progfiguration symlink {self.progfiguration_autovendored_path}...")
+                self.failed_unlinks.append(self.progfiguration_staticinclude_path)
+                logger.debug(f"Failed to unlink progfiguration symlink {self.progfiguration_staticinclude_path}...")
             for injection in self.injections:
                 try:
                     injection.path.unlink()

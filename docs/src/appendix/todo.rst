@@ -23,7 +23,7 @@ To do
           but runtime dependencies are not permitted in progfiguration core for maximum flexibility.
           Progfigsite implementations can use dependencies whenever it makes sense for them.
 
-    * Vendoring (implementation TBD)
+    * Vendoring and static inclusion
     * Python string.template, including custom subclasses
         * Can you avoid a full featured templating dependency like jinja?
           I do miss conditionals, but...
@@ -87,11 +87,6 @@ To do
   I really liked this from pdoc.
   I think some Sphinx themes have it?
 
-* Be precise when talking about pulling in other code.
-  There's "vendoring", which is copying code into your own project,
-  and there's "inlining" or something else,
-  which is copying a dependency into a package at build time, like static linking.
-
 * Refer to zipapp/pyz consistently everywhere
 
 * Add support for calling APIs from the controller.
@@ -113,5 +108,3 @@ To do
     * When you use Ansible escape hatches into imperativity like ``shell`` tasks
       or writing your own modules,
       you have to ensure idempotency yourself.
-
-* Combine autovendor and builddata modules in progfigsites.

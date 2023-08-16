@@ -34,9 +34,9 @@ def _action_version_core():
     try:
         coreversion = importlib.metadata.version("progfiguration")
     except importlib.metadata.PackageNotFoundError:
-        # This happens if progfiguration was vendored
-        # TODO: Handle vendored progfiguration version more gracefully
-        coreversion = "vendored"
+        # This happens if progfiguration was statically included.
+        # TODO: Handle this case more gracefully.
+        coreversion = "statically included"
     result = [
         f"progfiguration core:",
         f"    path: {pathlib.Path(progfiguration.__file__).parent}",

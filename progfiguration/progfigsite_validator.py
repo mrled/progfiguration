@@ -38,7 +38,6 @@ class ValidationResult:
         ProgfigsiteAttribute("site_description", str, True),
         ProgfigsiteAttribute("mint_version", Callable[[bool], str], True),
         ProgfigsiteAttribute("get_version", Callable[[], str], True),
-        ProgfigsiteAttribute("autovendor", ModuleType, True),
         ProgfigsiteAttribute("builddata", ModuleType, True),
         ProgfigsiteAttribute("groups", ModuleType, True),
         ProgfigsiteAttribute("nodes", ModuleType, True),

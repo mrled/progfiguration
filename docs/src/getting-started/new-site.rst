@@ -63,11 +63,8 @@ See also :doc:`/user-reference/progfigsite/index`.
     +-------------------------------------------+-----------------------------------------------+
     | ``progfigsite/sitelib/``                  | Site-specific utility functions etc.          |
     +-------------------------------------------+-----------------------------------------------+
-    | ``progfigsite/autovendor/``               | Used to statically include libraries in the   |
-    |                                           | site package.                                 |
-    +-------------------------------------------+-----------------------------------------------+
-    | ``progfigsite/builddata/``                | Used to inject data and build time like the   |
-    |                                           | build date.                                   |
+    | ``progfigsite/builddata/``                | Used to inject data at build time like        |
+    |                                           | statically included packages, build date, etc.|
     +-------------------------------------------+-----------------------------------------------+
 
     Not included in the table are a readme file and some empty ``__init__.py`` files

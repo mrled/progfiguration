@@ -41,7 +41,7 @@ You can install and run a combined progfiguration core + progfigsite package wit
     * progfigsite ``pyproject.toml`` only
     * installs commands from progfigsite ``pyproject.toml``, which should include a shim for the ``progfiguration_site_cmd:main`` function
     * does not install core ``progfiguration`` command
-    * progfigsite finds ``progfiguration`` package in ``autovendor`` directory because of ``ensure_autovendor()``
+    * progfigsite finds ``progfiguration`` package in ``progfigsite.builddata.staticinclude`` directory because of ``ensure_staticinclude()``
     * progfiguration finds ``progfigsite`` package in Python path because progfigsite was installed by pip
 
 

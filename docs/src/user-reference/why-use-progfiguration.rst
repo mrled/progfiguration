@@ -28,7 +28,7 @@ Why use progfiguration?
 * It is deployable as a single file.
   Once you've written your configuration, build it with ``progfiguration build pyz``,
   and it will be packaged as a single executable file.
-  You can even vendor your dependencies into the executable if you like.
+  You can even vendor or statically include your dependencies into the executable if you like.
 
   You can use this single file to deploy third party packages to the hosts you're configuring, too.
 

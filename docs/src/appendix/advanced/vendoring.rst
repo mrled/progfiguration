@@ -3,12 +3,24 @@ Vendoring site dependencies
 
 ``progfiguration`` is designed to support vendoring.
 
-When building pip or pyz packages with ``progfiguration build``,
-it automatically vendors ``progfiguration`` core into
-``progfigsite.autovendor.progfiguration``.
-
 It is recommended that site-specific vendored dependencies be placed somewhere under
 :doc:`/user-reference/progfigsite/sitelib` and imported from there.
+
+Vendoring and static inclusion
+------------------------------
+
+These two concepts are distinct, but there is some overlap.
+
+Vendoring
+    Copying a dependency into your own source tree.
+
+Static inclusion
+    Copying a dependency into your assembled package.
+    Analogous to static linking in languages like C and Go.
+
+Both vendoring and static inclusion have security implications.
+Using either strategy implies accepting the responsibility of handling these yourself,
+and/or the risks of failing to do so.
 
 When to vendor?
 ---------------
@@ -25,16 +37,30 @@ Vendoring should only be necessary for packages that you need for the site to wo
 For instance, if you are using a custom inventory that relies on YAML,
 you might vendor ``PyYAML`` into your site.
 
+When to statically include?
+---------------------------
+
+Static inclusion means your package build system handles dependency updates.
+This isn't as easy to manage or as timely as handling dependency updates on remote systems for normal packages.
+However, for the special needs of progfigsite packages,
+this might be good enough.
+
+Statically including ``progfiguration`` core
+--------------------------------------------
+
+When building pip or pyz packages with ``progfiguration build``,
+it copies ``progfiguration`` core into
+``progfigsite.builddata.staticinclude.progfiguration``.
+
 Vendoring ``progfiguration`` core
 ---------------------------------
 
-You can even vendor ``progfiguration`` core itself this way,
-if you want to make changes to core components and don't mind maintaining a fork.
+You can vendor ``progfiguration`` core if you prefer.
+You might wish to do this to make changes to core components.
+Doing so means you must maintain your fork yourself.
 
 Consider filing a bug against progfiguration if there is a missing extension point
 that would have allowed you to do what you needed in your own site.
-
-In the future, we'd like to offer an easy command for showing differences between a vendored progfiguration and upstream.
 
 When vendoring progfiguration core so that you can make changes to it, keep these ideas in mind:
 

@@ -100,10 +100,6 @@ def make_progfigsite(name: str, path: pathlib.Path, description: str, controller
     write_file_from_template("progfigsite_shim.py.temple", clidir / "progfigsite_shim.py", {})
 
     make_package_dir(
-        rootpkg / "autovendor",
-        init_contents='"""Automatically vendored packages.\n\nDo not copy modules into this directory yourself.\nProgfiguration will copy dependencies here during build time.\n"""\n',
-    )
-    make_package_dir(
         rootpkg / "builddata",
         init_contents='"""The builddata module\n\nNo files should be added to this directory in source control.\nIt is reserved for injections of data at build time only.\n"""\n',
     )

@@ -6,7 +6,7 @@ and packages of it are always self-contained.
 
 Progfigsite packages reference progfiguration core modules.
 When building progfigsite packages with ``progfiguration build`` (see :doc:`/user-reference/commands/progfiguration`),
-progfigsite packages include progfiguration core in the :doc:`autovendor` so they are self-contained.
+progfigsite packages include progfiguration core in a subpackage of :doc:`builddata` so they are self-contained.
 
 You can also build progfigsite packages without a vendored progfiguration core
 by using standard Python build tools and a ``pyproject.toml``.
@@ -27,7 +27,7 @@ Progfigsite packages may use third party dependencies in one of two ways:
     so you can easily install them during development).
 
     If not, you may wish to vendor them yourself.
-    Don't use :doc:`autovendor` for this,
+    Don't use :doc:`builddata` for this,
     but instead place them somewhere under :doc:`sitelib`.
 
 2.  For dependencies that can be installed by a ``progfigsite`` role.

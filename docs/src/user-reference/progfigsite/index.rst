@@ -26,7 +26,6 @@ They must contain certain members (subpackages, modules, functions, and variable
     groups.rst
     roles.rst
     sitelib.rst
-    autovendor.rst
     builddata.rst
 
     development.rst
