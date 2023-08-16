@@ -113,3 +113,5 @@ To do
     * When you use Ansible escape hatches into imperativity like ``shell`` tasks
       or writing your own modules,
       you have to ensure idempotency yourself.
+
+* Combine autovendor and builddata modules in progfigsites.
