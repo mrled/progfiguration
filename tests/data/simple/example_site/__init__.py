@@ -5,7 +5,7 @@ but is specific to my hosts/roles/groups/functions/etc.
 """
 
 from progfiguration import sitewrapper
-from progfiguration.age import AgeSecretFileStore
+from progfiguration.inventory.storeimpl.agesecrets import AgeSecretFileStore
 from progfiguration.inventory.invstores import HostStore
 
 
