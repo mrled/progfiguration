@@ -8,7 +8,6 @@
 import importlib.metadata
 from pathlib import Path
 
-
 # Paths
 
 _project_root = Path(__file__).parent.parent.parent
@@ -42,6 +41,8 @@ extensions = [
     "sphinxarg.ext",
 ]
 
+# TODO: make this work, it generates lot of spurious warnings at the moment.
+# nitpicky = True
 
 templates_path = ["_templates"]
 exclude_patterns = [

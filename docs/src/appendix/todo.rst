@@ -116,3 +116,7 @@ To do
     * Test secret decryption from node perspective
 
 * Make RoleArgumentReference a protocol, not an ABC
+
+* Reimplement missing encryption features since Secret has become a Protocol.
+    * Pass in an Age key on the command line. (General version: Secret backends can allow passing new arguments.)
+    * Set age key on node object. (General version: set Secret backend data separately on each node.)
