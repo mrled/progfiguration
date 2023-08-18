@@ -69,3 +69,9 @@ def make_release(ctx):
     ctx.run("python3 -m build -s")
     # Upload it to PyPI
     ctx.run(f"twine upload 'dist/progfiguration-{version}.tar.gz'")
+
+
+@invoke.task
+def mypy(ctx):
+    """Run mypy"""
+    ctx.run("mypy . --color-output")
