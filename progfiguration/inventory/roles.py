@@ -26,16 +26,12 @@ class RoleArgumentReference(Protocol):
     This is used to allow roles to reference arguments from other roles
 
     Role arguments are often used as-is, but some kinds of arguments are references.
-    A reference is any object that has a dereference() method.
-    Some examples from progfiguration core:
+    Some examples of references from progfiguration core:
 
-    * age.AgeSecretReference: Decrypt the secret using the age key
-    * RoleCalculationReference: Get the calculation from the referenced role
+    * `progfiguration.age.AgeSecretReference`: Decrypt the secret using the age key
+    * `progfiguration.inventory.roles.RoleCalculationReference`: Get the calculation from the referenced role
 
     Sites can define their own argument references.
-
-    Custom argument references to not need to inherit from this class,
-    but they must have a dereference() method with the same signature.
     """
 
     @abstractmethod
