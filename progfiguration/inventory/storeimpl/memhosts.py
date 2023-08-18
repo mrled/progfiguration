@@ -162,7 +162,7 @@ class MemoryHostStore:
 
             # Instantiate the role class, now that we have all the arguments we need
             try:
-                role = role_cls(name=rolename, localhost=self.localhost, inventory=self, rolepkg=rolepkg, **roleargs)
+                role = role_cls(name=rolename, localhost=self.localhost, hoststore=self, rolepkg=rolepkg, **roleargs)
             except Exception as exc:
                 msg = f"Error instantiating role {rolename} for node {nodename}: {exc}"
                 if isinstance(exc, AttributeError) and exc.args[0].startswith("can't set attribute"):

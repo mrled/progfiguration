@@ -15,10 +15,7 @@ import subprocess
 from typing import Any, Dict, List, Literal, Optional
 
 from progfiguration import logger, sitewrapper
-from progfiguration.inventory.invstores import get_inherited_secret
-from progfiguration.inventory.invstores import HostStore
-from progfiguration.inventory.invstores import SecretReference
-from progfiguration.inventory.invstores import Secret, SecretStore
+from progfiguration.inventory.invstores import Secret, SecretStore, SecretReference, HostStore, get_inherited_secret
 
 
 class AgeParseException(Exception):
@@ -123,10 +120,10 @@ class AgeSecretReference(SecretReference):
     def dereference(
         self,
         nodename: str,
-        inventory: HostStore,
+        hoststore: HostStore,
         secretstore: SecretStore,
     ) -> Any:
-        secret = get_inherited_secret(inventory, secretstore, nodename, self.name)
+        secret = get_inherited_secret(hoststore, secretstore, nodename, self.name)
         value = secret.decrypt()
         return value
 
@@ -256,7 +253,7 @@ class AgeSecretFileStore(SecretStore):
 
     def set_secret(
         self,
-        inventory: HostStore,
+        hoststore: HostStore,
         name: str,
         value: str,
         nodes: List[str],
@@ -274,10 +271,10 @@ class AgeSecretFileStore(SecretStore):
         recipients = nodes.copy()
 
         for group in groups:
-            recipients += inventory.group_members[group]
+            recipients += hoststore.group_members[group]
         recipients = list(set(recipients))
 
-        nmods = [inventory.node(n) for n in recipients]
+        nmods = [hoststore.node(n) for n in recipients]
         pubkeys = [nm.node.age_pubkey for nm in nmods]
 
         # We always encrypt for the controller when storing, so that the controller can decrypt too

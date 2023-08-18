@@ -37,7 +37,7 @@ class RoleArgumentReference(Protocol):
     def dereference(
         self,
         nodename: str,
-        inventory: "HostStore",  # type: ignore
+        hoststore: "HostStore",  # type: ignore
         secretstore: "SecretStore",  # type: ignore
     ) -> Any:
         """Get the final value of a role argument for a node.
@@ -45,7 +45,7 @@ class RoleArgumentReference(Protocol):
         Arguments to this method:
 
         * nodename:     The name of the node that the argument is being applied to
-        * inventory:    The inventory object
+        * hoststore:    The inventory object
 
         This function must retrieve or calculate the final value
         from its internal data and these arguments.
@@ -66,10 +66,10 @@ class RoleCalculationReference(RoleArgumentReference):
     def dereference(
         self,
         nodename: str,
-        inventory: "Inventory",  # type: ignore
+        hoststore: "HostStore",  # type: ignore
         _: "SecretStore",  # type: ignore
     ) -> Any:
-        return inventory.node_role(nodename, self.role).calculations()[self.calcname]
+        return hoststore.node_role(nodename, self.role).calculations()[self.calcname]
 
 
 @dataclass(kw_only=True)
@@ -80,7 +80,7 @@ class ProgfigurationRole(ABC):
 
     * name: The name of the role
     * localhost: A localhost object
-    * inventory: An inventory object
+    * hoststore: An inventory object
     * rolepkg: The package that the role is defined in,
         used to determine the path to the role's templates.
 
@@ -104,7 +104,7 @@ class ProgfigurationRole(ABC):
     # Take care when adding new attributes here.
     name: str
     localhost: LocalhostLinux
-    inventory: "Inventory"  # type: ignore
+    hoststore: "HostStore"  # type: ignore
     rolepkg: str
 
     # This is just a cache
@@ -128,7 +128,7 @@ class ProgfigurationRole(ABC):
 
 
 def collect_role_arguments(
-    inventory: "Inventory",  # type: ignore
+    hoststore: "HostStore",  # type: ignore
     secretstore: "SecretStore",  # type: ignore
     nodename: str,
     node: InventoryNode,
@@ -147,8 +147,8 @@ def collect_role_arguments(
     Dereference any arg refs.
     """
     groupmods = {}
-    for groupname in inventory.node_groups[nodename]:
-        groupmods[groupname] = inventory.group(groupname)
+    for groupname in hoststore.node_groups[nodename]:
+        groupmods[groupname] = hoststore.group(groupname)
 
     roleargs = {}
 
@@ -164,6 +164,6 @@ def collect_role_arguments(
 
     for key, value in roleargs.items():
         if isinstance(value, RoleArgumentReference):
-            roleargs[key] = value.dereference(nodename, inventory, secretstore)
+            roleargs[key] = value.dereference(nodename, hoststore, secretstore)
 
     return roleargs

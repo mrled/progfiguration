@@ -167,7 +167,7 @@ class SecretStore(Protocol):
 
     def set_secret(
         self,
-        inventory: HostStore,
+        hoststore: HostStore,
         name: str,
         value: str,
         nodes: List[str],
@@ -189,14 +189,14 @@ class SecretStore(Protocol):
         raise NotImplementedError("set_secret not implemented")
 
 
-def get_inherited_secret(inventory: HostStore, store: SecretStore, node: str, secret_name: str) -> Secret:
+def get_inherited_secret(hoststore: HostStore, secretstore: SecretStore, node: str, secret_name: str) -> Secret:
     """Get a secret for a node, inheriting from groups if necessary."""
-    secret = store.get_secret("node", node, secret_name)
+    secret = secretstore.get_secret("node", node, secret_name)
     if secret is None:
         # "universal" will be the first group; we want to check it last.
         # Reminder that all other group order is not guaranteed.
-        for group in reversed(inventory.node_groups[node]):
-            secret = store.get_secret("group", group, secret_name)
+        for group in reversed(hoststore.node_groups[node]):
+            secret = secretstore.get_secret("group", group, secret_name)
             if secret is not None:
                 break
     return secret
@@ -215,9 +215,9 @@ class SecretReference(RoleArgumentReference):
     def dereference(
         self,
         nodename: str,
-        inventory: "HostStore",  # type: ignore
+        hoststore: "HostStore",  # type: ignore
         secretstore: "SecretStore",  # type: ignore
     ) -> Any:
-        secret = get_inherited_secret(inventory, secretstore, nodename, self.name)
+        secret = get_inherited_secret(hoststore, secretstore, nodename, self.name)
         value = secret.decrypt()
         return value

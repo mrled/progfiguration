@@ -46,7 +46,7 @@ def _action_version_core():
     print("\n".join(result))
 
 
-def _action_version_all(inventory: HostStore):
+def _action_version_all():
     """Retrieve the version of progfiguration core and the progfigsite"""
 
     progfigsite = sitewrapper.get_progfigsite()
@@ -73,7 +73,7 @@ def _action_version_all(inventory: HostStore):
 
 
 def _action_apply(
-    inventory: HostStore,
+    hoststore: HostStore,
     secretstore: SecretStore,
     nodename: str,
     roles: Optional[List[str]] = None,
@@ -84,14 +84,14 @@ def _action_apply(
     if roles is None:
         roles = []
 
-    node = inventory.node(nodename).node
+    node = hoststore.node(nodename).node
 
     if node.TESTING_DO_NOT_APPLY and not force:
         raise Exception(
             f"Was going to apply progfiguration to node {nodename} but TESTING_DO_NOT_APPLY is True for that node."
         )
 
-    for role in inventory.node_role_list(nodename, secretstore):
+    for role in hoststore.node_role_list(nodename, secretstore):
         if not roles or role.name in roles:
             try:
                 logging.debug(f"Running role {role.name}...")
@@ -106,40 +106,40 @@ def _action_apply(
     logging.info(f"Finished running all roles")
 
 
-def _action_list(inventory: HostStore, collection: str):
+def _action_list(hoststore: HostStore, collection: str):
     if collection == "nodes":
-        for node in inventory.nodes:
+        for node in hoststore.nodes:
             print(node)
     elif collection == "groups":
-        for group in inventory.groups:
+        for group in hoststore.groups:
             print(group)
     elif collection == "functions":
-        for function in inventory.functions:
+        for function in hoststore.functions:
             print(function)
     else:
         raise Exception(f"Unknown collection {collection}")
 
 
-def _action_info(inventory: HostStore, nodes: List[str], groups: List[str], functions: List[str]):
+def _action_info(hoststore: HostStore, nodes: List[str], groups: List[str], functions: List[str]):
     if not any([nodes, groups, functions]):
         print("Request info on a node, group, or function. (See also the 'list' subcommand.)")
     for nodename in nodes:
-        node_groups = inventory.node_groups[nodename]
+        node_groups = hoststore.node_groups[nodename]
         node_group_commas = ", ".join(node_groups)
-        node_function = inventory.node_function[nodename]
-        node_roles = inventory.function_roles[node_function]
+        node_function = hoststore.node_function[nodename]
+        node_roles = hoststore.function_roles[node_function]
         node_roles_commas = ", ".join(node_roles)
         print(f"Node {nodename} (function {node_function}):")
         print(f"  Groups: {node_group_commas}")
         print(f"  Roles: {node_roles_commas}")
     for groupname in groups:
-        group_members = inventory.group_members[groupname]
+        group_members = hoststore.group_members[groupname]
         group_members_commas = ", ".join(group_members)
         print(f"Group {groupname}:")
         print(f"  Members: {group_members_commas}")
     for funcname in functions:
-        function_nodes = ", ".join(inventory.function_nodes[funcname])
-        function_roles = ", ".join(inventory.function_roles[funcname])
+        function_nodes = ", ".join(hoststore.function_nodes[funcname])
+        function_roles = ", ".join(hoststore.function_roles[funcname])
         print(f"Function {funcname}:")
         print(f"  Nodes: {function_nodes}")
         print(f"  Roles: {function_roles}")
@@ -147,7 +147,7 @@ def _action_info(inventory: HostStore, nodes: List[str], groups: List[str], func
 
 def _action_encrypt(
     secretstore: SecretStore,
-    inventory: HostStore,
+    hoststore: HostStore,
     name: str,
     value: str,
     nodes: List[str],
@@ -156,14 +156,14 @@ def _action_encrypt(
     store: bool,
     stdout: bool,
 ):
-    encrypted_value = secretstore.set_secret(inventory, name, value, nodes, groups, controller_key, store=store)
+    encrypted_value = secretstore.set_secret(hoststore, name, value, nodes, groups, controller_key, store=store)
     print("Encrypted for all of these recipients:")
     if stdout:
         print(encrypted_value)
 
 
 def _action_decrypt(
-    secretstore: SecretStore, inventory: HostStore, nodes: List[str], groups: List[str], controller_key: bool
+    secretstore: SecretStore, hoststore: HostStore, nodes: List[str], groups: List[str], controller_key: bool
 ):
 
     for node in nodes:
@@ -187,7 +187,7 @@ def _action_decrypt(
 
 
 def _action_deploy_apply(
-    inventory: HostStore,
+    hoststore: HostStore,
     nodenames: List[str],
     groupnames: List[str],
     roles: List[str],
@@ -200,10 +200,10 @@ def _action_deploy_apply(
         roles = []
 
     for group in groupnames:
-        nodenames += inventory.group_members[group]
+        nodenames += hoststore.group_members[group]
     nodenames = list(set(nodenames))
 
-    nodes = {n: inventory.node(n).node for n in nodenames}
+    nodes = {n: hoststore.node(n).node for n in nodenames}
 
     errors: list[dict[str, str]] = []
 
@@ -250,16 +250,16 @@ def _action_deploy_apply(
 
 
 def _action_deploy_copy(
-    inventory: HostStore,
+    hoststore: HostStore,
     nodenames: List[str],
     groupnames: List[str],
     remotepath: str,
 ):
     for group in groupnames:
-        nodenames += inventory.group_members[group]
+        nodenames += hoststore.group_members[group]
     nodenames = list(set(nodenames))
 
-    nodes = {n: inventory.node(n).node for n in nodenames}
+    nodes = {n: hoststore.node(n).node for n in nodenames}
 
     with tempfile.TemporaryDirectory() as tmpdir:
         pyzfile = pathlib.Path(os.path.join(tmpdir, "progfiguration.pyz"))
@@ -348,7 +348,7 @@ def _make_parser():
         "-r",
         default=[],
         type=CommaSeparatedStrList,
-        help="A role, or list of roles separated by commas. The role(s) must be defined in the inventory for the node(s).",
+        help="A role, or list of roles separated by commas. The role(s) must be defined in the hoststore for the node(s).",
     )
 
     subparsers = parser.add_subparsers(dest="action", required=True)
@@ -358,7 +358,7 @@ def _make_parser():
 
     # apply subcommand
     sub_apply = subparsers.add_parser("apply", parents=[roles_opts], description="Apply configuration")
-    sub_apply.add_argument("nodename", help="The name of a node in the progfiguration inventory")
+    sub_apply.add_argument("nodename", help="The name of a node in the progfiguration hoststore")
     sub_apply.add_argument(
         "--force-apply", action="store_true", help="Force apply, even if the node has TESTING_DO_NOT_APPLY set."
     )
@@ -367,7 +367,7 @@ def _make_parser():
     sub_deploy = subparsers.add_parser(
         "deploy",
         parents=[node_opts],
-        description="Deploy progfiguration to remote system in inventory as a pyz package; requires passwordless SSH configured",
+        description="Deploy progfiguration to remote system in hoststore as a pyz package; requires passwordless SSH configured",
     )
     sub_deploy_subparsers = sub_deploy.add_subparsers(dest="deploy_action", required=True)
     sub_deploy_sub_apply = sub_deploy_subparsers.add_parser(
@@ -396,7 +396,7 @@ def _make_parser():
     )
 
     # list subcommand
-    sub_list = subparsers.add_parser("list", description="List inventory items")
+    sub_list = subparsers.add_parser("list", description="List hoststore items")
     list_choices = ["nodes", "groups", "functions", "svcpreps"]
     sub_list.add_argument(
         "collection",
@@ -455,7 +455,7 @@ def _main_implementation(*arguments):
         sys.excepthook = syslog_excepthook
     configure_logging(parsed.log_stderr, parsed.log_syslog)
 
-    # Later actions do require an inventory
+    # Later actions do require a hoststore
 
     # Get a nodename, if we have one
     try:
@@ -473,18 +473,18 @@ def _main_implementation(*arguments):
 
     progfigsite = sitewrapper.get_progfigsite()
     secretstore = progfigsite.secretstore
-    inventory = progfigsite.inventory
+    hoststore = progfigsite.hoststore
 
     if parsed.action == "version":
-        _action_version_all(inventory)
+        _action_version_all()
     elif parsed.action == "apply":
-        _action_apply(inventory, secretstore, parsed.nodename, roles=parsed.roles, force=parsed.force_apply)
+        _action_apply(hoststore, secretstore, parsed.nodename, roles=parsed.roles, force=parsed.force_apply)
     elif parsed.action == "deploy":
         if not parsed.nodes and not parsed.groups:
             parser.error("You must pass at least one of --nodes or --groups")
         if parsed.deploy_action == "apply":
             _action_deploy_apply(
-                inventory,
+                hoststore,
                 parsed.nodes,
                 parsed.groups,
                 roles=parsed.roles,
@@ -493,14 +493,14 @@ def _main_implementation(*arguments):
                 keep_remote_file=parsed.keep_remote_file,
             )
         elif parsed.deploy_action == "copy":
-            _action_deploy_copy(inventory, parsed.nodes, parsed.groups, parsed.destination)
+            _action_deploy_copy(hoststore, parsed.nodes, parsed.groups, parsed.destination)
             print(f"Copied to remote host(s) at {parsed.destination}")
         else:
             parser.error(f"Unknown deploy action {parsed.deploy_action}")
     elif parsed.action == "list":
-        _action_list(inventory, parsed.collection)
+        _action_list(hoststore, parsed.collection)
     elif parsed.action == "info":
-        _action_info(inventory, parsed.nodes, parsed.groups, parsed.functions)
+        _action_info(hoststore, parsed.nodes, parsed.groups, parsed.functions)
     elif parsed.action == "encrypt":
         if not parsed.nodes and not parsed.groups and not parsed.controller:
             parser.error("You must pass at least one of --nodes, --groups, or --controller")
@@ -513,7 +513,7 @@ def _main_implementation(*arguments):
             value = parsed.value
         _action_encrypt(
             secretstore,
-            inventory,
+            hoststore,
             parsed.save_as or "",
             value,
             parsed.nodes,
@@ -525,7 +525,7 @@ def _main_implementation(*arguments):
     elif parsed.action == "decrypt":
         if not parsed.nodes and not parsed.groups and not parsed.controller:
             parser.error("You must pass at least one of --nodes, --groups, or --controller")
-        _action_decrypt(secretstore, inventory, parsed.nodes, parsed.groups, parsed.controller)
+        _action_decrypt(secretstore, hoststore, parsed.nodes, parsed.groups, parsed.controller)
     elif parsed.action == "validate":
         # We always validate but this shows a nice message even if validation succeeds
         _action_validate()
