@@ -71,7 +71,13 @@ def _action_version_all(inventory: Inventory):
     print("\n".join(result))
 
 
-def _action_apply(inventory: Inventory, nodename: str, roles: Optional[List[str]] = None, force: bool = False):
+def _action_apply(
+    inventory: Inventory,
+    secretstore: SecretStore,
+    nodename: str,
+    roles: Optional[List[str]] = None,
+    force: bool = False,
+):
     """Apply configuration for the node 'nodename' to localhost"""
 
     if roles is None:
@@ -84,7 +90,7 @@ def _action_apply(inventory: Inventory, nodename: str, roles: Optional[List[str]
             f"Was going to apply progfiguration to node {nodename} but TESTING_DO_NOT_APPLY is True for that node."
         )
 
-    for role in inventory.node_role_list(nodename):
+    for role in inventory.node_role_list(nodename, secretstore):
         if not roles or role.name in roles:
             try:
                 logging.debug(f"Running role {role.name}...")
@@ -471,7 +477,7 @@ def _main_implementation(*arguments):
     if parsed.action == "version":
         _action_version_all(inventory)
     elif parsed.action == "apply":
-        _action_apply(inventory, parsed.nodename, roles=parsed.roles, force=parsed.force_apply)
+        _action_apply(inventory, secretstore, parsed.nodename, roles=parsed.roles, force=parsed.force_apply)
     elif parsed.action == "deploy":
         if not parsed.nodes and not parsed.groups:
             parser.error("You must pass at least one of --nodes or --groups")

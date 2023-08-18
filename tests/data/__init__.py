@@ -8,7 +8,6 @@ import sys
 import progfiguration
 from progfiguration import logger, sitewrapper
 from progfiguration.cli.util import configure_logging
-from progfiguration.inventory import Inventory
 
 
 class NnssTestData:

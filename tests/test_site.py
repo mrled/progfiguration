@@ -21,7 +21,7 @@ class TestRun(PdbTestCase):
         """
 
         for nodename in self.nnss.progfigsite.inventory.nodes:
-            for role in self.nnss.progfigsite.inventory.node_role_list(nodename):
+            for role in self.nnss.progfigsite.inventory.node_role_list(nodename, self.nnss.progfigsite.secretstore):
                 with self.subTest(msg=f"nodename={nodename}, role={role}"):
                     pass
 

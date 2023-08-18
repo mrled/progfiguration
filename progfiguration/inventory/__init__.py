@@ -29,7 +29,7 @@ from types import ModuleType
 from typing import Any, Dict, List, Literal, Protocol, runtime_checkable
 
 from progfiguration import logger, sitewrapper
-from progfiguration.inventory.roles import ProgfigurationRole, collect_role_arguments
+from progfiguration.inventory.roles import ProgfigurationRole, RoleArgumentReference, collect_role_arguments
 from progfiguration.localhost import LocalhostLinux
 
 
@@ -164,7 +164,7 @@ class Inventory:
             self._role_modules[name] = module
         return self._role_modules[name]
 
-    def node_role(self, nodename: str, rolename: str) -> ProgfigurationRole:
+    def node_role(self, secretstore: "SecretStore", nodename: str, rolename: str) -> ProgfigurationRole:
         """A dict of `{nodename: {rolename: ProgfigurationRole}}`
 
         Get an instantiated `progfiguration.inventory.roles.ProgfigurationRole` object for a given node and role.
@@ -197,7 +197,7 @@ class Inventory:
 
             # Collect all the arguments we need to instantiate the role class
             # This function finds the most specific definition of each argument
-            roleargs = collect_role_arguments(self, nodename, node, groupmods, rolename)
+            roleargs = collect_role_arguments(self, secretstore, nodename, node, groupmods, rolename)
 
             # Instantiate the role class, now that we have all the arguments we need
             try:
@@ -213,9 +213,9 @@ class Inventory:
 
         return self._node_roles[nodename][rolename]
 
-    def node_role_list(self, nodename: str) -> list[ProgfigurationRole]:
+    def node_role_list(self, nodename: str, secretstore: "SecretStore") -> list[ProgfigurationRole]:
         """A list of all instantiated roles for a given node"""
-        return [self.node_role(nodename, rolename) for rolename in self.node_rolename_list(nodename)]
+        return [self.node_role(secretstore, nodename, rolename) for rolename in self.node_rolename_list(nodename)]
 
 
 @runtime_checkable
@@ -247,6 +247,27 @@ class Secret(Protocol):
     def decrypt(self) -> str:
         """Decrypt the secret."""
         raise NotImplementedError("decrypt not implemented")
+
+
+class SecretReference(RoleArgumentReference):
+    """A reference to a secret by name
+
+    This is a wrapper type that allows us to pass around a reference to a secret
+    without having to know the secret's value.
+    """
+
+    name: str
+    """The name of the secret"""
+
+    def dereference(
+        self,
+        nodename: str,
+        inventory: Inventory,
+        secretstore: "SecretStore",
+    ) -> Any:
+        secret = get_inherited_secret(inventory, secretstore, nodename, self.name)
+        value = secret.decrypt()
+        return value
 
 
 @runtime_checkable
@@ -298,7 +319,7 @@ class SecretStore(Protocol):
         raise NotImplementedError("set_secret not implemented")
 
 
-def get_inherited_secret(store: SecretStore, inventory: Inventory, node: str, secret_name: str) -> Secret:
+def get_inherited_secret(inventory: Inventory, store: SecretStore, node: str, secret_name: str) -> Secret:
     """Get a secret for a node, inheriting from groups if necessary."""
     secret = store.get_secret("node", node, secret_name)
     if secret is None:

@@ -6,18 +6,21 @@ so we cannot import it,
 or we will get a circular import.
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from importlib.abc import Traversable
 from importlib.resources import files as importlib_resources_files
 from types import ModuleType
-from typing import Any, Optional
+from typing import Any, Optional, Protocol, runtime_checkable
 
 from progfiguration.inventory.nodes import InventoryNode
 from progfiguration.localhost import LocalhostLinux
 
 
-class RoleArgumentReference(ABC):
+@runtime_checkable
+class RoleArgumentReference(Protocol):
     """A special kind of role argument that is dereferenced at runtime.
 
     This is used to allow roles to reference arguments from other roles
@@ -40,6 +43,7 @@ class RoleArgumentReference(ABC):
         self,
         nodename: str,
         inventory: "Inventory",  # type: ignore
+        secretstore: "SecretStore",  # type: ignore
     ) -> Any:
         """Get the final value of a role argument for a node.
 
@@ -51,7 +55,7 @@ class RoleArgumentReference(ABC):
         This function must retrieve or calculate the final value
         from its internal data and these arguments.
         """
-        pass
+        raise NotImplementedError
 
 
 @dataclass
@@ -68,6 +72,7 @@ class RoleCalculationReference(RoleArgumentReference):
         self,
         nodename: str,
         inventory: "Inventory",  # type: ignore
+        _: "SecretStore",  # type: ignore
     ) -> Any:
         return inventory.node_role(nodename, self.role).calculations()[self.calcname]
 
@@ -129,6 +134,7 @@ class ProgfigurationRole(ABC):
 
 def collect_role_arguments(
     inventory: "Inventory",  # type: ignore
+    secretstore: "SecretStore",  # type: ignore
     nodename: str,
     node: InventoryNode,
     nodegroups: dict[str, ModuleType],
@@ -162,7 +168,7 @@ def collect_role_arguments(
         roleargs[key] = value
 
     for key, value in roleargs.items():
-        if hasattr(value, "dereference"):
-            roleargs[key] = value.dereference(nodename, inventory)
+        if isinstance(value, RoleArgumentReference):
+            roleargs[key] = value.dereference(nodename, inventory, secretstore)
 
     return roleargs
