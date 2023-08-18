@@ -6,7 +6,7 @@ but is specific to my hosts/roles/groups/functions/etc.
 
 from progfiguration import sitewrapper
 from progfiguration.age import AgeSecretFileStore
-from progfiguration.inventory import Inventory
+from progfiguration.inventory.invstores import HostStore
 
 
 site_name = "example_site"
@@ -15,7 +15,7 @@ site_name = "example_site"
 site_description = "This site is bundled with progfiguration core as an example"
 """The description of the site"""
 
-inventory = Inventory(sitewrapper.site_submodule_resource("", "inventory.conf"))
+inventory = HostStore(sitewrapper.site_submodule_resource("", "inventory.conf"))
 """The site's inventory"""
 
 secretstore = AgeSecretFileStore(

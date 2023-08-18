@@ -15,7 +15,10 @@ import subprocess
 from typing import Any, Dict, List, Literal, Optional
 
 from progfiguration import logger, sitewrapper
-from progfiguration.inventory import Inventory, Secret, SecretReference, SecretStore, get_inherited_secret
+from progfiguration.inventory.invstores import get_inherited_secret
+from progfiguration.inventory.invstores import HostStore
+from progfiguration.inventory.invstores import SecretReference
+from progfiguration.inventory.invstores import Secret, SecretStore
 
 
 class AgeParseException(Exception):
@@ -120,7 +123,7 @@ class AgeSecretReference(SecretReference):
     def dereference(
         self,
         nodename: str,
-        inventory: Inventory,
+        inventory: HostStore,
         secretstore: SecretStore,
     ) -> Any:
         secret = get_inherited_secret(inventory, secretstore, nodename, self.name)
@@ -253,7 +256,7 @@ class AgeSecretFileStore(SecretStore):
 
     def set_secret(
         self,
-        inventory: Inventory,
+        inventory: HostStore,
         name: str,
         value: str,
         nodes: List[str],

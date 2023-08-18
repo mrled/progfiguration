@@ -14,7 +14,6 @@ from importlib.abc import Traversable
 from importlib.resources import files as importlib_resources_files
 from types import ModuleType
 from typing import Any, Optional, Protocol, runtime_checkable
-
 from progfiguration.inventory.nodes import InventoryNode
 from progfiguration.localhost import LocalhostLinux
 
@@ -38,7 +37,7 @@ class RoleArgumentReference(Protocol):
     def dereference(
         self,
         nodename: str,
-        inventory: "Inventory",  # type: ignore
+        inventory: "HostStore",  # type: ignore
         secretstore: "SecretStore",  # type: ignore
     ) -> Any:
         """Get the final value of a role argument for a node.

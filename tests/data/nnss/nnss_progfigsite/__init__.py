@@ -8,7 +8,7 @@ from pathlib import Path
 
 from progfiguration import sitewrapper
 from progfiguration.age import AgeSecretFileStore
-from progfiguration.inventory import Inventory
+from progfiguration.inventory.invstores import HostStore
 
 
 site_name = "Nevada Test Site"
@@ -18,7 +18,7 @@ site_name = "Nevada Test Site"
 site_description = "Force for Freedom"
 
 
-inventory = Inventory(sitewrapper.site_submodule_resource("", "inventory.conf"))
+inventory = HostStore(sitewrapper.site_submodule_resource("", "inventory.conf"))
 """The site's inventory"""
 
 secretstore = AgeSecretFileStore(

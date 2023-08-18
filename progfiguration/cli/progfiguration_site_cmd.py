@@ -24,7 +24,8 @@ from progfiguration.cli.util import (
     progfiguration_log_levels,
     syslog_excepthook,
 )
-from progfiguration.inventory import Inventory, SecretStore
+from progfiguration.inventory.invstores import SecretStore
+from progfiguration.inventory.invstores import HostStore
 from progfiguration.progfigsite_validator import validate
 
 
@@ -45,7 +46,7 @@ def _action_version_core():
     print("\n".join(result))
 
 
-def _action_version_all(inventory: Inventory):
+def _action_version_all(inventory: HostStore):
     """Retrieve the version of progfiguration core and the progfigsite"""
 
     progfigsite = sitewrapper.get_progfigsite()
@@ -72,7 +73,7 @@ def _action_version_all(inventory: Inventory):
 
 
 def _action_apply(
-    inventory: Inventory,
+    inventory: HostStore,
     secretstore: SecretStore,
     nodename: str,
     roles: Optional[List[str]] = None,
@@ -105,7 +106,7 @@ def _action_apply(
     logging.info(f"Finished running all roles")
 
 
-def _action_list(inventory: Inventory, collection: str):
+def _action_list(inventory: HostStore, collection: str):
     if collection == "nodes":
         for node in inventory.nodes:
             print(node)
@@ -119,7 +120,7 @@ def _action_list(inventory: Inventory, collection: str):
         raise Exception(f"Unknown collection {collection}")
 
 
-def _action_info(inventory: Inventory, nodes: List[str], groups: List[str], functions: List[str]):
+def _action_info(inventory: HostStore, nodes: List[str], groups: List[str], functions: List[str]):
     if not any([nodes, groups, functions]):
         print("Request info on a node, group, or function. (See also the 'list' subcommand.)")
     for nodename in nodes:
@@ -146,7 +147,7 @@ def _action_info(inventory: Inventory, nodes: List[str], groups: List[str], func
 
 def _action_encrypt(
     secretstore: SecretStore,
-    inventory: Inventory,
+    inventory: HostStore,
     name: str,
     value: str,
     nodes: List[str],
@@ -162,7 +163,7 @@ def _action_encrypt(
 
 
 def _action_decrypt(
-    secretstore: SecretStore, inventory: Inventory, nodes: List[str], groups: List[str], controller_key: bool
+    secretstore: SecretStore, inventory: HostStore, nodes: List[str], groups: List[str], controller_key: bool
 ):
 
     for node in nodes:
@@ -186,7 +187,7 @@ def _action_decrypt(
 
 
 def _action_deploy_apply(
-    inventory: Inventory,
+    inventory: HostStore,
     nodenames: List[str],
     groupnames: List[str],
     roles: List[str],
@@ -249,7 +250,7 @@ def _action_deploy_apply(
 
 
 def _action_deploy_copy(
-    inventory: Inventory,
+    inventory: HostStore,
     nodenames: List[str],
     groupnames: List[str],
     remotepath: str,
