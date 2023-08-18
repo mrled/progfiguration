@@ -6,9 +6,8 @@ but is specific to my hosts/roles/groups/functions/etc.
 
 from pathlib import Path
 
-from progfiguration import sitewrapper
 from progfiguration.inventory.storeimpl.agesecrets import AgeSecretFileStore
-from progfiguration.inventory.invstores import HostStore
+from progfiguration.inventory.storeimpl.memhosts import MemoryHostStore
 
 
 site_name = "Nevada Test Site"
@@ -17,8 +16,14 @@ site_name = "Nevada Test Site"
 # From the Wikipedia page for Nevada Test and Training Range (military unit)
 site_description = "Force for Freedom"
 
-
-inventory = HostStore(sitewrapper.site_submodule_resource("", "inventory.conf"))
+inventory = MemoryHostStore(
+    groups={"group1": ["node1"]},
+    node_function_map={"node1": "func1"},
+    function_role_map={
+        "func1": ["settz"],
+        "default": ["settz"],
+    },
+)
 """The site's inventory"""
 
 secretstore = AgeSecretFileStore(

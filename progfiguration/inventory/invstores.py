@@ -1,18 +1,14 @@
 """Inventory store
 
-Protocols for inventory stores (like host stores and secret stores).
+Protocols for inventory stores (host stores and secret stores).
 """
 
 from __future__ import annotations
 
-import configparser
-from importlib.abc import Traversable
-from pathlib import Path
 from types import ModuleType
 from typing import Any, Dict, List, Literal, Protocol, runtime_checkable
 
-from progfiguration import sitewrapper
-from progfiguration.inventory.roles import ProgfigurationRole, RoleArgumentReference, collect_role_arguments
+from progfiguration.inventory.roles import ProgfigurationRole, RoleArgumentReference
 from progfiguration.localhost import LocalhostLinux
 
 
@@ -47,136 +43,79 @@ class Secret(Protocol):
         raise NotImplementedError("decrypt not implemented")
 
 
-class HostStore:
-    """An site's inventory"""
+@runtime_checkable
+class HostStore(Protocol):
+    """Hosts, groups, functions, and roles for a site"""
 
-    def __init__(
-        self,
-        invfile: Traversable | Path | configparser.ConfigParser,
-    ):
-        """Initializer parameters:
+    localhost: LocalhostLinux
+    """A localhost object
 
-        * `invfile`: A path to an inventory configuration file.
-          Alternatively, a `configparser.ConfigParser` object from a valid configuration file.
-        * `age_privkey`: Use this path to an age private key.
-          If not passed, try to find the appropriate node/controller age key.
-        * `current_node`: The name of the current node, if applicable.
-          If `age_privkey` is not passed, this is used to find the appropriate node age key.
-        """
+    TODO: can we get rid of this?
+    """
 
-        if isinstance(invfile, configparser.ConfigParser):
-            self._config = invfile
-        else:
-            self._config = configparser.ConfigParser()
-            with invfile.open() as f:
-                self._config.read_file(f)
+    node_function: Dict[str, str]
+    """A dict where keys are node names and values are function names"""
 
-        self.localhost = LocalhostLinux()
-        """A localhost object
+    function_roles: Dict[str, List[str]]
+    """A dict where keys are function names and value are lists of role names"""
 
-        TODO: probably should not use this
-        """
-
-        self.node_function = {}
-        """A dict where keys are node names and values are function names"""
-        for node, func in self._config.items("node_function_map"):
-            self.node_function[node] = func
-
-        self.function_roles = {}
-        """ a dict where keys are function names and value are lists of role names"""
-        for func, roles in self._config.items("function_role_map"):
-            self.function_roles[func] = roles.split()
-
-        self.group_members = {"universal": [n for n in self.node_function.keys()]}
-        """a dict where keys are group names and values are lists of node names"""
-        # (Prepend the universal group to the list of groups)
-        for group, members in self._config.items("groups"):
-            self.group_members[group] = members.split()
-
-        self._node_groups: Dict[str, List[str]] = {}
-        self._function_nodes: Dict[str, List[str]] = {}
-
-        self._node_modules: Dict[str, ModuleType] = {}
-        self._group_modules: Dict[str, ModuleType] = {}
-        self._role_modules: Dict[str, ModuleType] = {}
-        self._node_roles: Dict[str, Dict[str, ProgfigurationRole]] = {}
+    group_members: Dict[str, List[str]]
+    """A dict where keys are group names and values are lists of node names"""
 
     @property
     def groups(self) -> List[str]:
         """All groups, in undetermined order"""
-        return list(self.group_members.keys())
+        raise NotImplementedError("groups not implemented")
 
     @property
     def nodes(self) -> List[str]:
         """All nodes, in undetermined order"""
-        return list(self.node_function.keys())
+        raise NotImplementedError("nodes not implemented")
 
     @property
     def functions(self) -> List[str]:
         """All functions, in undetermined order"""
-        return list(self.function_roles.keys())
+        raise NotImplementedError("functions not implemented")
 
     @property
     def roles(self) -> List[str]:
         """All roles, in undetermined order"""
-        result = set()
-        for func_role_list in self.function_roles.values():
-            result.update(func_role_list)
-        return list(result)
+        raise NotImplementedError("roles not implemented")
 
     @property
     def node_groups(self) -> Dict[str, List[str]]:
         """A dict, containing node:grouplist mappings"""
-        if not self._node_groups:
-            self._node_groups = {}
-
-            # All nodes should be listed in the nodeFunctionMap, so we first give them all an empty group list.
-            # This gets us all nodes, even if they are not members of any explicit group.
-            for node in self.node_function.keys():
-                self._node_groups[node] = []
-
-            # Now we traverse the groupNodeMap and fill in the group list
-            for group, members in self.group_members.items():
-                for member in members:
-                    self._node_groups[member].append(group)
-
-        return self._node_groups
+        raise NotImplementedError("node_groups not implemented")
 
     @property
     def function_nodes(self) -> Dict[str, List[str]]:
         """A dict, containing function:nodelist mappings"""
-        if not self._function_nodes:
-            self._function_nodes = {}
-            for node, function in self.node_function.items():
-                if function not in self._function_nodes:
-                    self._function_nodes[function] = []
-                self._function_nodes[function].append(node)
-        return self._function_nodes
+        raise NotImplementedError("function_nodes not implemented")
 
     def node_rolename_list(self, nodename: str) -> List[str]:
         """A list of all rolenames for a given node"""
-        return self.function_roles[self.node_function[nodename]]
+        raise NotImplementedError("node_rolename_list not implemented")
 
     def node(self, name: str) -> ModuleType:
-        """The Python module for a given node"""
-        if name not in self._node_modules:
-            module = sitewrapper.site_submodule(f"nodes.{name}")
-            self._node_modules[name] = module
-        return self._node_modules[name]
+        """The Python module for a given node
+
+        TODO: should return an InventoryNode instead of a ModuleType.
+        """
+        raise NotImplementedError("node not implemented")
 
     def group(self, name: str) -> ModuleType:
-        """The Python module for a given group"""
-        if name not in self._group_modules:
-            module = sitewrapper.site_submodule(f"groups.{name}")
-            self._group_modules[name] = module
-        return self._group_modules[name]
+        """The Python module for a given group
+
+        TODO: should return a dict instead of a ModuleType.
+        """
+        raise NotImplementedError("group not implemented")
 
     def role_module(self, name: str) -> ModuleType:
-        """The Python module for a given role"""
-        if name not in self._role_modules:
-            module = sitewrapper.site_submodule(f"roles.{name}")
-            self._role_modules[name] = module
-        return self._role_modules[name]
+        """The Python module for a given role
+
+        TODO: should return a ProgfigurationRole subclass instead of a ModuleType.
+        """
+        raise NotImplementedError("role_module not implemented")
 
     def node_role(self, secretstore: SecretStore, nodename: str, rolename: str) -> ProgfigurationRole:
         """A dict of `{nodename: {rolename: ProgfigurationRole}}`
@@ -191,45 +130,14 @@ class HostStore:
 
         Results are cached for subsequent calls.
         """
-        if nodename not in self._node_roles:
-            self._node_roles[nodename] = {}
-        if rolename not in self._node_roles[nodename]:
-
-            # rolepkg is a string containing the package name of the role, like 'progfigsite.roles.role_name'
-            rolepkg = self.role_module(rolename).__package__
-
-            # The class it the subclass of ProgfigurationRole that implements the role
-            role_cls = self.role_module(rolename).Role
-
-            # Get a list of all the groups this node is a member of so that we can get any role arg definitions they may have
-            groupmods = {}
-            for groupname in self.node_groups[nodename]:
-                groupmods[groupname] = self.group(groupname)
-
-            # Get the node module so we can get any role arg definitions it may have
-            node = self.node(nodename).node
-
-            # Collect all the arguments we need to instantiate the role class
-            # This function finds the most specific definition of each argument
-            roleargs = collect_role_arguments(self, secretstore, nodename, node, groupmods, rolename)
-
-            # Instantiate the role class, now that we have all the arguments we need
-            try:
-                role = role_cls(name=rolename, localhost=self.localhost, inventory=self, rolepkg=rolepkg, **roleargs)
-            except Exception as exc:
-                msg = f"Error instantiating role {rolename} for node {nodename}: {exc}"
-                if isinstance(exc, AttributeError) and exc.args[0].startswith("can't set attribute"):
-                    msg += " This might happen if you have two properties with the same name (perhaps one as a function with a @property decorator)."
-                raise Exception(msg) from exc
-
-            # And set the role in the cache
-            self._node_roles[nodename][rolename] = role
-
-        return self._node_roles[nodename][rolename]
+        raise NotImplementedError("node_role not implemented")
 
     def node_role_list(self, nodename: str, secretstore: SecretStore) -> list[ProgfigurationRole]:
-        """A list of all instantiated roles for a given node"""
-        return [self.node_role(secretstore, nodename, rolename) for rolename in self.node_rolename_list(nodename)]
+        """A list of all instantiated roles for a given node
+
+        TODO: Deprecate this, it's just a wrapper around node_role anyway.
+        """
+        raise NotImplementedError("node_role_list not implemented")
 
 
 @runtime_checkable

@@ -14,9 +14,9 @@ class NnssTestData:
     """A bundle of test data for the NNSS progfigsite
 
     Properties:
-    - nnss_progfigsite_path: pathlib.Path to the NNSS progfigsite package
-    - invfilecfg: configparser.ConfigParser for the NNSS progfigsite inventory.conf
-    - inventory: progfiguration.inventory.Inventory for the NNSS progfigsite
+    - progfigsite_path: pathlib.Path to the NNSS progfigsite package
+    - controller_age: pathlib.Path to the controller.age file
+    - progfigsite: progfiguration.progfigsite.Progfigsite for the NNSS progfigsite
 
     """
 
@@ -38,10 +38,3 @@ class NnssTestData:
         self.controller_age = pathlib.Path(nnss_path / "controller.age")
 
         self.progfigsite = sitewrapper.get_progfigsite()
-
-        self.invfilecfg = configparser.ConfigParser()
-        self.invfilecfg.read(sitewrapper.site_submodule_resource("", "inventory.conf"))
-
-        # Override the controller age path to point to the test controller age,
-        # no matter where it is on the filesystem.
-        self.invfilecfg.set("general", "controller_age_path", str(self.controller_age))
