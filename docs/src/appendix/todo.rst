@@ -74,9 +74,6 @@ To do
     This implements our values of keeping the core progfiguration module
     simple, free of dependencies, and easy for sites to extend.
 
-* Make encryption extensible
-  * Allow sites to implement their own secrets management, encryption, etc.
-
 * Can I make sphinx-autobuild faster? Waiting 5+ seconds on every single file save is _horrible_.
 
 * Add a philosophy section, or include all of this in the design section:
@@ -108,3 +105,14 @@ To do
     * When you use Ansible escape hatches into imperativity like ``shell`` tasks
       or writing your own modules,
       you have to ensure idempotency yourself.
+
+* Can we make all ABCs Protocols instead? Either do this, or write comments as to why.
+
+* Update docs for new SecretStore API. Include new requirements at site package root level.
+
+* Improve test coverage
+    * Test most the command line invocations for both core and site.
+    * Test secret encryption from controller perspective
+    * Test secret decryption from node perspective
+
+* Make RoleArgumentReference a protocol, not an ABC
