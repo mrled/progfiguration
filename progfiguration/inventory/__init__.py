@@ -24,17 +24,13 @@
 
 import configparser
 from importlib.abc import Traversable
-import json
-import os
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Literal, Protocol, runtime_checkable
 
 from progfiguration import logger, sitewrapper
-from progfiguration.age import AgeKey, AgeSecret, encrypt
 from progfiguration.inventory.roles import ProgfigurationRole, collect_role_arguments
 from progfiguration.localhost import LocalhostLinux
-from progfiguration.progfigtypes import AnyPathOrStr
 
 
 class Inventory:
@@ -43,8 +39,6 @@ class Inventory:
     def __init__(
         self,
         invfile: Traversable | Path | configparser.ConfigParser,
-        age_privkey: Optional[str] = None,
-        current_node: Optional[str] = None,
     ):
         """Initializer parameters:
 
@@ -92,59 +86,6 @@ class Inventory:
         self._group_modules: Dict[str, ModuleType] = {}
         self._role_modules: Dict[str, ModuleType] = {}
         self._node_roles: Dict[str, Dict[str, ProgfigurationRole]] = {}
-
-        self._node_secrets: Dict[str, Dict[str, AgeSecret]] = {}
-        self._group_secrets: Dict[str, Dict[str, AgeSecret]] = {}
-        self._controller_secrets: Dict[str, AgeSecret] = {}
-
-        self.controller = Controller(
-            self._config.get("general", "controller_age_pub"), self._config.get("general", "controller_age_path")
-        )
-        """A `Controller`, for keeping track of the age key
-
-        TODO: weird API, maybe get rid of the .controller property
-        """
-
-        # Get the age key path for this node, if the node is specified and has a key defined
-        current_node_age_key_path = None
-        if current_node is not None:
-            try:
-                current_node_age_key_path = self.node(current_node).node.age_key_path
-            except (KeyError, ModuleNotFoundError):
-                pass
-
-        def maybe_get_age_path() -> Optional[str]:
-            """Find the age path to a private key if possible
-
-            Lookup order, highest priority first:
-            * A key passed to the class initializer directly, if present
-            * The controller key, if available
-            * The key for the current node, if running from a node with an available key
-            * None
-            """
-            for possible_key in [
-                age_privkey,
-                self.controller.agepath,
-                current_node_age_key_path,
-                self._config.get("general", "node_fallback_age_path"),
-            ]:
-                if possible_key and os.path.exists(possible_key):
-                    logger.debug(f"Found age key {possible_key}")
-                    return possible_key
-                else:
-                    logger.debug(f"No age key found at {possible_key}, continuing...")
-            else:
-                logger.debug("No age key found")
-                return None
-
-        self.age_path: Union[str, None] = maybe_get_age_path()
-        """The path to the age private key currently in scope
-
-        If one cannot be found, this will be None.
-
-        Depending on context, this might be the controller key, an individual node's key,
-        or one passed in from the  command line.
-        """
 
     @property
     def groups(self) -> List[str]:
@@ -276,152 +217,95 @@ class Inventory:
         """A list of all instantiated roles for a given node"""
         return [self.node_role(nodename, rolename) for rolename in self.node_rolename_list(nodename)]
 
-    def get_secrets(self, filename: AnyPathOrStr) -> Dict[str, AgeSecret]:
-        """Retrieve secrets from a file.
 
-        If the file is not found, just return an empty dict.
-        """
-        if isinstance(filename, str):
-            filename = Path(filename)
-        try:
-            with filename.open() as fp:
-                contents = json.load(fp)
-                encrypted_secrets = {k: AgeSecret(v) for k, v in contents.items()}
-                return encrypted_secrets
-        except FileNotFoundError:
-            return {}
+@runtime_checkable
+class Secret(Protocol):
+    """An abstract class for secrets"""
 
-    def get_node_secrets(self, nodename: str) -> Dict[str, AgeSecret]:
-        """A Dict of secrets for a given node
+    _cache: Any
+    """An optional cache for the decrypted secret value.
 
-        Returns just the node's secrets, not taking into account any groups it may be a member of.
-        """
-        if nodename not in self._node_secrets:
-            self._node_secrets[nodename] = self.get_secrets(self.node_secrets_file(nodename))
-        return self._node_secrets[nodename]
-
-    def get_group_secrets(self, groupname: str) -> Dict[str, Any]:
-        """A Dict of secrets for a given group"""
-        if groupname not in self._group_secrets:
-            self._group_secrets[groupname] = self.get_secrets(self.group_secrets_file(groupname))
-        return self._group_secrets[groupname]
-
-    def get_inherited_node_secrets(self, nodename: str) -> Dict[str, AgeSecret]:
-        """A Dict of secrets for a given node, including secrets inherited from groups."""
-        secrets = {}
-        for group in self.node_groups[nodename]:
-            secrets.update(self.get_group_secrets(group))
-        secrets.update(self.get_node_secrets(nodename))
-        return secrets
-
-    def get_controller_secrets(self) -> Dict[str, Any]:
-        """A Dict of secrets for the controller"""
-        if not self._controller_secrets:
-            sfile = sitewrapper.site_submodule_resource("", "controller.secrets.json")
-            self._controller_secrets = self.get_secrets(sfile)
-        return self._controller_secrets
-
-    def _set_secrets(self, filepath: Path, secrets: Dict[str, AgeSecret]):
-        """Set the contents of a secrets file"""
-        file_contents = {k: v.secret for k, v in secrets.items()}
-        with filepath.open("w") as fp:
-            json.dump(file_contents, fp)
-
-    def group_secrets_file(self, group: str) -> Path:
-        """The path to the secrets file for a given group"""
-        sfile = sitewrapper.site_submodule_resource("groups", f"{group}.secrets.json")
-        return sfile
-
-    def node_secrets_file(self, node: str) -> Path:
-        """The path to the secrets file for a given node"""
-        sfile = sitewrapper.site_submodule_resource("nodes", f"{node}.secrets.json")
-        return sfile
-
-    def controller_secrets_file(self) -> Path:
-        """The path to the secrets file for the controller"""
-        sfile = sitewrapper.site_submodule_resource("", "controller.secrets.json")
-        return sfile
-
-    def set_node_secret(self, nodename: str, secretname: str, encrypted_value: str):
-        """Set a secret for a node"""
-        self.get_node_secrets(nodename)  # Ensure it's cached
-        self._node_secrets[nodename][secretname] = AgeSecret(encrypted_value)
-        self._set_secrets(self.node_secrets_file(nodename), self._node_secrets[nodename])
-
-    def set_group_secret(self, groupname: str, secretname: str, encrypted_value: str):
-        """Set a secret for a group"""
-        self.get_group_secrets(groupname)  # Ensure it's cached
-        self._group_secrets[groupname][secretname] = AgeSecret(encrypted_value)
-        self._set_secrets(self.group_secrets_file(groupname), self._group_secrets[groupname])
-
-    def set_controller_secret(self, secretname: str, encrypted_value: str):
-        """Set a secret for the controller"""
-        self.get_controller_secrets()  # Ensure it's cached
-        self._controller_secrets[secretname] = AgeSecret(encrypted_value)
-        self._set_secrets(self.controller_secrets_file(), self._controller_secrets)
-
-    def encrypt_secret(
-        self, name: str, value: str, nodes: List[str], groups: List[str], controller_key: bool, store: bool = False
-    ):
-        """Encrypt a secret for some list of nodes and groups.
-
-        Always encrypt for the controller so that it can decrypt too.
-        """
-
-        recipients = nodes.copy()
-
-        for group in groups:
-            recipients += self.group_members[group]
-        recipients = list(set(recipients))
-
-        nmods = [self.node(n) for n in recipients]
-        pubkeys = [nm.node.age_pubkey for nm in nmods]
-
-        # We always encrypt for the controller when storing, so that the controller can decrypt too
-        if controller_key or store:
-            pubkeys += [self.controller.agepub]
-
-        encrypted_value = encrypt(value, pubkeys)
-
-        if store:
-            for node in nodes:
-                self.set_node_secret(node, name, encrypted_value)
-            for group in groups:
-                self.set_group_secret(group, name, encrypted_value)
-            if controller_key:
-                self.set_controller_secret(name, encrypted_value)
-
-        return (encrypted_value, pubkeys)
-
-
-class Controller:
-    """A Controller object
-
-    If this program is running on the controller, it includes the private key;
-    otherwise, it just includes the public key.
+    Used by the default implementation of the `value` property.
     """
 
-    age: Optional[AgeKey]
-    """An age key object, if the private key is available"""
+    secret: str
+    """The encrypted secret value."""
 
-    agepub: str
-    """A string containing the age public key"""
+    def __init__(self):
+        self._cache = None
 
-    agepath: Optional[str]
-    """The path to the controller age private key, if available"""
+    @property
+    def value(self) -> str:
+        """Return the secret value.
 
-    def __init__(self, agepub: str, privkeypath: str):
-        """Initializer params:
-
-        * `agepub`:         The path to the controller age public key
-        * `privkeypath`:    The path to the controller age private key
+        This default implementation caches the result in the ``_cache`` attribute.
         """
-        if privkeypath and os.path.exists(privkeypath):
-            self.age = AgeKey.from_file(privkeypath)
-        else:
-            self.age = None
-        self.agepub = agepub
-        self.agepath = privkeypath
+        if self._cache is None:
+            self._cache = self.decrypt()
+        return self._cache
 
-    def __str__(self):
-        return f"Controller(agepub={self.agepub}, agepath={self.agepath}, age={self.age})"
+    def decrypt(self) -> str:
+        """Decrypt the secret."""
+        raise NotImplementedError("decrypt not implemented")
+
+
+@runtime_checkable
+class SecretStore(Protocol):
+    """A protocol for secret storage and encryption.
+
+    Implementations are encouraged to cache results.
+
+    Secrets are stored in three different collections.
+    "node" and "group" collections then use the node/group name.
+    The only name used in the "special" collection is "controller",
+    for secrets that only the controller should be able to decrypt.
+    """
+
+    def list_secrets(self, collection: Literal["node", "group", "special"], name: str) -> List[str]:
+        """List secrets."""
+        raise NotImplementedError("list_secrets not implemented")
+
+    def get_secret(self, collection: Literal["node", "group", "special"], name: str, secret_name: str) -> Secret:
+        """Retrieve a secret from the secret store.
+
+        This operation returns an opaque Secret type.
+        The secret does not have to be decrypted yet,
+        but can be, depending on the Secret implementation.
+        """
+        raise NotImplementedError("get_secret not implemented")
+
+    def set_secret(
+        self,
+        inventory: Inventory,
+        name: str,
+        value: str,
+        nodes: List[str],
+        groups: List[str],
+        controller_key: bool,
+        store: bool = False,
+    ) -> str:
+        """Set a secret in the secret store.
+
+        This operation encrypts the secret and stores it in the secret store.
+
+        If ``store`` is True, persist the encrypted value to secret storage.
+        Implementations must make sure that the controller will be able to decrypt.
+        If ``store`` is False, the secret is just being displayed to the user or something.
+
+        Return the encrypted value.
+        (If we don't return the encrypted value, it makes no sense to have a store parameter.)
+        """
+        raise NotImplementedError("set_secret not implemented")
+
+
+def get_inherited_secret(store: SecretStore, inventory: Inventory, node: str, secret_name: str) -> Secret:
+    """Get a secret for a node, inheriting from groups if necessary."""
+    secret = store.get_secret("node", node, secret_name)
+    if secret is None:
+        # "universal" will be the first group; we want to check it last.
+        # Reminder that all other group order is not guaranteed.
+        for group in reversed(inventory.node_groups[node]):
+            secret = store.get_secret("group", group, secret_name)
+            if secret is not None:
+                break
+    return secret

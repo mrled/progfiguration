@@ -4,8 +4,28 @@ This includes everything that is not generic to how progfiguration works,
 but is specific to my hosts/roles/groups/functions/etc.
 """
 
+from progfiguration import sitewrapper
+from progfiguration.age.asfstore import AgeSecretFileStore
+from progfiguration.inventory import Inventory
+
+
 site_name = "example_site"
+"""The name of the site"""
+
 site_description = "This site is bundled with progfiguration core as an example"
+"""The description of the site"""
+
+inventory = Inventory(sitewrapper.site_submodule_resource("", "inventory.conf"))
+"""The site's inventory"""
+
+secretstore = AgeSecretFileStore(
+    controller_age_pubkey="paste the public key here",
+    decryption_age_privkey_path_list=[
+        "/path/to/controller.age",
+        "/default/path/for/nodes/key.age",
+    ],
+)
+"""The method for storing secrets."""
 
 
 def mint_version() -> str:

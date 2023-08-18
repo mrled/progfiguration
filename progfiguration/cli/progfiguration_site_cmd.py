@@ -24,7 +24,7 @@ from progfiguration.cli.util import (
     progfiguration_log_levels,
     syslog_excepthook,
 )
-from progfiguration.inventory import Inventory
+from progfiguration.inventory import Inventory, SecretStore
 from progfiguration.progfigsite_validator import validate
 
 
@@ -139,6 +139,7 @@ def _action_info(inventory: Inventory, nodes: List[str], groups: List[str], func
 
 
 def _action_encrypt(
+    secretstore: SecretStore,
     inventory: Inventory,
     name: str,
     value: str,
@@ -148,36 +149,34 @@ def _action_encrypt(
     store: bool,
     stdout: bool,
 ):
-    encrypted_value, recipients = inventory.encrypt_secret(name, value, nodes, groups, controller_key, store=store)
+    encrypted_value = secretstore.set_secret(inventory, name, value, nodes, groups, controller_key, store=store)
     print("Encrypted for all of these recipients:")
-    for pk in recipients:
-        print(pk)
     if stdout:
         print(encrypted_value)
 
 
-def _action_decrypt(inventory: Inventory, nodes: List[str], groups: List[str], controller_key: bool):
-    age_path = inventory.age_path
-    if not age_path:
-        raise Exception("Could not find age key")
+def _action_decrypt(
+    secretstore: SecretStore, inventory: Inventory, nodes: List[str], groups: List[str], controller_key: bool
+):
+
     for node in nodes:
-        print(f"Secrets for node {node}:")
-        print("---")
-        decrypted_secrets = {k: v.decrypt(age_path) for k, v in inventory.get_node_secrets(node).items()}
-        print(json.dumps(decrypted_secrets, indent=2, sort_keys=True))
-        print("---")
+        for secret in secretstore.list_secrets("node", node):
+            print(f"Secret {secret} for node {node}:")
+            print("---")
+            print(secretstore.get_secret("node", node, secret).decrypt())
+            print("---")
     for group in groups:
-        print(f"Secrets for group {group}:")
-        print("---")
-        decrypted_secrets = {k: v.decrypt(age_path) for k, v in inventory.get_group_secrets(group).items()}
-        print(json.dumps(decrypted_secrets, indent=2, sort_keys=True))
-        print("---")
+        for secret in secretstore.list_secrets("group", group):
+            print(f"Secret {secret} for group {group}:")
+            print("---")
+            print(secretstore.get_secret("group", group, secret).decrypt())
+            print("---")
     if controller_key:
-        print(f"Secrets for the controller:")
-        print("---")
-        decrypted_secrets = {k: v.decrypt(age_path) for k, v in inventory.get_controller_secrets().items()}
-        print(json.dumps(decrypted_secrets, indent=2, sort_keys=True))
-        print("---")
+        for secret in secretstore.list_secrets("special", "controller"):
+            print(f"Secret {secret} for controller:")
+            print("---")
+            print(secretstore.get_secret("special", "controller", secret).decrypt())
+            print("---")
 
 
 def _action_deploy_apply(
@@ -307,10 +306,6 @@ def _make_parser():
         default=syslog_default(),
         choices=progfiguration_log_levels,
         help="Log level to send to syslog. Defaults to INFO if /dev/log exists, otherwise NONE. NONE to disable. If a value other than NONE is passed explicitly and /dev/log does not exist, an exception will be raised.",
-    )
-
-    parser.add_argument(
-        "--age-private-key", "-k", help="The path to an age private key that decrypts inventory secrets"
     )
 
     # node/group related options
@@ -461,12 +456,6 @@ def _main_implementation(*arguments):
     except AttributeError:
         nodename = None
 
-    inventory = Inventory(
-        sitewrapper.site_submodule_resource("", "inventory.conf"),
-        age_privkey=parsed.age_private_key,
-        current_node=nodename,
-    )
-
     validation = validate(progfiguration.progfigsite_module_path)
     if not validation.is_valid:
         print(
@@ -474,6 +463,10 @@ def _main_implementation(*arguments):
         )
         for attrib in validation.errors:
             print(attrib.errstr)
+
+    progfigsite = sitewrapper.get_progfigsite()
+    secretstore = progfigsite.secretstore
+    inventory = progfigsite.inventory
 
     if parsed.action == "version":
         _action_version_all(inventory)
@@ -512,6 +505,7 @@ def _main_implementation(*arguments):
         else:
             value = parsed.value
         _action_encrypt(
+            secretstore,
             inventory,
             parsed.save_as or "",
             value,
@@ -524,7 +518,7 @@ def _main_implementation(*arguments):
     elif parsed.action == "decrypt":
         if not parsed.nodes and not parsed.groups and not parsed.controller:
             parser.error("You must pass at least one of --nodes, --groups, or --controller")
-        _action_decrypt(inventory, parsed.nodes, parsed.groups, parsed.controller)
+        _action_decrypt(secretstore, inventory, parsed.nodes, parsed.groups, parsed.controller)
     elif parsed.action == "validate":
         # We always validate but this shows a nice message even if validation succeeds
         _action_validate()

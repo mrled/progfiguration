@@ -12,7 +12,7 @@ def tests(ctx, debug=False, slow=False):
         env["PROGFIGURATION_TEST_DEBUG"] = "1"
     if slow:
         env["PROGFIGURATION_TEST_SLOW_ALL"] = "1"
-    ctx.run("python3 -m unittest", env=env)
+    ctx.run("python3 -m unittest -v", env=env)
 
 
 @invoke.task

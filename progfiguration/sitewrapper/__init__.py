@@ -38,25 +38,22 @@ def get_progfigsite() -> ModuleType:
     """
     global _progfigsite_module
     if _progfigsite_module is None:
+        progfiguration.logger.debug("Loading progfigsite module")
         try:
             _progfigsite_module = importlib.import_module(progfiguration.progfigsite_module_path)
+            progfiguration.logger.debug(f"Loaded progfigsite module at {progfiguration.progfigsite_module_path}")
         except ModuleNotFoundError as e:
+            progfiguration.logger.debug(
+                f"Could not find progfigsite module at {progfiguration.progfigsite_module_path}"
+            )
             raise ProgfigsiteModuleNotFoundError(
                 f"Could not find progfigsite module at {progfiguration.progfigsite_module_path}"
             ) from e
+    else:
+        progfiguration.logger.debug(
+            f"Using already-loaded progfigsite module from {progfiguration.progfigsite_module_path}"
+        )
     return _progfigsite_module
-
-
-def set_site_module_filepath(filepath: str):
-    """Use a Python package from a filepath as progfigsite
-
-    This is intended to be called only once, at the beginning of program execution.
-
-    Args:
-        filepath: The path to the site package, eg "/path/to/my_progfigsite"
-    """
-    _, modname = import_module_from_filepath(filepath)
-    progfiguration.progfigsite_module_path = modname
 
 
 def site_modpath(submodule_path: str) -> str:
@@ -72,6 +69,7 @@ def site_modpath(submodule_path: str) -> str:
         modpath = f"{progfiguration.progfigsite_module_path}.{submodule_path}"
     else:
         modpath = progfiguration.progfigsite_module_path
+    progfiguration.logger.debug(f"site_modpath({submodule_path}) = {modpath}")
     return modpath
 
 

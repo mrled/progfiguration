@@ -20,31 +20,31 @@ class TestRun(PdbTestCase):
         and properly dereferencing secrets and role calculations.
         """
 
-        for nodename in self.nnss.inventory.nodes:
-            for role in self.nnss.inventory.node_role_list(nodename):
+        for nodename in self.nnss.progfigsite.inventory.nodes:
+            for role in self.nnss.progfigsite.inventory.node_role_list(nodename):
                 with self.subTest(msg=f"nodename={nodename}, role={role}"):
                     pass
 
     @pdbexc
     def test_list_nodes(self):
         """Find all nodes"""
-        self.assertCountEqual(self.nnss.inventory.nodes, ["node1"])
-        self.assertEqual(self.nnss.inventory.node("node1").node.address, "node1.example.mil")
+        self.assertCountEqual(self.nnss.progfigsite.inventory.nodes, ["node1"])
+        self.assertEqual(self.nnss.progfigsite.inventory.node("node1").node.address, "node1.example.mil")
 
     @pdbexc
     def test_list_groups(self):
         """Find all groups"""
-        self.assertCountEqual(self.nnss.inventory.groups, ["universal", "group1"])
+        self.assertCountEqual(self.nnss.progfigsite.inventory.groups, ["universal", "group1"])
 
     @pdbexc
     def test_list_functions(self):
         """Find all functions"""
-        self.assertCountEqual(self.nnss.inventory.functions, ["default", "func1"])
+        self.assertCountEqual(self.nnss.progfigsite.inventory.functions, ["default", "func1"])
 
     @pdbexc
     def test_list_roles(self):
         """Find all roles"""
-        self.assertCountEqual(self.nnss.inventory.roles, ["settz"])
+        self.assertCountEqual(self.nnss.progfigsite.inventory.roles, ["settz"])
 
     # @pdbexc
     # def test_controller_encrypt(self):
@@ -60,8 +60,8 @@ class TestRun(PdbTestCase):
 
     @pdbexc
     def test_controller_decrypt(self):
-        csecrets = self.nnss.inventory.get_controller_secrets()
-        decrypted_test_pass = csecrets["test_password"].decrypt(self.nnss.inventory.controller.agepath)
+        test_password = self.nnss.progfigsite.secretstore.get_secret("special", "controller", "test_password")
+        decrypted_test_pass = test_password.decrypt()
         self.assertEqual(decrypted_test_pass, "p@ssw0rd")
 
 

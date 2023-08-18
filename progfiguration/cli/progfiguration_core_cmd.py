@@ -150,6 +150,7 @@ def _make_parser():
         default="A progfigsite package",
         help="The description of the progfigsite package to create. Defaults to '%(default)s'.",
     )
+    # TODO: how will users create sites with alternative secret backends?
     sub_newsite.add_argument(
         "--controller-age-key-path",
         type=pathlib.Path,

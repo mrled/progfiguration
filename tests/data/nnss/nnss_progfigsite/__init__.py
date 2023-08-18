@@ -4,11 +4,36 @@ This includes everything that is not generic to how progfiguration works,
 but is specific to my hosts/roles/groups/functions/etc.
 """
 
+from pathlib import Path
+
+from progfiguration import sitewrapper
+from progfiguration.age.asfstore import AgeSecretFileStore
+from progfiguration.inventory import Inventory
+
+
 site_name = "Nevada Test Site"
 
 # What a boring motto.
 # From the Wikipedia page for Nevada Test and Training Range (military unit)
 site_description = "Force for Freedom"
+
+
+inventory = Inventory(sitewrapper.site_submodule_resource("", "inventory.conf"))
+"""The site's inventory"""
+
+secretstore = AgeSecretFileStore(
+    # This pubkey matches the private key we keep in the package directory.
+    controller_age_pubkey="age1dmxq0tws40d8npseun9azpq65smpyd2kqfyj0ytlk6m7trn7nsxqnsrag2",
+    decryption_age_privkey_path_list=[
+        # Let the unit tests find controller.age in this file's parent directory.
+        # Normally you would not want to keep it here,
+        # as it would mean your controller key is in version control.
+        (Path(__file__).parent.parent / "controller.age").as_posix(),
+        # An example default value, not used in our unit tests
+        "/default/path/for/nodes/key.age",
+    ],
+)
+"""The method for storing secrets."""
 
 
 def mint_version() -> str:

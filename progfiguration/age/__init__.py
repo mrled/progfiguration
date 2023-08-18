@@ -10,8 +10,14 @@ import pathlib
 import subprocess
 from typing import Any, List, Optional
 
+from progfiguration.inventory import Secret
+
 
 class AgeParseException(Exception):
+    pass
+
+
+class MissingAgeKeyException(Exception):
     pass
 
 
@@ -78,19 +84,21 @@ class AgeKey:
 
 
 @dataclass
-class AgeSecret:
+class AgeSecret(Secret):
     """An age-encrypted secret value"""
 
     secret: str
     """The encrypted secret value"""
 
-    _decrypted: str = ""
+    privkey_path: Optional[str]
+    """The path to the private key.
 
-    def decrypt(self, privkey_path: str):
-        """Decrypt the secret and cache the result."""
-        if not self._decrypted:
-            self._decrypted = decrypt(self.secret, privkey_path)
-        return self._decrypted
+    If this is None, then the secret cannot be decrypted.
+    """
+
+    def decrypt(self) -> str:
+        """Decrypt the secret."""
+        return decrypt(self.secret, self.privkey_path)
 
 
 @dataclass
@@ -129,8 +137,10 @@ def encrypt(value: str, pubkeys: List[str]):
     return proc.stdout.decode()
 
 
-def decrypt(value: str, privkey_path: str):
+def decrypt(value: str, privkey_path: Optional[str]) -> str:
     """Decrypt an encrypted age value"""
+    if not privkey_path:
+        raise MissingAgeKeyException
     proc = subprocess.run(
         ["age", "--decrypt", "--identity", privkey_path],
         input=value.encode(),
