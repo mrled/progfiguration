@@ -112,11 +112,5 @@ To do
 
 * Improve test coverage
     * Test most the command line invocations for both core and site.
-    * Test secret encryption from controller perspective
-    * Test secret decryption from node perspective
 
 * Make RoleArgumentReference a protocol, not an ABC
-
-* Reimplement missing encryption features since Secret has become a Protocol.
-    * Pass in an Age key on the command line. (General version: Secret backends can allow passing new arguments.)
-    * Set age key on node object. (General version: set Secret backend data separately on each node.)

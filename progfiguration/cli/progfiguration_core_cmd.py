@@ -25,7 +25,9 @@ def _find_progfigsite_module(parser: argparse.ArgumentParser, parsed: argparse.N
 
     if parsed.progfigsite_filesystem_path:
         progfigsite_filesystem_path = parsed.progfigsite_filesystem_path
-        progfigsite, progfigsite_module_path = import_module_from_filepath(parsed.progfigsite_filesystem_path)
+        progfigsite, progfigsite_module_path = import_module_from_filepath(
+            parsed.progfigsite_filesystem_path, set_as_progfigsite=True
+        )
     elif parsed.progfigsite_python_path:
         progfigsite_module_path = parsed.progfigsite_python_path
         progfigsite = importlib.import_module(progfigsite_module_path)

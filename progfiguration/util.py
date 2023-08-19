@@ -10,17 +10,31 @@ import os
 import sys
 from typing import Optional
 
+import progfiguration
 from progfiguration.progfigtypes import AnyPathOrStr
 
 
-def import_module_from_filepath(filepath: AnyPathOrStr):
+def import_module_from_filepath(filepath: AnyPathOrStr, set_as_progfigsite: bool = False):
     """Import a module from a filesystem path
 
     Imported modules must have a unique name.
     This function will generate a unique name for the module by hashing the path.
 
     Args:
-        filepath: The path to the site package, eg "/path/to/package"
+
+    ``filepath``:
+        The path to the module, eg "/path/to/module.py"
+
+    ``set_as_progfigsite``:
+        If True, set the imported module as the progfigsite module
+        (`progfiguration.progfigsite_module_path`.)
+        This happens after we find the module and generate a name,
+        but before we import the module.
+        Progfigsite packages sometimes import core progfigsite in their __init__.py,
+        including sitewrapper, which needs to know the progfigsite module,
+        or else it will try to import the default progfigsite package name.
+        Basically, this is only necessary if the module you are importing
+        is a progfigsite package.
 
     Returns:
         A tuple of `(module, module_name)`,
@@ -37,6 +51,9 @@ def import_module_from_filepath(filepath: AnyPathOrStr):
         filepath = f"{filepath}/__init__.py"
 
     module_name = hashlib.md5(filepath.encode("utf-8")).hexdigest()
+
+    if set_as_progfigsite:
+        progfiguration.progfigsite_module_path = module_name
 
     if module_name in sys.modules:
         # We've already imported this one, just return it

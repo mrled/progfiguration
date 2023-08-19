@@ -10,6 +10,9 @@ import importlib
 from types import ModuleType
 from typing import Any, Callable, List
 
+import progfiguration
+from progfiguration.inventory.invstores import HostStore, SecretStore
+
 
 @dataclass
 class ProgfigsiteAttribute:
@@ -38,6 +41,8 @@ class ValidationResult:
         ProgfigsiteAttribute("site_description", str, True),
         ProgfigsiteAttribute("mint_version", Callable[[bool], str], True),
         ProgfigsiteAttribute("get_version", Callable[[], str], True),
+        ProgfigsiteAttribute("hoststore", HostStore, True),
+        ProgfigsiteAttribute("secretstore", SecretStore, True),
         ProgfigsiteAttribute("builddata", ModuleType, True),
         ProgfigsiteAttribute("groups", ModuleType, True),
         ProgfigsiteAttribute("nodes", ModuleType, True),
@@ -61,7 +66,7 @@ class ValidationResult:
 
 
 def validate(module_path: str) -> ValidationResult:
-    """Validate a module
+    """Validate a progfigsite module
 
     Return a `ValidationResult` object.
     """
