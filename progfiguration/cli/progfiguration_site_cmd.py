@@ -480,7 +480,7 @@ def _main_implementation(*arguments):
 
     progfigsite = sitewrapper.get_progfigsite()
     secretstore = progfigsite.secretstore
-    secretstore.set_arguments(parsed.secret_store_arguments or {})
+    secretstore.apply_cli_arguments(parsed.secret_store_arguments or {})
     hoststore = progfigsite.hoststore
 
     if parsed.action == "version":
