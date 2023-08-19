@@ -39,7 +39,7 @@ class TestRun(PdbTestCase):
         """
         secname_inmem = "test_node1_encrypt_decrypt_inmem"
         secvalue_inmem = "red mercury"
-        encrypted_str = self.nnss.progfigsite.secretstore.set_secret(
+        encrypted_str = self.nnss.progfigsite.secretstore.encrypt_secret(
             self.nnss.progfigsite.hoststore, secname_inmem, secvalue_inmem, ["node1"], [], False, store=False
         )
         secret = AgeSecret(encrypted_str, self.nnss.progfigsite.nodes.node1.node.sitedata["age_key_path"])
@@ -57,7 +57,7 @@ class TestRun(PdbTestCase):
         """
         secname_ondisk = "test_node1_encrypt_decrypt_ondisk"
         secvalue_ondisk = "LK-99, a room temperature superconductor, really guys we promise"
-        # self.nnss.progfigsite.secretstore.set_secret(
+        # self.nnss.progfigsite.secretstore.encrypt_secret(
         #     self.nnss.progfigsite.hoststore, secname_ondisk, secvalue_ondisk, ["node1"], [], False, store=True
         # )
         secret = self.nnss.progfigsite.secretstore.get_secret("node", "node1", secname_ondisk)

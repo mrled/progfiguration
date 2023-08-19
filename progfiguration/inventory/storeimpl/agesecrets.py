@@ -270,7 +270,7 @@ class AgeSecretStore(SecretStore):
         entity_secrets = self._load_secrets(collection, name)
         return entity_secrets[secret_name]
 
-    def set_secret(
+    def encrypt_secret(
         self,
         hoststore: HostStore,
         name: str,

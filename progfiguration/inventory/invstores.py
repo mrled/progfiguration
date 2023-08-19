@@ -166,7 +166,7 @@ class SecretStore(Protocol):
         """
         raise NotImplementedError("get_secret not implemented")
 
-    def set_secret(
+    def encrypt_secret(
         self,
         hoststore: HostStore,
         name: str,
@@ -187,7 +187,7 @@ class SecretStore(Protocol):
         Return the encrypted value.
         (If we don't return the encrypted value, it makes no sense to have a store parameter.)
         """
-        raise NotImplementedError("set_secret not implemented")
+        raise NotImplementedError("encrypt_secret not implemented")
 
     def apply_cli_arguments(self, args: Dict[str, str]) -> None:
         """Apply arguments from the command line

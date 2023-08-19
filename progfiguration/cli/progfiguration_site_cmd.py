@@ -157,7 +157,7 @@ def _action_encrypt(
     store: bool,
     stdout: bool,
 ):
-    encrypted_value = secretstore.set_secret(hoststore, name, value, nodes, groups, controller_key, store=store)
+    encrypted_value = secretstore.encrypt_secret(hoststore, name, value, nodes, groups, controller_key, store=store)
     print("Encrypted for all of these recipients:")
     if stdout:
         print(encrypted_value)
