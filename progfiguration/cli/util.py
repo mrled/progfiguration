@@ -111,3 +111,15 @@ def CommaSeparatedStrList(cssl: str) -> List[str]:
     Useful as a type= argument to argparse.add_argument()
     """
     return cssl.split(",")
+
+
+def CommaSeparatedDict(csd: str) -> dict[str, str]:
+    """Convert a string with commas into a dict
+
+    Useful as a type= argument to argparse.add_argument()
+    """
+    d = {}
+    for pair in csd.split(","):
+        k, v = pair.split("=", 1)
+        d[k] = v
+    return d

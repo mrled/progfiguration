@@ -30,7 +30,9 @@ For each node:
         node = InventoryNode(
             address="agassiz.home.micahrl.com",
             user="root",
-            age_pubkey="age17wp408dyw8s4tszh230t92k4gyeeq3se48sx7yjkpmempja6xvgqnamqp3",
+            sitedata=dict(
+                age_pubkey="age17wp408dyw8s4tszh230t92k4gyeeq3se48sx7yjkpmempja6xvgqnamqp3",
+            ),
             # ...
         )
 

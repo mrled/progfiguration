@@ -114,7 +114,6 @@ You could set the username and password like this in a role:
 
     node = InventoryNode(
         address="node1.example.com",
-        age_pubkey="...",
         ssh_host_fingerprint="...",
         roles=dict(
             create_service_account={

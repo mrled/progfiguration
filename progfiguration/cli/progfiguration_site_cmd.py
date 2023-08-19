@@ -17,6 +17,7 @@ from typing import List, Optional
 import progfiguration
 from progfiguration import logger, progfigbuild, remotebrute, sitewrapper
 from progfiguration.cli.util import (
+    CommaSeparatedDict,
     CommaSeparatedStrList,
     configure_logging,
     idb_excepthook,
@@ -315,6 +316,12 @@ def _make_parser():
         help="Log level to send to syslog. Defaults to INFO if /dev/log exists, otherwise NONE. NONE to disable. If a value other than NONE is passed explicitly and /dev/log does not exist, an exception will be raised.",
     )
 
+    parser.add_argument(
+        "--secret-store-arguments",
+        type=CommaSeparatedDict,
+        help="A comma-separated list of key=value pairs to configure the secret store. See the documentation for your secret store for details.",
+    )
+
     # node/group related options
     node_opts = argparse.ArgumentParser(add_help=False)
     node_opts.add_argument(
@@ -473,6 +480,7 @@ def _main_implementation(*arguments):
 
     progfigsite = sitewrapper.get_progfigsite()
     secretstore = progfigsite.secretstore
+    secretstore.set_arguments(parsed.secret_store_arguments or {})
     hoststore = progfigsite.hoststore
 
     if parsed.action == "version":

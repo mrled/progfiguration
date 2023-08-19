@@ -4,11 +4,11 @@ from configparser import ConfigParser
 from pathlib import Path
 from typing import Tuple, Union
 
-from progfiguration.inventory.storeimpl.agesecrets import AgeSecretFileStore
+from progfiguration.inventory.storeimpl.agesecrets import AgeSecretStore
 from progfiguration.inventory.storeimpl.memhosts import MemoryHostStore
 
 
-def inventory_conf(cfgfile: Union[Path, ConfigParser]) -> Tuple[MemoryHostStore, AgeSecretFileStore]:
+def inventory_conf(cfgfile: Union[Path, ConfigParser]) -> Tuple[MemoryHostStore, AgeSecretStore]:
     """Read the inventory configuration file and return the inventory and secret store"""
 
     if isinstance(cfgfile, ConfigParser):
@@ -24,7 +24,7 @@ def inventory_conf(cfgfile: Union[Path, ConfigParser]) -> Tuple[MemoryHostStore,
         function_role_map={f: r.split() for f, r in config.items("function_role_map")},
     )
 
-    secretstore = AgeSecretFileStore(
+    secretstore = AgeSecretStore(
         controller_age_pubkey=config.get("general", "controller_age_pub"),
         decryption_age_privkey_path_list=[
             config.get("general", "controller_age_path"),

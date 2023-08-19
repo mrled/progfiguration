@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from types import ModuleType
 from typing import Any, Dict, List, Literal, Protocol, runtime_checkable
+from progfiguration.inventory.nodes import InventoryNode
 
 from progfiguration.inventory.roles import ProgfigurationRole, RoleArgumentReference
 from progfiguration.localhost import LocalhostLinux
@@ -187,6 +188,23 @@ class SecretStore(Protocol):
         (If we don't return the encrypted value, it makes no sense to have a store parameter.)
         """
         raise NotImplementedError("set_secret not implemented")
+
+    def apply_cli_arguments(self, args: Dict[str, str]) -> None:
+        """Apply arguments from the command line
+
+        Arguments are passed as comma-separated key/value pairs,
+        like ``--secret-store-arguments key1=value1,key2=value2``
+        and then parsed into a dict.
+        """
+        raise NotImplementedError("apply_cli_arguments not implemented")
+
+    def find_node_key(self, node: InventoryNode):
+        """If called, this function should find the decryption key for a node.
+
+        It may be called by the progfigsite command-line program if the user specifies a node.
+        The implementation may look up the key in the node's sitedata.
+        """
+        raise NotImplementedError("find_node_key not implemented")
 
 
 def get_inherited_secret(hoststore: HostStore, secretstore: SecretStore, node: str, secret_name: str) -> Secret:

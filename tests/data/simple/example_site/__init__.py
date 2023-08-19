@@ -14,7 +14,7 @@ site_name = "example_site"
 site_description = "This site is bundled with progfiguration core as an example"
 """The description of the site"""
 
-inventory, secretstore = inventory_conf(sitewrapper.site_submodule_resource("", "inventory.conf"))
+hoststore, secretstore = inventory_conf(sitewrapper.site_submodule_resource("", "inventory.conf"))
 
 
 def mint_version() -> str:

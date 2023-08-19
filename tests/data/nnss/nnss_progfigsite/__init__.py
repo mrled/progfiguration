@@ -6,7 +6,7 @@ but is specific to my hosts/roles/groups/functions/etc.
 
 from pathlib import Path
 
-from progfiguration.inventory.storeimpl.agesecrets import AgeSecretFileStore
+from progfiguration.inventory.storeimpl.agesecrets import AgeSecretStore
 from progfiguration.inventory.storeimpl.memhosts import MemoryHostStore
 
 
@@ -16,7 +16,7 @@ site_name = "Nevada Test Site"
 # From the Wikipedia page for Nevada Test and Training Range (military unit)
 site_description = "Force for Freedom"
 
-inventory = MemoryHostStore(
+hoststore = MemoryHostStore(
     groups={"group1": ["node1"]},
     node_function_map={"node1": "func1"},
     function_role_map={
@@ -26,7 +26,7 @@ inventory = MemoryHostStore(
 )
 """The site's inventory"""
 
-secretstore = AgeSecretFileStore(
+secretstore = AgeSecretStore(
     # This pubkey matches the private key we keep in the package directory.
     controller_age_pubkey="age1dmxq0tws40d8npseun9azpq65smpyd2kqfyj0ytlk6m7trn7nsxqnsrag2",
     decryption_age_privkey_path_list=[

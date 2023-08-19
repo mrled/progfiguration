@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Literal, Optional
 
 from progfiguration import logger, sitewrapper
 from progfiguration.inventory.invstores import Secret, SecretStore, SecretReference, HostStore, get_inherited_secret
+from progfiguration.inventory.nodes import InventoryNode
 
 
 class AgeParseException(Exception):
@@ -151,11 +152,29 @@ def decrypt(value: str, privkey_path: Optional[str]) -> str:
     return proc.stdout.decode()
 
 
-class AgeSecretFileStore(SecretStore):
+class AgeSecretStore(SecretStore):
     """Age secret file store for progfiguration inventories.
 
-    Store progfiguration secrets as files.
+    Store progfiguration secrets as files in the site's nodes/ and groups/ submodules.
     Each secret is encrypted by an Age key.
+
+    Look for a decryption key in the list passed to the initializer.
+
+    The CLI arguments it accepts:
+
+    ``age_key``
+        The path to an age private key to decrypt secrets.
+
+    The InventoryNode sitedata it looks for:
+
+    ``age_key_path``
+        The path on the node to an age private key to decrypt secrets.
+        If this is not set, we try to use the ``decryption_age_privkey_path``.
+        If this is set, but the key does not exist, we raise FileNotFoundError.
+
+    ``age_pubkey``
+        The string of an age public key to encrypt secrets.
+        If this is not set, encrypting secrets for the node (or any of its groups) will fail.
     """
 
     controller_age_pubkey: str
@@ -195,11 +214,11 @@ class AgeSecretFileStore(SecretStore):
         self.controller_age_pubkey = controller_age_pubkey
         for item in decryption_age_privkey_path_list or []:
             if Path(item).exists():
-                logger.debug(f"AgeSecretFileStore: Found decryption key at {item}")
+                logger.debug(f"AgeSecretStore: Found decryption key at {item}")
                 self.decryption_age_privkey_path = item
                 break
             else:
-                logger.debug(f"AgeSecretFileStore: Could not find decryption key at {item}")
+                logger.debug(f"AgeSecretStore: Could not find decryption key at {item}")
 
         self._cache = {"node": {}, "group": {}, "special": {}}
 
@@ -260,7 +279,7 @@ class AgeSecretFileStore(SecretStore):
         groups: List[str],
         controller_key: bool,
         store: bool = False,
-    ):
+    ) -> str:
         """Encrypt a secret for some list of nodes and groups.
 
         Always encrypt for the controller so that it can decrypt too.
@@ -275,7 +294,7 @@ class AgeSecretFileStore(SecretStore):
         recipients = list(set(recipients))
 
         nmods = [hoststore.node(n) for n in recipients]
-        pubkeys = [nm.node.age_pubkey for nm in nmods]
+        pubkeys = [nm.node.sitedata["age_pubkey"] for nm in nmods]
 
         # We always encrypt for the controller when storing, so that the controller can decrypt too
         if controller_key or store:
@@ -288,16 +307,42 @@ class AgeSecretFileStore(SecretStore):
             for node in nodes:
                 if node not in self._cache["node"]:
                     self._cache["node"][node] = {}
-                self._cache["node"][node][name] = AgeSecret(encrypted_value, self.decryption_age_privkey_path)
+                self._cache["node"][node][name] = encrypted_value
+                self._save_secrets("node", node)
             for group in groups:
                 if group not in self._cache["group"]:
                     self._cache["group"][group] = {}
-                self._cache["group"][group][name] = AgeSecret(encrypted_value, self.decryption_age_privkey_path)
+                self._cache["group"][group][name] = encrypted_value
+                self._save_secrets("group", group)
             if controller_key:
                 if name not in self._cache["special"]["controller"]:
                     self._cache["special"]["controller"] = {}
-                self._cache["special"]["controller"][name] = AgeSecret(
-                    encrypted_value, self.decryption_age_privkey_path
-                )
+                self._cache["special"]["controller"][name] = encrypted_value
+                self._save_secrets("special", "controller")
 
         return encrypted_value
+
+    def apply_cli_arguments(self, args: Dict[str, str]) -> None:
+        """Apply arguments from the command line
+
+        Arguments are passed as comma-separated key/value pairs,
+        like ``--secret-store-arguments key1=value1,key2=value2``.
+        """
+        for key in args:
+            if key == "age_key":
+                self.decryption_age_privkey_path = args[key]
+            else:
+                raise ValueError(f"Unknown argument {key} for AgeSecretStore")
+
+    def find_node_key(self, node: InventoryNode):
+        """If called, this function should find the decryption key for a node.
+
+        It may be called by the progfigsite command-line program if the user specifies a node.
+        The implementation may look up the key in the node's sitedata.
+        """
+        sitedata = node.sitedata or {}
+        if "age_key_path" in sitedata:
+            if Path(sitedata["age_key_path"]).exists():
+                return sitedata["age_key_path"]
+            else:
+                raise FileNotFoundError(f"Age key path {sitedata['age_key_path']} does not exist")
