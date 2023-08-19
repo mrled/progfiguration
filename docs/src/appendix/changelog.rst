@@ -6,6 +6,16 @@ WIP
 
 ... nothing yet ...
 
+`0.0.6`
+-------
+
+* Make API that progfigsites have to implement simpler
+* Improve test coverage
+* Make secret and host storage for inventory pluggable
+* Update and expand documentation
+* Add sitedata concept for site-specific node data
+* Accept arguments to configure secret store on the commandline
+
 `0.0.5`
 -------
 
