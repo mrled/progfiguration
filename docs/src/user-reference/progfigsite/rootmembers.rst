@@ -10,6 +10,16 @@ Sites must define a few members in their root package ``__init__.py``:
 ``site_description``
     a longer user-facing string
 
+``hoststore``
+    An implementation of the :class:`progfiguration.inventory.invstores.HostStore` protocol.
+    Progfiguration core ships with
+    :class:`progfiguration.inventory.storeimpl.memhosts.MemoryHostStore`.
+
+``secretstore``
+    An implementation of the :class:`progfiguration.inventory.invstores.SecretStore` protocol.
+    Progfiguration core ships with
+    :class:`progfiguration.inventory.storeimpl.agesecrets.AgeSecretStore`
+
 ``mint_version()``
     a function that takes no arguments and returns a valid pip version number.
 
@@ -49,6 +59,11 @@ Sites must define a few members in their root package ``__init__.py``:
                 return version.version
             except ImportError:
                 return "0.0.1a0"
+
+Progfiguration core ships with a convenience function
+:meth:`progfiguration.inventory.storeimpl.invconf.inventory_conf`
+which instantiates both a MemoryHostStore and an AgeSecretStore
+based on an inventory config file.
 
 Here is an exmple from :mod:`example_site`.
 

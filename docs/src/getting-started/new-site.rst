@@ -37,10 +37,10 @@ See also :doc:`/user-reference/progfigsite/index`.
     |                                           | (The same name as the parent, e.g.            |
     |                                           | ``progfigsite/progfigsite/``.                 |
     +-------------------------------------------+-----------------------------------------------+
-    | ``progfigsite/__init__.py``               | The root package exports some version         |
-    |                                           | information.                                  |
+    | ``progfigsite/__init__.py``               | The root package exports some required        |
+    |                                           | attributes.                                   |
     +-------------------------------------------+-----------------------------------------------+
-    | ``progfigsite/inventory.conf``            | An inventory file for the site.               |
+    | ``progfigsite/inventory.conf``            | An inventory config file for the site.        |
     +-------------------------------------------+-----------------------------------------------+
     | ``progfigsite/cli/``                      | A Python package for command line scripts.    |
     +-------------------------------------------+-----------------------------------------------+

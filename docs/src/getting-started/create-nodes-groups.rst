@@ -39,6 +39,16 @@ For each node:
 3.  Place the private key in the correct location on each node,
     by default ``/etc/progfiguration/node.age``.
 
+.. note:: What is ``sitedata``?
+
+    Progfiguration supports pluggable secrets storage backends that implement
+    the :class:`progfiguration.inventory.invstores.SecretStore` protocol.
+    The ``newsite`` command uses a build-in backend that uses Age,
+    :class:`progfiguration.inventory.storeimpl.agesecrets.AgeSecretStore`,
+    but you could also write your own and use that instead.
+    Because Age-related information is site-specific,
+    it goes in the ``.sitedata`` attribute of a node object.
+
 Once we have the pubkey stored in the node's Python module,
 you can use ``progfigsite encrypt`` to store secrets.
 

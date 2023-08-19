@@ -19,10 +19,20 @@ The controller
 .. _progfigsite-concept-inventory:
 
 Inventory
-    The group of all nodes, groups, functions, and roles, in the progfigsite.
-    Includes the ``inventory.conf`` file in ConfigParser format,
-    as well as the Python packages for the nodes, groups, and roles.
-    See :doc:`/user-reference/progfigsite/inventory`.
+    Storage for nodes, groups, functions, roles, and secrets for a progfigsite.
+    Made up of an implementation of the :class:`progfiguration.inventory.invstores.HostStore` protocol
+    plus an implementation of the :class:`progfiguration.inventory.invstores.SecretStore` protocol.
+
+    Progfiguration ships with
+    :class:`progfiguration.inventory.storeimpl.memhosts.MemoryHostStore` and
+    :class:`progfiguration.inventory.storeimpl.agesecrets.AgeSecretStore`
+    which implement those two protocols, as well as a convenience function
+    :meth:`progfiguration.inventory.storeimpl.invconf.inventory_conf`
+    which can instantiate one of each based on a simple configuration file.
+
+    Sites may also implement their own implementation of HostStore and/or SecreStore
+    (in their own :doc:`sitelib module </user-reference/progfigsite/sitelib>`)
+    and use those instead.
 
 .. _progfigsite-concept-node:
 
@@ -55,11 +65,11 @@ Role reference
     Most role arguments are simple Python objects, like strings, ints, or :class:`pathlib.Path` objects.
     Role references are special arguments that are used to dynamically find argument values at runtime.
     Currently, progfiguration understands two kinds of references:
-    `progfiguration.inventory.roles.RoleCalculationReference`,
+    :class:`progfiguration.inventory.roles.RoleCalculationReference`,
     which refers to the results of role calculations
     (see :doc:`/user-reference/progfigsite/roles` for more on calculations),
-    and `progfiguration.age.AgeSecretReference`,
-    which refers to secret values.
+    and :class:`progfiguration.inventory.invstores.SecretReference`,
+    which is a protocol that SecretStore backends must implement that refers to secret values.
     Role references are dereferenced at runtime.
 
 .. _progfigsite-concept-function:

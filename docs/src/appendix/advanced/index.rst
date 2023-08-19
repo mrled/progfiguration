@@ -10,4 +10,5 @@ Advanced topics
     :maxdepth: 1
     :caption: Contents:
 
+    custom-inventories.rst
     vendoring.rst

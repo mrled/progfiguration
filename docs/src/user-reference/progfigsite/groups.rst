@@ -30,21 +30,27 @@ For instance, the node defined in :mod:`example_site.groups.group1`:
 .. literalinclude:: ../../../..//tests/data/simple/example_site/groups/group1.py
     :language: python
 
-Group secret files
-------------------
+Group secret files with AgeSecretStore
+--------------------------------------
+
+.. note:: Information in this section only applies to AgeSecretStore
+
+    This section only applies to sites that use the
+    :class:`progfiguration.inventory.storeimpl.agesecrets.AgeSecretStore`
+    secret storage implementation.
+    It's what ships with progfiguration core so it's the easiest to get started with,
+    but other secret storage backends will work differently.
 
 If a group has secrets encrypted with ``progfiguration encrypt``,
 they will be stored in a file named ``<group name>.secrets.json``
 in the ``groups`` package.
 
-.. note:: Groups do not have their own encryption keys.
+Group secrets are encrypted with the public key of each member node.
 
-    Group secrets are encrypted with the public key of each member node.
-
-    When you add a node to a group with existing secrets,
-    you must re-encrypt the secrets file so that it can be decrypted by the new node.
-    You can do this with ``progfigsite decrypt ... | progfigsite encrypt ...``.
-    TODO: Add a single command to re-encrypt a group's secrets.
+When you add a node to a group with existing secrets,
+you must re-encrypt the secrets file so that it can be decrypted by the new node.
+You can do this with ``progfigsite decrypt ... | progfigsite encrypt ...``.
+TODO: Add a single command to re-encrypt a group's secrets.
 
 The ``universal`` group
 -----------------------

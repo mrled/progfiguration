@@ -17,9 +17,10 @@ It provides:
 
 *   A way to write code to configure your infrastructure.
 *   A simple standard library for functions like writing to files idempotently.
-*   A core implementation free of third-party Python dependencies
-    (it relies on `Age <https://github.com/FiloSottile/age>`_ for encryption
-    and SSH for deployment).
+*   Judicious use of dependencies:
+    remote deployments typically use SSH,
+    the default secret storage mechanism uses `Age <https://github.com/FiloSottile/age>`_,
+    and building/development use well supported third party Python libraries.
 *   A command-line interface for running your configuration.
 *   A nice package building experience that assmebles your code into a single executable.
 
