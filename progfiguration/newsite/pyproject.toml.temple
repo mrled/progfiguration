@@ -7,7 +7,7 @@ requires-python = ">=3.10"
 dependencies = []
 
 [project.scripts]
-progfigsite = "{$}name.cli.progfigsite_shim:main"
+{$}name = "{$}name.cli.progfigsite_shim:main"
 
 [project.optional-dependencies]
 development = [

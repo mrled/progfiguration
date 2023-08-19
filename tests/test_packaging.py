@@ -32,7 +32,7 @@ class TestRun(PdbTestCase):
             pyzfile = pathlib.Path(tmpdir) / "test.pyz"
             progfigbuild.build_progfigsite_zipapp(nnss.progfigsite_path, pyzfile)
             self.assertTrue(pyzfile.exists())
-            result = magicrun([str(pyzfile), "version"])
+            result = magicrun([str(pyzfile), "version"], print_output=False)
             stdout = result.stdout.read().strip()
             self.assertTrue("progfiguration core" in stdout)
             self.assertTrue("Nevada Test Site" in stdout)
