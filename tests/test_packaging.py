@@ -5,7 +5,7 @@ from progfiguration import progfigbuild
 from progfiguration.cmd import magicrun
 
 from tests import PdbTestCase, pdbexc, skipUnlessAnyEnv
-from tests.data import NnssTestData
+from tests.data import nnss_test_data
 
 
 class TestRun(PdbTestCase):
@@ -27,10 +27,9 @@ class TestRun(PdbTestCase):
     @pdbexc
     @skipUnlessAnyEnv(["PROGFIGURATION_TEST_SLOW_ALL", "PROGFIGURATION_TEST_SLOW_PACKAGING"])
     def test_package_nnss(self):
-        nnss = NnssTestData()
-        with tempfile.TemporaryDirectory() as tmpdir:
+        with nnss_test_data as nnss, tempfile.TemporaryDirectory() as tmpdir:
             pyzfile = pathlib.Path(tmpdir) / "test.pyz"
-            progfigbuild.build_progfigsite_zipapp(nnss.progfigsite_path, pyzfile)
+            progfigbuild.build_progfigsite_zipapp(nnss.progfigsite_path, nnss.progfigsite_name, pyzfile)
             self.assertTrue(pyzfile.exists())
             result = magicrun([str(pyzfile), "version"], print_output=False)
             stdout = result.stdout.read().strip()

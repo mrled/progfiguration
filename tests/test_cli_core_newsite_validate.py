@@ -1,10 +1,8 @@
-import os
+from pathlib import Path
 import shutil
 import tempfile
 import unittest
 import venv
-
-from tests import pdbexc, skipUnlessAnyEnv
 
 try:
     import tomllib
@@ -13,16 +11,19 @@ except ImportError:
 
 from progfiguration import cmd, progfigbuild
 
+from tests import pdbexc, skipUnlessAnyEnv
+
 
 class TestRun(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Set up a temporary directory and create the newsite"""
-        cls.tmpdir = tempfile.mkdtemp()
+        cls.tmpdir = Path(tempfile.mkdtemp())
         cls.sitename = "testsite_xyz"
-        cls.projectdir = os.path.join(cls.tmpdir, "testproj")
-        cls.packagedir = os.path.join(cls.projectdir, cls.sitename)
-        cls.controllerage = os.path.join(cls.tmpdir, "controller.age")
+        cls.projectdir = cls.tmpdir / "testproj"
+        cls.packagedir = cls.projectdir / cls.sitename
+        cls.controllerage = cls.tmpdir / "controller.age"
+        cls.pyproject = cls.projectdir / "pyproject.toml"
 
         # Create the new site in the temp directory
         cls.newsite_result = cmd.magicrun(
@@ -32,19 +33,19 @@ class TestRun(unittest.TestCase):
                 "--name",
                 cls.sitename,
                 "--path",
-                cls.projectdir,
+                cls.projectdir.as_posix(),
                 "--controller-age-key-path",
-                cls.controllerage,
+                cls.controllerage.as_posix(),
             ],
             print_output=False,
         )
 
-        cmd.magicrun(["find", cls.tmpdir])
+        # cmd.magicrun(["find", cls.tmpdir])
 
     @classmethod
     def tearDownClass(cls):
         """Remove the temporary directory"""
-        shutil.rmtree(cls.tmpdir)
+        shutil.rmtree(cls.tmpdir.as_posix())
 
     @pdbexc
     def test_newsite_successful(self):
@@ -57,7 +58,7 @@ class TestRun(unittest.TestCase):
     def test_newsite_files_created(self):
         """Test the newsite subcommand"""
 
-        pyproj = tomllib.load(open(os.path.join(self.projectdir, "pyproject.toml"), "rb"))
+        pyproj = tomllib.load(self.pyproject.open("rb"))
         self.assertEqual(pyproj["project"]["name"], self.sitename)
         self.assertEqual(pyproj["project"]["scripts"][self.sitename], f"{self.sitename}.cli.progfigsite_shim:main")
 
@@ -67,7 +68,14 @@ class TestRun(unittest.TestCase):
 
         # Run validate against the new site
         result = cmd.magicrun(
-            ["progfiguration", "validate", "--progfigsite-filesystem-path", self.packagedir],
+            [
+                "progfiguration",
+                "validate",
+                "--progfigsite-fspath",
+                self.packagedir.as_posix(),
+                "--progfigsite-modname",
+                self.sitename,
+            ],
             print_output=False,
         )
         stdout = result.stdout.read()
@@ -82,19 +90,24 @@ class TestRun(unittest.TestCase):
         Slow test, requires a new venv.
         """
 
-        venvdir = os.path.join(self.tmpdir, "venv")
+        venvdir = self.tmpdir / "venv"
 
         # Create a venv without pip (much faster)
-        venv.create(venvdir)
-        venv_python = os.path.join(venvdir, "bin", "python")
+        venv.create(venvdir.as_posix())
+        venv_python = venvdir / "bin" / "python"
 
         # Out of the venv, use progfiguration core to create a site package
-        pyzfile = os.path.join(self.tmpdir, "test.pyz")
-        progfigbuild.build_progfigsite_zipapp(self.packagedir, pyzfile)
+        pyzfile = self.tmpdir / "test.pyz"
+        progfigbuild.build_progfigsite_zipapp(self.packagedir, self.sitename, pyzfile)
+
+        # Show all the files in the zipapp
+        # import zipfile
+        # with zipfile.ZipFile(pyzfile, "r") as z:
+        #     z.printdir()
 
         # Use the venv python, which is guaranteed not to have progfiguration core or any site installed,
         # to run the newly created zipapp, and validate.
-        result = cmd.magicrun([venv_python, pyzfile, "validate"])
+        result = cmd.magicrun([venv_python.as_posix(), pyzfile.as_posix(), "validate"], print_output=False)
         stdout = result.stdout.read()
         self.assertTrue(result.returncode == 0)
         self.assertRegex(stdout, r"Progfigsite \(Python path: '.*'\) is valid.")

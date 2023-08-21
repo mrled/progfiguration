@@ -8,7 +8,7 @@ import sys
 import textwrap
 
 import progfiguration
-from progfiguration import progfigbuild
+from progfiguration import progfigbuild, sitewrapper
 from progfiguration.cli.util import (
     configure_logging,
     idb_excepthook,
@@ -17,25 +17,6 @@ from progfiguration.cli.util import (
 )
 from progfiguration.newsite import make_progfigsite
 from progfiguration.progfigsite_validator import validate
-from progfiguration.util import import_module_from_filepath
-
-
-def _find_progfigsite_module(parser: argparse.ArgumentParser, parsed: argparse.Namespace):
-    """Find the progfigsite module from the command line arguments"""
-
-    if parsed.progfigsite_filesystem_path:
-        progfigsite_filesystem_path = parsed.progfigsite_filesystem_path
-        progfigsite, progfigsite_module_path = import_module_from_filepath(
-            parsed.progfigsite_filesystem_path, set_as_progfigsite=True
-        )
-    elif parsed.progfigsite_python_path:
-        progfigsite_module_path = parsed.progfigsite_python_path
-        progfigsite = importlib.import_module(progfigsite_module_path)
-        progfigsite_filesystem_path = pathlib.Path(progfigsite.__file__).parent
-    else:
-        parser.error(f"Missing progfigsite path option")
-
-    return (progfigsite, progfigsite_module_path, progfigsite_filesystem_path)
 
 
 def _action_version_core(quiet: bool = False):
@@ -87,16 +68,15 @@ def _make_parser():
 
     # options for finding the progfigsite
     site_opts = argparse.ArgumentParser(add_help=False)
-    site_grp = site_opts.add_mutually_exclusive_group(required=True)
-    site_grp.add_argument(
-        "--progfigsite-filesystem-path",
+    site_opts.add_argument(
+        "--progfigsite-fspath",
         type=pathlib.Path,
-        help="The filesystem path to a progfigsite package, like /path/to/progfigsite. If neither this nor --progfigsite-python-path is passed, look for a 'progfigsite' package in the Python path.",
+        help="The filesystem path to a progfigsite package, like /path/to/progfigsite. You must also pass --progfigsite-modname with this argument, because we do not read pyproject.toml or any other file to find the module name automatically.",
     )
-    site_grp.add_argument(
-        "--progfigsite-python-path",
+    site_opts.add_argument(
+        "--progfigsite-modname",
         type=str,
-        help="The python path to a progfigsite package, like 'my_progfigsite' or 'one.two.three.progfigsite'. If neither this nor --progfigsite-filesystem-path is passed, look for a 'progfigsite' package in the Python path.",
+        help="The module name for a progfigsite package, like 'my_progfigsite'. If --progfigsite-fspath is specified, use this name for the module found at that path on the filesystem. If --progfigsite-fspath is not specified, expect to find a progfigsite module with this name in the Python path already.",
     )
 
     subparsers = parser.add_subparsers(dest="action", required=True)
@@ -171,22 +151,12 @@ def _main_implementation(*arguments):
         sys.excepthook = idb_excepthook
     configure_logging(parsed.log_stderr)
 
+    # Subcommands that don't need an existing progfigsite
+
     if parsed.action == "version":
         _action_version_core(quiet=parsed.quiet)
-    elif parsed.action == "build":
-        progfigsite, progfigsite_modpath, progfigsite_fspath = _find_progfigsite_module(parser, parsed)
-        # TODO: how will sites extend this?
-        if parsed.buildaction == "pyz":
-            progfigbuild.build_progfigsite_zipapp(progfigsite_fspath, parsed.pyzfile)
-        elif parsed.buildaction == "pip":
-            progfigbuild.build_progfigsite_pip(
-                progfigsite_fspath, parsed.outdir, keep_injected_files=parsed.keep_injected_files
-            )
-        else:
-            parser.error(f"Unknown buildaction {parsed.buildaction}")
-    elif parsed.action == "validate":
-        progfigsite, progfigsite_modpath, progfigsite_fspath = _find_progfigsite_module(parser, parsed)
-        _action_validate(progfigsite_modpath)
+        return
+
     elif parsed.action == "newsite":
         path = parsed.path or pathlib.Path(parsed.name)
         controllerage = parsed.controller_age_key_path or pathlib.Path(f"{parsed.name}.controller.age")
@@ -198,15 +168,46 @@ def _main_implementation(*arguments):
                 f"""\
                 Created new progfigsite package '{parsed.name}' at '{path}'. Next steps:
 
-                    * Run `progfiguration validate --progfigsite-filesystem-path {rootpkg}` to validate the package.
+                    * Run `progfiguration validate --progfigsite-fspath {rootpkg} --progfigsite-modname {parsed.name}` to validate the package.
                     * Edit '{rootpkg}/inventory.conf' to include your hosts, roles, groups, and functions.
                     * Create node and group files in '{rootpkg}/nodes' and '{rootpkg}/groups'.
                     * Write your roles in '{rootpkg}/roles'.
                 """
             )
         )
+        return
+
+    # Subcommands that need an existing progfigsite
+
+    if parsed.progfigsite_fspath and parsed.progfigsite_modname:
+        sitewrapper.set_progfigsite_by_filepath(parsed.progfigsite_fspath, parsed.progfigsite_modname)
+    elif parsed.progfigsite_modname:
+        sitewrapper.set_progfigsite_by_module_name(parsed.progfigsite_modname)
     else:
-        parser.error(f"Unknown action {parsed.action}")
+        parser.error(
+            f"For action {parsed.action}, must specify --progfigsite-modname if the site is already in the Python path, or both --progfigsite-fspath and --progfigsite-modname to find the site on the filesystem outside of the Python path."
+        )
+    progfigsite_modpath = parsed.progfigsite_modname
+    progfigsite_fspath = sitewrapper.get_progfigsite_path()
+
+    if parsed.action == "build":
+        if parsed.buildaction == "pyz":
+            progfigbuild.build_progfigsite_zipapp(progfigsite_fspath, parsed.progfigsite_modname, parsed.pyzfile)
+        elif parsed.buildaction == "pip":
+            progfigbuild.build_progfigsite_pip(
+                progfigsite_fspath,
+                parsed.progfigsite_modname,
+                parsed.outdir,
+                keep_injected_files=parsed.keep_injected_files,
+            )
+        else:
+            parser.error(f"Unknown buildaction {parsed.buildaction}")
+        return
+    elif parsed.action == "validate":
+        _action_validate(progfigsite_modpath)
+        return
+
+    parser.error(f"Unknown action {parsed.action}")
 
 
 def main():

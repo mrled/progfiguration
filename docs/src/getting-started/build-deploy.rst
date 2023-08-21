@@ -8,7 +8,7 @@ Building packages
 -----------------
 
 You can build a Pip package with
-``progfiguration build --progfigsite-python-path progfigsite pip``,
+``progfiguration build --progfigsite-modname progfigsite pip``,
 run from your virtual environment.
 You can copy the result to the node(s) you created,
 install it with ``pip``,
@@ -16,7 +16,7 @@ and run ``progfigsite apply NODENAME``,
 and your node will apply its configuration!
 
 You can also build a zipapp package with
-``progfiguration build --progfigsite-python-path progfigsite pyz progfigsite.pyz``.
+``progfiguration build --progfigsite-modname progfigsite pyz progfigsite.pyz``.
 This can be run directly, the same way a Python script can be run,
 and it includes both your ``progfigsite`` module
 and the core ``progfiguration`` module in one file!

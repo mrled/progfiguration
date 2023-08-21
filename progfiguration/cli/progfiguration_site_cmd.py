@@ -50,7 +50,7 @@ def _action_version_core():
 def _action_version_all():
     """Retrieve the version of progfiguration core and the progfigsite"""
 
-    progfigsite = sitewrapper.get_progfigsite()
+    progfigsitename, progfigsite = sitewrapper.get_progfigsite()
 
     try:
         builddata_version = sitewrapper.site_submodule("builddata.version")
@@ -208,9 +208,12 @@ def _action_deploy_apply(
 
     errors: list[dict[str, str]] = []
 
+    sitepath = sitewrapper.get_progfigsite_path()
+    sitename, sitemod = sitewrapper.get_progfigsite()
+
     with tempfile.TemporaryDirectory() as tmpdir:
         pyzfile = pathlib.Path(os.path.join(tmpdir, "progfiguration.pyz"))
-        progfigbuild.build_progfigsite_zipapp(sitewrapper.get_progfigsite_path(), pyzfile)
+        progfigbuild.build_progfigsite_zipapp(sitepath, sitename, pyzfile)
         for nname, node in nodes.items():
             args = []
             if remote_debug:
@@ -262,21 +265,22 @@ def _action_deploy_copy(
 
     nodes = {n: hoststore.node(n).node for n in nodenames}
 
+    sitepath = sitewrapper.get_progfigsite_path()
+    sitename, sitemod = sitewrapper.get_progfigsite()
+
     with tempfile.TemporaryDirectory() as tmpdir:
         pyzfile = pathlib.Path(os.path.join(tmpdir, "progfiguration.pyz"))
-        progfigbuild.build_progfigsite_zipapp(sitewrapper.get_progfigsite_path(), pyzfile)
+        progfigbuild.build_progfigsite_zipapp(sitepath, sitename, pyzfile)
         for nname, node in nodes.items():
             remotebrute.scp(f"{node.user}@{node.address}", pyzfile.as_posix(), remotepath)
 
 
-def _action_validate():
-    validation = validate(progfiguration.progfigsite_module_path)
+def _action_validate(progfigsite_modname: str):
+    validation = validate(progfigsite_modname)
     if validation.is_valid:
-        print(f"Progfigsite (Python path: '{progfiguration.progfigsite_module_path}') is valid.")
+        print(f"Progfigsite (Python path: '{progfigsite_modname}') is valid.")
     else:
-        print(
-            f"Progfigsite (Python path: '{progfiguration.progfigsite_module_path}') has {len(validation.errors)} errors:"
-        )
+        print(f"Progfigsite (Python path: '{progfigsite_modname}') has {len(validation.errors)} errors:")
     for attrib in validation.errors:
         print(attrib.errstr)
 
@@ -470,15 +474,14 @@ def _main_implementation(*arguments):
     except AttributeError:
         nodename = None
 
-    validation = validate(progfiguration.progfigsite_module_path)
+    progfigsitename, progfigsite = sitewrapper.get_progfigsite()
+
+    validation = validate(progfigsitename)
     if not validation.is_valid:
-        print(
-            f"Progfigsite (Python path: '{progfiguration.progfigsite_module_path}') has {len(validation.errors)} errors:"
-        )
+        print(f"Progfigsite (Python path: '{progfigsitename}') has {len(validation.errors)} errors:")
         for attrib in validation.errors:
             print(attrib.errstr)
 
-    progfigsite = sitewrapper.get_progfigsite()
     secretstore = progfigsite.secretstore
     secretstore.apply_cli_arguments(parsed.secret_store_arguments or {})
     hoststore = progfigsite.hoststore
@@ -536,7 +539,7 @@ def _main_implementation(*arguments):
         _action_decrypt(secretstore, hoststore, parsed.nodes, parsed.groups, parsed.controller)
     elif parsed.action == "validate":
         # We always validate but this shows a nice message even if validation succeeds
-        _action_validate()
+        _action_validate(progfigsitename)
     else:
         parser.error(f"Unknown action {parsed.action}")
 
@@ -561,7 +564,7 @@ def main(progfigsite_modpath: str):
 
     TODO: document how the modpath thing works
     """
-    progfiguration.progfigsite_module_path = progfigsite_modpath
+    sitewrapper.set_progfigsite_by_module_name(progfigsite_modpath)
 
     # mypy flags this for no reason and I can't figure out why, YOLO
     # > Argument 2 to "progfiguration_error_handler" has incompatible type "*list[str]"; expected "list[str]"  [arg-type]mypy(error)
