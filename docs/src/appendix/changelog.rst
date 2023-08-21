@@ -6,6 +6,13 @@ WIP
 
 ... nothing yet ...
 
+`0.0.7`
+-------
+
+* Fix bugs when running sites in some states
+* Replace progfiguration.progfigsite_module_path  with sitewrapper ``get_`` and ``set_`` methods
+* Require sites to call ``sitewrapper.set_progfigsite_by_module_name()`` in their root module
+
 `0.0.6`
 -------
 
