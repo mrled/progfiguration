@@ -9,11 +9,18 @@ from progfiguration.inventory.storeimpl.invconf import inventory_conf
 
 
 site_name = "example_site"
-"""The name of the site"""
+"""The name of the site package
+
+This must match the name of the site package defined in pyproject.toml.
+"""
 
 site_description = "This site is bundled with progfiguration core as an example"
 """The description of the site"""
 
+# The progfigsite package must be set before calling anything else from progfiguration core.
+sitewrapper.set_progfigsite_by_module_name(site_name)
+
+# Use progfiguration core to create an inventory
 hoststore, secretstore = inventory_conf(sitewrapper.site_submodule_resource("", "inventory.conf"))
 
 

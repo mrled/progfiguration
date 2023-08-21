@@ -6,16 +6,21 @@ but is specific to my hosts/roles/groups/functions/etc.
 
 from pathlib import Path
 
+from progfiguration import sitewrapper
 from progfiguration.inventory.storeimpl.agesecrets import AgeSecretStore
 from progfiguration.inventory.storeimpl.memhosts import MemoryHostStore
 
 
-site_name = "Nevada Test Site"
+site_name = "nnss_progfigsite"
 
 # What a boring motto.
 # From the Wikipedia page for Nevada Test and Training Range (military unit)
 site_description = "Force for Freedom"
 
+# The progfigsite package must be set before calling anything else from progfiguration core.
+sitewrapper.set_progfigsite_by_module_name(site_name)
+
+# Use progfiguration core to create an inventory
 hoststore = MemoryHostStore(
     groups={"group1": ["node1"]},
     node_function_map={"node1": "func1"},

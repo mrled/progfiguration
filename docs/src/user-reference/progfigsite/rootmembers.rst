@@ -5,10 +5,10 @@ Sites must define a few members in their root package ``__init__.py``:
 
 
 ``site_name``
-    a short user-facing string
+    The name of the Python package, e.g. ``example_site``. Must match the name of the package in ``pyproject.toml``.
 
 ``site_description``
-    a longer user-facing string
+    A longer user-facing string.
 
 ``hoststore``
     An implementation of the :class:`progfiguration.inventory.invstores.HostStore` protocol.
@@ -21,7 +21,7 @@ Sites must define a few members in their root package ``__init__.py``:
     :class:`progfiguration.inventory.storeimpl.agesecrets.AgeSecretStore`
 
 ``mint_version()``
-    a function that takes no arguments and returns a valid pip version number.
+    A function that takes no arguments and returns a valid pip version number.
 
     This function should return a **new** version number,
     suitable for the next build of the pacakge.
@@ -41,7 +41,7 @@ Sites must define a few members in their root package ``__init__.py``:
     Some implementations might instead pull the version number from an environment variable injected by a CI service, etc.
 
 ``get_version()``
-    a function that takes no arguments and returns a valid pip version number.
+    A function that takes no arguments and returns a valid pip version number.
 
     This function should return the **current** version number,
     for the currently-running package.
@@ -59,6 +59,14 @@ Sites must define a few members in their root package ``__init__.py``:
                 return version.version
             except ImportError:
                 return "0.0.1a0"
+
+Sites also must tell progfiguration core the name of the site pacakge, like this:
+
+.. code:: python
+
+    sitewrapper.set_progfigsite_by_module_name(site_name)
+
+You must do this before calling any other progfiguration core functions.
 
 Progfiguration core ships with a convenience function
 :meth:`progfiguration.inventory.storeimpl.invconf.inventory_conf`
