@@ -1,3 +1,5 @@
+# -*- mode: python -*-
+
 """The progfigsite command.
 
 This is required.

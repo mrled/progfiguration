@@ -26,8 +26,9 @@ Inventory
     Progfiguration ships with
     :class:`progfiguration.sitehelpers.memhosts.MemoryHostStore` and
     :class:`progfiguration.sitehelpers.agesecrets.AgeSecretStore`
-    which implement those two protocols, as well as a convenience function
-    :meth:`progfiguration.sitehelpers.invconf.inventory_conf`
+    which implement those two protocols, as well as convenience functions
+    :meth:`progfiguration.sitehelpers.invconf.hosts_conf` and
+    :meth:`progfiguration.sitehelpers.invconf.secrets_conf`
     which can instantiate one of each based on a simple configuration file.
 
     Sites may also implement their own implementation of HostStore and/or SecreStore

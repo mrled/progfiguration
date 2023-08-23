@@ -31,6 +31,7 @@ Run tests with `invoke tests`.
 Run with `--slow` to run slow tests too.
 Special environment variables:
 
+* `PROGFIGURATION_TEST_VERBOSE=1`: Show verbose output, including stdout/stderr of commands run inside of tests
 * `PROGFIGURATION_TEST_DEBUG=1`: Launch a debugger on any test failure or exception
 * `PROGFIGURATION_TEST_SLOW_ALL=1`: Run all slow tests (same as `invoke tests --slow`)
 * `PROGFIGURATION_TEST_SLOW_PACKAGING=1`: Run just slow tests related to packaging (`progfiguration build`, etc)

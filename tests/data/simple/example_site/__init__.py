@@ -5,7 +5,8 @@ but is specific to my hosts/roles/groups/functions/etc.
 """
 
 from progfiguration import sitewrapper
-from progfiguration.sitehelpers.invconf import inventory_conf
+from progfiguration.sitehelpers import siteversion
+from progfiguration.sitehelpers.invconf import hosts_conf, secrets_conf
 
 
 site_name = "example_site"
@@ -20,53 +21,43 @@ site_description = "This site is bundled with progfiguration core as an example"
 # The progfigsite package must be set before calling anything else from progfiguration core.
 sitewrapper.set_progfigsite_by_module_name(site_name)
 
-# Use progfiguration core to create an inventory
-hoststore, secretstore = inventory_conf(sitewrapper.site_submodule_resource("", "inventory.conf"))
+hoststore = hosts_conf("inventory.conf")
+"""The hoststore for the site
+
+The :meth:`progfiguration.sitehelpers.invconf.hosts_conf` function
+returns a :class:`progfiguration.sitehelpers.invconf.MemoryHostStore`.
+The path we pass to it can be included in the site package
+and found relative to the site package root.
+"""
+
+secretstore = secrets_conf("inventory.conf")
+"""The secretstore for the site
+
+The :meth:`progfiguration.sitehelpers.invconf.secrets_conf` function
+returns a :class:`progfiguration.sitehelpers.invconf.AgeSecretStore`.
+Note that we pass it the same config file -- it reads different sections.
+"""
 
 
-def mint_version() -> str:
-    """Mint a new version number
+mint_version = siteversion.mint_version_factory_from_epoch(major=1, minor=0)
+"""A function that generates a new version when it's called.
 
-    This function is called by progfiguration core to generate a version number.
-    It may be called by site-specific code as well.
-    It should return a string that is a valid pip version number.
-    (If you are also building other packages like RPMs,
-    make sure to use a version number that is valid for all of them.)
-    """
-    from datetime import datetime
+Set it from :meth:`sitehelpers.siteversion.mint_version_factory_from_epoch`,
+which returns a ``mint_version()`` implementation
+that returns f"{maj}.{min}.{epoch}".
 
-    dt = datetime.utcnow()
-    epoch = int(dt.timestamp())
-    version = f"1.0.{epoch}"
-    return version
+Sites can write their own ``mint_version()`` if they wish,
+perhaps pulling the version from a build number in a CI system.
+"""
 
+get_version = siteversion.get_version_factory_with_simple_fallback(default_version="0.0.1a0")
+"""A function that retrieves the current version of the package when it's called.
 
-def get_version() -> str:
-    """Dynamically get the package version
+It looks in the build data, and if a version cannot be found there,
+it returns a default low version number.
 
-    In pyproject.toml, this function is used to set the package version.
-    That means it must return the correct value in multiple contexts.
+Set it from :meth:`sitehelpers.siteversion.get_version_factory_with_simple_fallback`,
+which returns a valid ``get_version()`` implementation with the specified default value.
 
-    building a package (e.g. with `python -m build`)
-        First look for ``progfigsite.builddata.version``,
-        which will have been injected at build time by
-        `progfiguration.progfigbuild.ProgfigsitePythonPackagePreparer`.
-        If that fails, fall back to the default value returned by this function,
-
-    installing from a built package (e.g. a .tar.gz or .whl)
-        Use ``progfigsite.builddata.version`` as above.
-        This should always be present for a built package.
-
-    installing from source (e.g. with `pip install -e .`)
-        Use the default value returned by this function,
-        which a very low version number.
-        ``progfigsite.builddata.version`` should never be present in this case.
-    """
-
-    try:
-        from example_site.builddata import version  # type: ignore
-
-        return version.version
-    except Exception as exc:
-        default_version = "0.0.1a0"
-        return default_version
+Sites can write their own ``get_version()`` if they wish.
+"""

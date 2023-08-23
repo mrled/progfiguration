@@ -39,7 +39,7 @@ Each function can then apply whatever roles it likes.
 
 .. code:: ini
 
-    [general]
+    [secrets]
     controller_age_path = /path/to/controller.age
     controller_age_pub = ...
     node_fallback_age_path = /etc/progfiguration/node.age

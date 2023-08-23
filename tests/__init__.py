@@ -49,3 +49,9 @@ def skipUnlessAnyEnv(envvars: List):
     return unittest.skip(
         "Skipping test unless any of the following environment variables are set: " + ", ".join(envvars)
     )
+
+
+def verbose_test_output() -> bool:
+    """Return whether verbose test output is enabled"""
+    verbose = bool(os.environ.get("PROGFIGURATION_TEST_VERBOSE", ""))
+    return verbose

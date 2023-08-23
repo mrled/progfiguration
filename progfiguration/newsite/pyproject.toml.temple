@@ -1,3 +1,5 @@
+# -*- mode: toml -*-
+
 [project]
 name = "{$}name"
 dynamic = ["version"]

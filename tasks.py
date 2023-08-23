@@ -5,9 +5,11 @@ import invoke
 
 
 @invoke.task
-def tests(ctx, debug=False, slow=False):
+def tests(ctx, debug=False, slow=False, verbose=False):
     """Run normal tests, but not slower packaging tests"""
     env = {}
+    if verbose:
+        env["PROGFIGURATION_TEST_VERBOSE"] = "1"
     if debug:
         env["PROGFIGURATION_TEST_DEBUG"] = "1"
     if slow:

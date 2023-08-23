@@ -15,7 +15,7 @@ except ImportError:
 
 from progfiguration import cmd, progfigbuild
 
-from tests import pdbexc, skipUnlessAnyEnv
+from tests import pdbexc, skipUnlessAnyEnv, verbose_test_output
 
 
 class TestRun(unittest.TestCase):
@@ -104,14 +104,16 @@ class TestRun(unittest.TestCase):
         pyzfile = self.tmpdir / "test.pyz"
         progfigbuild.build_progfigsite_zipapp(self.packagedir, self.sitename, pyzfile)
 
-        # Show all the files in the zipapp
-        # import zipfile
-        # with zipfile.ZipFile(pyzfile, "r") as z:
-        #     z.printdir()
+        if verbose_test_output():
+            print("Contents of the zipapp:")
+            import zipfile
+
+            with zipfile.ZipFile(pyzfile, "r") as z:
+                z.printdir()
 
         # Use the venv python, which is guaranteed not to have progfiguration core or any site installed,
         # to run the newly created zipapp, and validate.
-        result = cmd.magicrun([venv_python.as_posix(), pyzfile.as_posix(), "validate"], print_output=False)
+        result = cmd.magicrun([venv_python.as_posix(), pyzfile.as_posix(), "validate"], print_output=verbose_test_output())
         stdout = result.stdout.read()
         self.assertTrue(result.returncode == 0)
         self.assertRegex(stdout, r"Progfigsite \(Python path: '.*'\) is valid.")
@@ -146,7 +148,7 @@ class TestRun(unittest.TestCase):
                 "--editable",
                 progfiguration_core_project_path.as_posix(),
             ],
-            print_output=False,
+            print_output=verbose_test_output(),
         )
 
         # Install the site into the venv as editable
@@ -160,7 +162,7 @@ class TestRun(unittest.TestCase):
                 "--editable",
                 self.projectdir.as_posix(),
             ],
-            print_output=False,
+            print_output=verbose_test_output(),
         )
         self.assertTrue(pip_site_result.returncode == 0)
 
@@ -171,7 +173,7 @@ class TestRun(unittest.TestCase):
                 venv_site.as_posix(),
                 "validate",
             ],
-            print_output=False,
+            print_output=verbose_test_output(),
         )
         validate_stdout = validate_result.stdout.read()
         self.assertEqual(validate_result.returncode, 0)

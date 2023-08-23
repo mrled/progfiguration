@@ -78,7 +78,7 @@ See also :doc:`/user-reference/progfigsite/index`.
     in a secret store like ``gopass``,
     or wherever makes sense for your controller and your threat model.
 
-    If you move it, make sure that the ``general.controller_age_path``
+    If you move it, make sure that the ``secrets.controller_age_path``
     configuration key contains the new location.
 
 4.  Install your progfigsite package to the venv.
