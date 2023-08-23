@@ -71,6 +71,11 @@ To do
   When we need to do something like create Route53 records,
   there is no host to deploy the package to,
   but we should be able to run it on the controller.
+  The easiest way to do this might be to allow multiple functions per node,
+  maybe with a singular default.
+
+* Test against large numbers of hosts.
+  Maybe just large numbers of connections to localhost with a bunch of different entries in /etc/hosts.
 
 *   Contrast *declarativity* with *idempotency*.
 
