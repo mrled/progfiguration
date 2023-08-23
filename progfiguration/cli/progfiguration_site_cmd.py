@@ -544,11 +544,11 @@ def _main_implementation(*arguments):
         parser.error(f"Unknown action {parsed.action}")
 
 
-def main(progfigsite_modpath: str):
+def main():
     """The main function for the progfigsite command-line interface
 
     While this file exists in the core progfiguration package,
-    it is not installed as a command-line script there.
+    it is not installed as a command-line script here.
     Instead, progfigsite packages are expected to add a shim file that calls this function,
     and configure their Python project to install that shim file as a command-line script.
 
@@ -561,11 +561,6 @@ def main(progfigsite_modpath: str):
     Building a pyz package with `progfiguration build pyz`
     will install the site package as `progfigsite` in the pyz regardless of what the site package is called,
     and will call this function with `progfigsite` as the argument.
-
-    TODO: document how the modpath thing works
     """
-    sitewrapper.set_progfigsite_by_module_name(progfigsite_modpath)
 
-    # mypy flags this for no reason and I can't figure out why, YOLO
-    # > Argument 2 to "progfiguration_error_handler" has incompatible type "*list[str]"; expected "list[str]"  [arg-type]mypy(error)
-    progfiguration_error_handler(_main_implementation, *sys.argv)  # type: ignore
+    progfiguration_error_handler(_main_implementation, *sys.argv)

@@ -97,8 +97,9 @@ def build_progfigsite_zipapp(
 
     main_py = textwrap.dedent(
         f"""
+        import {site_zip_directory}
         from progfiguration.cli import progfiguration_site_cmd
-        progfiguration_site_cmd.main("{site_zip_directory}")
+        progfiguration_site_cmd.main()
         """
     )
 
