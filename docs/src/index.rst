@@ -39,9 +39,9 @@ Do you...
 Availability
 ------------
 
-*   The source code is available on GitHub at `mrled/progfiguration <https://github.com/mrled/progfiguration>`_.
-*   Releases are on PyPI as `progfiguration <https://pypi.org/project/progfiguration/>`_.
-*   Progfiguration is available under the `MIT license <https://github.com/mrled/progfiguration/blob/master/LICENSE>`_.
+*   Source code on GitHub at `mrled/progfiguration <https://github.com/mrled/progfiguration>`_.
+*   Releases on PyPI as `progfiguration <https://pypi.org/project/progfiguration/>`_.
+*   Available under the `MIT license <https://github.com/mrled/progfiguration/blob/master/LICENSE>`_.
 *   Written by `Micah R Ledbetter <http://me.micahrl.com>`_.
 
 Patches and bug reports are welcome!
@@ -54,7 +54,8 @@ A guided tour of the documentation
 Read :ref:`progfiguration-getting-started` first.
 It will walk you through installing ``progfiguration`` and building out your *site*,
 which is the directory (usually in a Git repository) that contains your inventory.
-When you're exploring, you might be interested in the :ref:`command help <commands>` reference,
+When you're exploring, you might be interested in some basic :doc:`concepts </user-reference/concepts>`,
+the :ref:`command help <commands>` reference,
 and the :ref:`progfigsite API <progfigsite>` that lists your site package must implement.
 You might also want to read :ref:`for-ansible-users`,
 if you're familiar with Ansible.

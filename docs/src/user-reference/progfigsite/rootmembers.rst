@@ -1,11 +1,15 @@
 ``progfigsite`` root members
 ============================
 
-Sites must define a few members in their root package ``__init__.py``:
+A site's root ``__init__.py`` must contain the following definitions and function calls:
 
 
 ``site_name``
     The name of the Python package, e.g. ``example_site``. Must match the name of the package in ``pyproject.toml``.
+
+``sitewrapper.set_progfigsite_by_module_name(site_name)``
+    After setting the site name, you must call this function to tell progfiguration core the name of the package.
+    This must happen in the root module, and before any progfiguration core functions are called.
 
 ``site_description``
     A longer user-facing string.
@@ -13,12 +17,14 @@ Sites must define a few members in their root package ``__init__.py``:
 ``hoststore``
     An implementation of the :class:`progfiguration.inventory.invstores.HostStore` protocol.
     Progfiguration core ships with
-    :class:`progfiguration.inventory.storeimpl.memhosts.MemoryHostStore`.
+    :class:`progfiguration.inventory.storeimpl.memhosts.MemoryHostStore`,
+    and sites are free to implement their own.
 
 ``secretstore``
     An implementation of the :class:`progfiguration.inventory.invstores.SecretStore` protocol.
     Progfiguration core ships with
-    :class:`progfiguration.inventory.storeimpl.agesecrets.AgeSecretStore`
+    :class:`progfiguration.inventory.storeimpl.agesecrets.AgeSecretStore`,
+    and sites are free to implement their own.
 
 ``mint_version()``
     A function that takes no arguments and returns a valid pip version number.
@@ -59,14 +65,6 @@ Sites must define a few members in their root package ``__init__.py``:
                 return version.version
             except ImportError:
                 return "0.0.1a0"
-
-Sites also must tell progfiguration core the name of the site pacakge, like this:
-
-.. code:: python
-
-    sitewrapper.set_progfigsite_by_module_name(site_name)
-
-You must do this before calling any other progfiguration core functions.
 
 Progfiguration core ships with a convenience function
 :meth:`progfiguration.inventory.storeimpl.invconf.inventory_conf`
