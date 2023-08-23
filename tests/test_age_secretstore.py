@@ -1,7 +1,7 @@
 """Tests of inventory functionality using a test site."""
 
 import unittest
-from progfiguration.inventory.storeimpl.agesecrets import AgeSecret
+from progfiguration.sitehelpers.agesecrets import AgeSecret
 
 from tests import PdbTestCase, pdbexc
 from tests.data import nnss_test_data

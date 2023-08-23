@@ -44,7 +44,7 @@ For each node:
     Progfiguration supports pluggable secrets storage backends that implement
     the :class:`progfiguration.inventory.invstores.SecretStore` protocol.
     The ``newsite`` command uses a build-in backend that uses Age,
-    :class:`progfiguration.inventory.storeimpl.agesecrets.AgeSecretStore`,
+    :class:`progfiguration.sitehelpers.agesecrets.AgeSecretStore`,
     but you could also write your own and use that instead.
     Because Age-related information is site-specific,
     it goes in the ``.sitedata`` attribute of a node object.

@@ -32,7 +32,7 @@ Node secret files with AgeSecretStore
 .. note:: Information in this section only applies to AgeSecretStore
 
     This section only applies to sites that use the
-    :class:`progfiguration.inventory.storeimpl.agesecrets.AgeSecretStore`
+    :class:`progfiguration.sitehelpers.agesecrets.AgeSecretStore`
     secret storage implementation.
     It's what ships with progfiguration core so it's the easiest to get started with,
     but other secret storage backends will work differently.

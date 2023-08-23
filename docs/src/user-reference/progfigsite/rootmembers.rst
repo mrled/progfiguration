@@ -17,13 +17,13 @@ A site's root ``__init__.py`` must contain the following definitions and functio
 ``hoststore``
     An implementation of the :class:`progfiguration.inventory.invstores.HostStore` protocol.
     Progfiguration core ships with
-    :class:`progfiguration.inventory.storeimpl.memhosts.MemoryHostStore`,
+    :class:`progfiguration.sitehelpers.memhosts.MemoryHostStore`,
     and sites are free to implement their own.
 
 ``secretstore``
     An implementation of the :class:`progfiguration.inventory.invstores.SecretStore` protocol.
     Progfiguration core ships with
-    :class:`progfiguration.inventory.storeimpl.agesecrets.AgeSecretStore`,
+    :class:`progfiguration.sitehelpers.agesecrets.AgeSecretStore`,
     and sites are free to implement their own.
 
 ``mint_version()``
@@ -67,7 +67,7 @@ A site's root ``__init__.py`` must contain the following definitions and functio
                 return "0.0.1a0"
 
 Progfiguration core ships with a convenience function
-:meth:`progfiguration.inventory.storeimpl.invconf.inventory_conf`
+:meth:`progfiguration.sitehelpers.invconf.inventory_conf`
 which instantiates both a MemoryHostStore and an AgeSecretStore
 based on an inventory config file.
 
