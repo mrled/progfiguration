@@ -5,7 +5,7 @@ but is specific to my hosts/roles/groups/functions/etc.
 """
 
 from progfiguration import sitewrapper
-from progfiguration.inventory.storeimpl.invconf import inventory_conf
+from progfiguration.sitehelpers.invconf import inventory_conf
 
 
 site_name = "example_site"

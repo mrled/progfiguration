@@ -7,8 +7,8 @@ but is specific to my hosts/roles/groups/functions/etc.
 from pathlib import Path
 
 from progfiguration import sitewrapper
-from progfiguration.inventory.storeimpl.agesecrets import AgeSecretStore
-from progfiguration.inventory.storeimpl.memhosts import MemoryHostStore
+from progfiguration.sitehelpers.agesecrets import AgeSecretStore
+from progfiguration.sitehelpers.memhosts import MemoryHostStore
 
 
 site_name = "nnss_progfigsite"

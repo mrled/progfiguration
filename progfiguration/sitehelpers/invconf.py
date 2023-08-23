@@ -4,8 +4,8 @@ from configparser import ConfigParser
 from pathlib import Path
 from typing import Tuple, Union
 
-from progfiguration.inventory.storeimpl.agesecrets import AgeSecretStore
-from progfiguration.inventory.storeimpl.memhosts import MemoryHostStore
+from progfiguration.sitehelpers.agesecrets import AgeSecretStore
+from progfiguration.sitehelpers.memhosts import MemoryHostStore
 
 
 def inventory_conf(cfgfile: Union[Path, ConfigParser]) -> Tuple[MemoryHostStore, AgeSecretStore]:

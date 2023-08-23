@@ -4,7 +4,7 @@
 import importlib.resources
 import pathlib
 from typing import Optional
-from progfiguration.inventory.storeimpl.agesecrets import AgeKey
+from progfiguration.sitehelpers.agesecrets import AgeKey
 from progfiguration.cmd import magicrun
 
 from progfiguration.temple import Temple
