@@ -1,4 +1,4 @@
-"""An inventory configuration file that uses AgeSecretStore and MemoryHostStore"""
+"""Inventory configuration files that can be used with AgeSecretStore and MemoryHostStore"""
 
 from configparser import ConfigParser
 from pathlib import Path

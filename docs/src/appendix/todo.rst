@@ -55,25 +55,6 @@ To do
   Consider adding support for downloading a fresh copy from pypi,
   in case the user does something weird with their current version.
 
-* Make the inventory an API.
-    Previously, the inventory was a YAML document.
-    Now, it is expected to be parsable by ``configparser``, which allows us
-    to use just the standard library.
-    In the future, define an inventory abstract class, and allow the progfigsite to implement it.
-    Provide an easy to use configparser implementation
-
-    That would let the progfigsite depend on any format it wants, including:
-        - YAML, which I still prefer over most options
-        - configparser format, built in to Python
-        - JSON, which is a pain to use but built in to Python
-        - Raw Python, which has a nice alignment with the raw Python node/group modules
-        - TOML, which is built in to Python 11, and also into pip which is ubiquitous even on older Python versions
-        - Some external program that generates any of the above -- especially JSON
-        - ... whatever
-
-    This implements our values of keeping the core progfiguration module
-    simple, free of dependencies, and easy for sites to extend.
-
 * Can I make sphinx-autobuild faster? Waiting 5+ seconds on every single file save is _horrible_.
 
 * Add a philosophy section, or include all of this in the design section:
@@ -107,8 +88,6 @@ To do
       you have to ensure idempotency yourself.
 
 * Can we make all ABCs Protocols instead? Either do this, or write comments as to why.
-
-* Update docs for new SecretStore API. Include new requirements at site package root level.
 
 * Improve test coverage
     * Test most the command line invocations for both core and site.

@@ -73,6 +73,7 @@ but for now this is a manual process.)
 Add nodes and groups to the inventory
 -------------------------------------
 
-All nodes and groups you create must be listed in the inventory file,
+All nodes and groups you create must be added to your :ref:`host store <progfigsite-concept-hoststore>`,
 or progfiguration will not be able to find them.
+In our case, we do this by adding them to the ``inventory.conf`` file.
 We'll explore the inventory in :doc:`/getting-started/create-role`.

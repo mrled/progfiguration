@@ -13,27 +13,47 @@ Progfiguration sites (``progfigsite``\ s)
 
 .. _progfigsite-concept-controller:
 
-The controller
+Controller
     This is the machine that contains a master Age key and can connect to all the nodes in the inventory.
+    It can decrypt all secrets
+    and can connect to all nodes via SSH when running the ``progfigsite deploy`` command.
 
 .. _progfigsite-concept-inventory:
 
 Inventory
-    Storage for nodes, groups, functions, roles, and secrets for a progfigsite.
-    Made up of an implementation of the :class:`progfiguration.inventory.invstores.HostStore` protocol
-    plus an implementation of the :class:`progfiguration.inventory.invstores.SecretStore` protocol.
+    A :ref:`host store <progfigsite-concept-hoststore>` plus a :ref:`secret store <progfigsite-concept-secretstore>`.
+
+.. _progfigsite-concept-hoststore:
+
+Host store
+    Where nodes, groups, and functions are defined.
+    See :class:`progfiguration.inventory.invstores.HostStore`.
 
     Progfiguration ships with
-    :class:`progfiguration.sitehelpers.memhosts.MemoryHostStore` and
-    :class:`progfiguration.sitehelpers.agesecrets.AgeSecretStore`
-    which implement those two protocols, as well as convenience functions
-    :meth:`progfiguration.sitehelpers.invconf.hosts_conf` and
-    :meth:`progfiguration.sitehelpers.invconf.secrets_conf`
-    which can instantiate one of each based on a simple configuration file.
+    :class:`progfiguration.sitehelpers.memhosts.MemoryHostStore` which implements that protocol,
+    and :meth:`progfiguration.sitehelpers.invconf.hosts_conf`
+    which can instantiate one from a simple configuration file.
 
-    Sites may also implement their own implementation of HostStore and/or SecreStore
-    (in their own :doc:`sitelib module </user-reference/progfigsite/sitelib>`)
-    and use those instead.
+    Sites are free to instantiate a ``MemoryHostStore`` directly
+    or implement their own ``HostStore``
+    (in their :doc:`sitelib module </user-reference/progfigsite/sitelib>`)
+    and use it instead.
+
+.. _progfigsite-concept-secretstore:
+
+Secret store
+    How secrets are stored.
+    See :class:`progfiguration.inventory.invstores.SecretStore`.
+
+    Progfiguration ships with
+    :class:`progfiguration.sitehelpers.agesecrets.AgeSecretStore` which implements that protocol,
+    and :meth:`progfiguration.sitehelpers.invconf.secrets_conf`
+    which can instantiate one from a simple configuration file.
+
+    Sites are free to instantiate an ``AgeSecretStore`` directly
+    or implement their own ``SecretStore``
+    (in their :doc:`sitelib module </user-reference/progfigsite/sitelib>`)
+    and use it instead.
 
 .. _progfigsite-concept-node:
 
@@ -77,6 +97,9 @@ Role reference
 
 Function
     A function is a mapping of a node to a set of roles.
-    Functions are defined inside the inventory config file only
-    (and do not have a Python module associated with them).
-    A node can only have one function.
+    Functions are defined inside the host store only --
+    unlike groups and nodes, they don't have an object associated with them.
+
+    A node can only have one function,
+    but the function can map to multiple roles.
+    When a node is provisioned, the roles associated with the function are applied to the node.

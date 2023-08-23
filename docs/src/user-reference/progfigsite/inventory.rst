@@ -1,18 +1,22 @@
 ``progfigsite`` ``inventory.conf`` File
 =======================================
 
-An ``inventory.conf`` file must be present in the root of the ``progfigsite`` package.
-The file should be in :mod:`configparser` format.
+An ``inventory.conf`` file is not technically part of progfiguration core,
+but it can be used with
+:func:`progfiguration.sitehelpers.invconf.hosts_conf` and
+:func:`progfiguration.sitehelpers.invconf.secrets_conf` to create a
+:ref:`host store <progfigsite-concept-hoststore>` and
+:ref:`secrets store <progfigsite-concept-secretsstore>` respectively.
 
 Here's an example from :mod:`example_site`:
 
 .. literalinclude:: ../../../../tests/data/simple/example_site/inventory.conf
-   :language: ini
+    :language: ini
 
-Functions
----------
+By itself, that inventory file does nothing,
+but when referenced in the site's root module
+it generates the host and secret stores.
+Here is the root module from :mod:`example_site`:
 
-Unlike groups and nodes, functions don't have an object associated with them.
-Functions play a similar role to :doc:`playbooks in Ansible </appendix/for-ansible-users/functions>`.
-A function is mapped to a list of nodes and a list of roles.
-When a node is provisioned, the roles associated with the function are applied to the node.
+.. literalinclude:: ../../../../tests/data/simple/example_site/__init__.py
+    :language: python
