@@ -34,5 +34,5 @@ class TestRun(PdbTestCase):
             result = magicrun([str(pyzfile), "version"], print_output=False)
             stdout = result.stdout.read().strip()
             self.assertTrue("progfiguration core" in stdout)
-            self.assertTrue("Nevada Test Site" in stdout)
+            self.assertTrue("nss_progfigsite" in stdout)
             self.assertTrue(nnss.progfigsite.site_description in stdout)
