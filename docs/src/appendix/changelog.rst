@@ -6,6 +6,16 @@ WIP
 
 ... nothing yet ...
 
+`0.0.8`
+-------
+
+* Simplify the API for progfigsites, including the root module and the cli shim
+* Add ``sitehelpers`` module, move inventory implementations there
+* Separate ``hosts_conf()`` and ``secrets_conf()`` helper functions
+* Make progfigsite shim easier to understand
+* Add tests
+* Documentation improvements
+
 `0.0.7`
 -------
 
