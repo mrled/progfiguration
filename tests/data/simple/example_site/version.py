@@ -15,10 +15,16 @@ installing from a built package (e.g. a .tar.gz or .whl)
     Use ``progfigsite.builddata.version`` as above.
     This should always be present for a built package.
 
-installing from source (e.g. with `pip install -e .`)
+installing from source with progfiguration core already present (e.g. with `pip install -e .`)
     Use the default value returned by this function,
     which a very low version number.
     ``progfigsite.builddata.version`` should never be present in this case.
+
+installing from source with progfiguration core not already present (e.g. with `pip install -e '.[development]'`)
+    In this case, ``pip`` reads ``pyprojec.toml`` first,
+    and calculates the version before it installs prerequisites for the ``development`` extras --
+    meaning that ``progfiguration`` core is not yet installed.
+    Provide a fallback for this case so that ``pip`` can still retrieve a version.
 
 The default version should be very low.
 """

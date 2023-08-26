@@ -1,3 +1,5 @@
+# -*- mode: python -*-
+
 """The version module.
 
 get_version() used to get the current package version,
