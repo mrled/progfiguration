@@ -1,13 +1,11 @@
 """Utilities for command-line programs"""
 
-import argparse
 from collections.abc import Callable
 import logging
 import logging.handlers
 import os
 import pdb
 import sys
-import textwrap
 import traceback
 from typing import List
 
@@ -92,6 +90,14 @@ def configure_logging(log_stderr: str, log_syslog: str = "NONE") -> None:
     * `log_stderr`: The log level for stderr, one of `progfiguration_log_levels`.
     * `log_syslog`: The log level for syslog, one of `progfiguration_log_levels`.
     """
+
+    # Check if the function has been called before by looking for a 'configured' attribute
+    if hasattr(configure_logging, "configured") and configure_logging.configured:
+        # If logging is already configured, remove all existing handlers so we can reconfigure
+        for handler in logging.root.handlers[:]:
+            logging.root.removeHandler(handler)
+
+    # Add handlers
     if log_stderr != "NONE":
         handler_stderr = logging.StreamHandler()
         handler_stderr.setFormatter(logging.Formatter("[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s"))
@@ -103,6 +109,9 @@ def configure_logging(log_stderr: str, log_syslog: str = "NONE") -> None:
         handler_syslog = logging.handlers.SysLogHandler(address="/dev/log")
         handler_syslog.setLevel(log_syslog)
         logger.addHandler(handler_syslog)
+
+    # Mark the function as configured
+    setattr(configure_logging, "configured", True)
 
 
 def CommaSeparatedStrList(cssl: str) -> List[str]:
