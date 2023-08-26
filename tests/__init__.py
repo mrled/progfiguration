@@ -3,6 +3,8 @@ import pdb
 from typing import List
 import unittest
 
+from progfiguration.cli.util import configure_logging
+
 
 class PdbTestCase(unittest.TestCase):
     def run(self, result=None):
@@ -55,3 +57,7 @@ def verbose_test_output() -> bool:
     """Return whether verbose test output is enabled"""
     verbose = bool(os.environ.get("PROGFIGURATION_TEST_VERBOSE", ""))
     return verbose
+
+
+if verbose_test_output():
+    configure_logging("DEBUG")
