@@ -33,7 +33,7 @@ build-backend = "setuptools.build_meta"
 example_site = ["*"]
 
 [tool.setuptools.dynamic]
-version = {attr = "{$}name.get_version"}
+version = {attr = "{$}name.version.get_version"}
 
 [tool.black]
 line-length = 120

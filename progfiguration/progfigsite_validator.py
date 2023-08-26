@@ -40,7 +40,7 @@ class ValidationResult:
         ProgfigsiteAttribute("site_name", str, True),
         ProgfigsiteAttribute("site_description", str, True),
         ProgfigsiteAttribute("mint_version", Callable[[bool], str], True),
-        ProgfigsiteAttribute("get_version", Callable[[], str], True),
+        ProgfigsiteAttribute("version", ModuleType, True),
         ProgfigsiteAttribute("hoststore", HostStore, True),
         ProgfigsiteAttribute("secretstore", SecretStore, True),
         ProgfigsiteAttribute("builddata", ModuleType, True),

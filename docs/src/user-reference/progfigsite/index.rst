@@ -27,6 +27,7 @@ They must contain certain members (subpackages, modules, functions, and variable
     roles.rst
     sitelib.rst
     builddata.rst
+    version.rst
 
     development.rst
     defining-dependencies.rst

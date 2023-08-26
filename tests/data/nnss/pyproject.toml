@@ -2,7 +2,7 @@
 name = "nnss_progfigsite"
 dynamic = ["version"]
 description = "Nevada National Security Site progfigsite"
-license = {text = "MIT"}
+license = { text = "MIT" }
 readme = "readme.md"
 requires-python = ">=3.10"
 
@@ -29,16 +29,14 @@ development = [
 Homepage = "https://github.com/mrled/progfiguration/"
 
 [build-system]
-requires = [
-    "setuptools",
-]
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.package-data]
 nnss_progfigsite = ["*"]
 
 [tool.setuptools.dynamic]
-version = {attr = "nnss_progfigsite.get_version"}
+version = { attr = "nnss_progfigsite.version.get_version" }
 
 [tool.black]
 line-length = 120

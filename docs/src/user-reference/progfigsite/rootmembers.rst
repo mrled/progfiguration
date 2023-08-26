@@ -36,27 +36,14 @@ A site's root ``__init__.py`` must contain the following definitions and functio
 
     This function should return a **new** version number,
     suitable for the next build of the pacakge.
+    (This is different from the ``get_version()`` function in :ref:`/user-reference/progfigsite/version`,
+    which returns the **current** version number.)
 
     Progfiguration core ships with
     :func:`progfiguration.sitehelpers.siteversion.mint_version_factory_from_epoch`,
     which will return a function that uses the epoch time in the version number.
     Some implementations might prefer to implement their own ``mint_version()``,
     perhaps to pull the version number from an environment variable injected by a CI service, etc.
-
-``get_version()``
-    A function that takes no arguments and returns a valid pip version number.
-
-    This function should return the **current** version number,
-    for the currently-running package.
-
-    It should first look for a ``builddata.version`` package with a string ``version`` member and return that.
-    If that is not found, it should return a default version number.
-
-    Progfiguration core ships with
-    :func:`progfiguration.sitehelpers.siteversion.get_version_factory_with_simple_fallback`,
-    which will return a function that uses the ``builddata.version`` package if it exists,
-    and otherwise returns a default version number.
-    Implementations are free to implement their own ``get_version()`` as well.
 
 Here is an example root ``__init__.py`` file from :mod:`example_site`.
 

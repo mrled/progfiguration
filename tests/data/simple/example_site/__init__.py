@@ -49,15 +49,3 @@ that returns f"{maj}.{min}.{epoch}".
 Sites can write their own ``mint_version()`` if they wish,
 perhaps pulling the version from a build number in a CI system.
 """
-
-get_version = siteversion.get_version_factory_with_simple_fallback(default_version="0.0.1a0")
-"""A function that retrieves the current version of the package when it's called.
-
-It looks in the build data, and if a version cannot be found there,
-it returns a default low version number.
-
-Set it from :meth:`sitehelpers.siteversion.get_version_factory_with_simple_fallback`,
-which returns a valid ``get_version()`` implementation with the specified default value.
-
-Sites can write their own ``get_version()`` if they wish.
-"""

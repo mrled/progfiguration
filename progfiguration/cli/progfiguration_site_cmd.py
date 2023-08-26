@@ -51,13 +51,12 @@ def _action_version_all():
     """Retrieve the version of progfiguration core and the progfigsite"""
 
     progfigsitename, progfigsite = sitewrapper.get_progfigsite()
-
+    site_vers_mod = sitewrapper.site_submodule("version")
+    version = site_vers_mod.get_version()
     try:
-        builddata_version = sitewrapper.site_submodule("builddata.version")
-        version = builddata_version.version
-        builddate = builddata_version.builddate
-    except ModuleNotFoundError:
-        version = progfigsite.get_version()
+        site_builddata_vers_mod = sitewrapper.site_submodule("builddata.version")
+        builddate = site_builddata_vers_mod.builddate
+    except ImportError:
         builddate = datetime.datetime.utcnow()
 
     result = [
@@ -481,6 +480,7 @@ def _main_implementation(*arguments):
         print(f"Progfigsite (Python path: '{progfigsitename}') has {len(validation.errors)} errors:")
         for attrib in validation.errors:
             print(attrib.errstr)
+        sys.exit(1)
 
     secretstore = progfigsite.secretstore
     secretstore.apply_cli_arguments(parsed.secret_store_arguments or {})

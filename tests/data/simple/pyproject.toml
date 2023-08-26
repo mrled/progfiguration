@@ -2,7 +2,7 @@
 name = "example_site"
 dynamic = ["version"]
 description = "progfiguration example_site"
-license = {text = "MIT"}
+license = { text = "MIT" }
 readme = "readme.md"
 requires-python = ">=3.10"
 dependencies = []
@@ -30,16 +30,14 @@ development = [
 Homepage = "https://github.com/mrled/progfiguration/"
 
 [build-system]
-requires = [
-    "setuptools",
-]
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.package-data]
 example_site = ["*"]
 
 [tool.setuptools.dynamic]
-version = {attr = "example_site.get_version"}
+version = { attr = "example_site.version.get_version" }
 
 [tool.black]
 line-length = 120
