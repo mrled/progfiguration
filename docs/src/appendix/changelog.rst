@@ -6,6 +6,13 @@ WIP
 
 ... nothing yet ...
 
+`0.0.9`
+-------
+
+* Require site packages to have a ``version`` submodule with a ``get_versio()`` function
+* Configure logging in all tests
+* Allow reconfiguring logging without duplicate handlers
+
 `0.0.8`
 -------
 
