@@ -28,6 +28,7 @@ They must contain certain members (subpackages, modules, functions, and variable
     sitelib.rst
     builddata.rst
     version.rst
+    progfigsite_shim.rst
 
     development.rst
     defining-dependencies.rst

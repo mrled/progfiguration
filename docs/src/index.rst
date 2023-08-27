@@ -75,7 +75,7 @@ Table of Contents
 
    getting-started/index.rst
    user-reference/index.rst
-   design/index.rst
+   developer-reference/index.rst
    appendix/index.rst
 
 

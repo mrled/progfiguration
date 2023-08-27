@@ -1,5 +1,6 @@
 from pathlib import Path
 import shutil
+import string
 import tempfile
 import textwrap
 import unittest
@@ -15,6 +16,36 @@ except ImportError:
 from progfiguration import cmd, progfigbuild
 
 from tests import pdbexc, skipUnlessAnyEnv, verbose_test_output
+
+
+_pyproject_toml_template = string.Template(
+    """\
+[project]
+name = "$sitename"
+dynamic = ["version"]
+description = "Test project"
+[project.scripts]
+$sitename = "$sitename.cli.progfigsite_shim:main"
+[project.optional-dependencies]
+development = ["progfiguration @ file://$progfiguration_proj_path"]
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+[tool.setuptools.package-data]
+example_site = ["*"]
+[tool.setuptools.dynamic.version]
+attr = "$sitename.version.get_version"
+[tool.black]
+line-length = 120
+"""
+)
+"""Template for pyproject.toml files created by tests
+
+* Use the sitename as the package and script names.
+* Use the local filesystem path to progfiguration core.
+  This is much faster and more reliable for tests than installing from PyPI,
+  and allows us to test local changes to progfiguration core.
+"""
 
 
 class TestRun(unittest.TestCase):
@@ -121,13 +152,13 @@ class TestRun(unittest.TestCase):
 
     @pdbexc
     @skipUnlessAnyEnv(["PROGFIGURATION_TEST_SLOW_ALL", "PROGFIGURATION_TEST_SLOW_SITE"])
-    def test_newsite_installable(self):
-        """Test that it is installable to a venv
+    def test_newsite_install_editable(self):
+        """Test that it is installable to a venv with 'pip install -e'
 
         Slow test, requires a new venv.
         """
 
-        venvdir = self.tmpdir / "venv_test_newsite_installable"
+        venvdir = self.tmpdir / "venv_test_install_editable"
 
         # Create a venv with pip (slow)
         venv.create(venvdir.as_posix(), with_pip=True)
@@ -221,35 +252,13 @@ class TestRun(unittest.TestCase):
         self.assertTrue(newsite_result.returncode == 0)
 
         # Modify pyproject.toml to install progfiguration core from the local filesystem.
-        # By default, 'progfiguration newsite' sets the 'development' extra
-        # to install progfiguration core form PyPI.
-        # Install from local instead, because:
-        # 1. It's faster
-        # 2. We can test local changes to progfiguration core
         progfiguration_proj_path = Path(progfiguration.__file__).parent.parent
         pyproject_toml = projectdir / "pyproject.toml"
         with pyproject_toml.open("w") as fp:
             fp.write(
-                textwrap.dedent(
-                    f"""\
-                        [project]
-                        name = "{sitename}"
-                        dynamic = ["version"]
-                        description = "Test project"
-                        [project.scripts]
-                        {sitename} = "{sitename}.cli.progfigsite_shim:main"
-                        [project.optional-dependencies]
-                        development = ["progfiguration @ file://{progfiguration_proj_path}"]
-                        [build-system]
-                        requires = ["setuptools"]
-                        build-backend = "setuptools.build_meta"
-                        [tool.setuptools.package-data]
-                        example_site = ["*"]
-                        [tool.setuptools.dynamic.version]
-                        attr = "{sitename}.version.get_version"
-                        [tool.black]
-                        line-length = 120
-                    """
+                _pyproject_toml_template.substitute(
+                    sitename=sitename,
+                    progfiguration_proj_path=progfiguration_proj_path,
                 )
             )
         if verbose_test_output():
@@ -273,6 +282,109 @@ class TestRun(unittest.TestCase):
                 ".[development]",
             ],
             cwd=projectdir.as_posix(),
+            print_output=verbose_test_output(),
+        )
+        self.assertTrue(pip_site_result.returncode == 0)
+
+        # Validate the site from within the venv
+        venv_site_cmd = venvdir / "bin" / sitename
+        validate_result = cmd.magicrun(
+            [
+                venv_site_cmd.as_posix(),
+                "validate",
+            ],
+            print_output=verbose_test_output(),
+        )
+        validate_stdout = validate_result.stdout.read()
+        self.assertEqual(validate_result.returncode, 0)
+        self.assertEqual(validate_stdout, f"Progfigsite (Python path: '{sitename}') is valid.\n")
+
+    @pdbexc
+    @skipUnlessAnyEnv(["PROGFIGURATION_TEST_SLOW_ALL", "PROGFIGURATION_TEST_SLOW_SITE"])
+    def test_site_pip_install_build_install(self):
+        """Test that the site can be built and installed with pip.
+
+        This is a slow test, as it creates a fresh virtualenv
+        to install the site package into.
+        """
+
+        sitename = "test_spibi"
+        venvdir = self.tmpdir / f"venv_{sitename}"
+
+        # Make a new site, dedicated to this one test
+        projectdir = self.tmpdir / sitename
+        packagedir = projectdir / sitename
+        controllerage = self.tmpdir / f"controller.{sitename}.age"
+        newsite_result = cmd.magicrun(
+            [
+                "progfiguration",
+                "newsite",
+                "--name",
+                sitename,
+                "--path",
+                projectdir.as_posix(),
+                "--controller-age-key-path",
+                controllerage.as_posix(),
+            ],
+            print_output=verbose_test_output(),
+        )
+        self.assertTrue(newsite_result.returncode == 0)
+
+        # Modify pyproject.toml to install progfiguration core from the local filesystem.
+        progfiguration_proj_path = Path(progfiguration.__file__).parent.parent
+        pyproject_toml = projectdir / "pyproject.toml"
+        with pyproject_toml.open("w") as fp:
+            fp.write(
+                _pyproject_toml_template.substitute(
+                    sitename=sitename,
+                    progfiguration_proj_path=progfiguration_proj_path,
+                )
+            )
+
+        # Build the site into a pip package
+        pip_build = self.tmpdir / "pip_build"
+        prog_build_result = cmd.magicrun(
+            [
+                "progfiguration",
+                "build",
+                "--progfigsite-fspath",
+                packagedir.as_posix(),
+                "--progfigsite-modname",
+                sitename,
+                "pip",
+                "--outdir",
+                pip_build.as_posix(),
+            ],
+            print_output=verbose_test_output(),
+        )
+        self.assertTrue(prog_build_result.returncode == 0)
+
+        # Find the pip package in the build directory
+        pip_package = None
+        for child in pip_build.iterdir():
+            if verbose_test_output():
+                print(f"{pip_build} / {child}")
+            if child.name.endswith(".tar.gz"):
+                pip_package = child
+                break
+        if pip_package is None:
+            raise RuntimeError(f"Could not find pip package in {pip_build}")
+
+        # Create a venv
+        # Add pip (slow), so we can install the site into it
+        venv.create(venvdir.as_posix(), with_pip=True)
+        venv_python = venvdir / "bin" / "python"
+
+        # Install the site into the venv as editable
+        pip_site_result = cmd.magicrun(
+            [
+                venv_python.as_posix(),
+                "-m",
+                "pip",
+                "--disable-pip-version-check",
+                "install",
+                pip_package.as_posix(),
+            ],
             print_output=verbose_test_output(),
         )
         self.assertTrue(pip_site_result.returncode == 0)

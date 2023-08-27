@@ -35,7 +35,7 @@ See also :doc:`/user-reference/progfigsite/index`.
     +-------------------------------------------+-----------------------------------------------+
     | ``progfigsite/``                          | The root of the actual Python package.        |
     |                                           | (The same name as the parent, e.g.            |
-    |                                           | ``progfigsite/progfigsite/``.                 |
+    |                                           | ``progfigsite/progfigsite/``).                |
     +-------------------------------------------+-----------------------------------------------+
     | ``progfigsite/__init__.py``               | The root package exports some required        |
     |                                           | attributes.                                   |
