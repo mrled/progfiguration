@@ -50,7 +50,7 @@ Statically including ``progfiguration`` core
 
 When building pip or pyz packages with ``progfiguration build``,
 it copies ``progfiguration`` core into
-``progfigsite.builddata.staticinclude.progfiguration``.
+``progfigsite.builddata.static_include.progfiguration``.
 
 Vendoring ``progfiguration`` core
 ---------------------------------

@@ -285,7 +285,7 @@ class ProgfigsitePythonPackagePreparer:
         """
 
         self.progfiguration_staticinclude_path = (
-            progfigsite_filesystem_path / "builddata" / "staticinclude" / "progfiguration"
+            progfigsite_filesystem_path / "builddata" / "static_include" / "progfiguration"
         )
         """The filesystem path to the progfiguration core package inside the progfigsite package
 

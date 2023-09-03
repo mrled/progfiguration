@@ -28,7 +28,7 @@ Why statically include progfiguration core?
 
 When we build pip or zipapp packages with ``progfiguration build``,
 progfiguration core is statically included into the package as
-``progfigsite.builddata.staticinclude.progfiguration``.
+``progfigsite.builddata.static_include.progfiguration``.
 
 Why not just use a separate package for core and site?
 While this is exactly the shape of problem that packaging systems (like pip) were invented for,
