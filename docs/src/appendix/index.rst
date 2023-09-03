@@ -16,3 +16,4 @@ Some items here may be incomplete works in progress.
     advanced/index.rst
     experiments/index.rst
     sphinx.rst
+    pyproject.rst
