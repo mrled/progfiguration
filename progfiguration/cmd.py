@@ -50,7 +50,10 @@ def magicrun(cmd: str | list, print_output=True, log_output=False, check=True, *
     """
     shell = isinstance(cmd, str)
 
-    logger.debug(f"Running command: {cmd}")
+    msg = f"Running command: {cmd}"
+    if kwargs.get("cwd"):
+        msg += f" from directory {kwargs['cwd']}"
+    logger.debug(msg)
 
     # ignore mypy errors because *args and **kwargs confuses it
     process = subprocess.Popen(  # type: ignore
