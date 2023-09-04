@@ -474,6 +474,7 @@ def _main_implementation(*arguments):
         nodename = None
 
     progfigsitename, progfigsite = sitewrapper.get_progfigsite()
+    inventory = sitewrapper.site_submodule("inventory")
 
     validation = validate(progfigsitename)
     if not validation.is_valid:
@@ -482,9 +483,9 @@ def _main_implementation(*arguments):
             print(attrib.errstr)
         sys.exit(1)
 
-    secretstore = progfigsite.secretstore
+    secretstore = inventory.secretstore
     secretstore.apply_cli_arguments(parsed.secret_store_arguments or {})
-    hoststore = progfigsite.hoststore
+    hoststore = inventory.hoststore
 
     if parsed.action == "version":
         _action_version_all()

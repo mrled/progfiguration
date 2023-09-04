@@ -24,7 +24,7 @@ class TestRun(PdbTestCase):
     @pdbexc
     def test_controller_decrypt(self):
         with nnss_test_data as nnss:
-            test_password = nnss.progfigsite.secretstore.get_secret("special", "controller", "test_password")
+            test_password = nnss.inventory.secretstore.get_secret("special", "controller", "test_password")
             decrypted_test_pass = test_password.decrypt()
             self.assertEqual(decrypted_test_pass, "p@ssw0rd")
 
@@ -37,8 +37,8 @@ class TestRun(PdbTestCase):
         secname_inmem = "test_node1_encrypt_decrypt_inmem"
         secvalue_inmem = "red mercury"
         with nnss_test_data as nnss:
-            encrypted_str = nnss.progfigsite.secretstore.encrypt_secret(
-                nnss.progfigsite.hoststore, secname_inmem, secvalue_inmem, ["node1"], [], False, store=False
+            encrypted_str = nnss.inventory.secretstore.encrypt_secret(
+                nnss.inventory.hoststore, secname_inmem, secvalue_inmem, ["node1"], [], False, store=False
             )
             secret = AgeSecret(encrypted_str, nnss.progfigsite.nodes.node1.node.sitedata["age_key_path"])
             self.assertEqual(secret.decrypt(), secvalue_inmem)
@@ -56,10 +56,10 @@ class TestRun(PdbTestCase):
         secname_ondisk = "test_node1_encrypt_decrypt_ondisk"
         secvalue_ondisk = "LK-99, a room temperature superconductor, really guys we promise"
         with nnss_test_data as nnss:
-            # nnss.progfigsite.secretstore.encrypt_secret(
-            #     nnss.progfigsite.hoststore, secname_ondisk, secvalue_ondisk, ["node1"], [], False, store=True
+            # nnss.inventory.secretstore.encrypt_secret(
+            #     nnss.inventory.hoststore, secname_ondisk, secvalue_ondisk, ["node1"], [], False, store=True
             # )
-            secret = nnss.progfigsite.secretstore.get_secret("node", "node1", secname_ondisk)
+            secret = nnss.inventory.secretstore.get_secret("node", "node1", secname_ondisk)
             self.assertEqual(secret.decrypt(), secvalue_ondisk)
 
 

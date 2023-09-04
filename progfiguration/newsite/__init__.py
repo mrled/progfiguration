@@ -98,14 +98,16 @@ def make_progfigsite(name: str, path: pathlib.Path, description: str, controller
     write_file_from_template(
         "version.py.temple",
         rootpkg / "version.py",
-        {
-            "controller_age_path": controller_age_path.as_posix(),
-            "controller_age_pub": controller_age.public,
-        },
+        {"name": name},
+    )
+    write_file_from_template(
+        "inventory.py.temple",
+        rootpkg / "inventory.py",
+        {"name": name},
     )
 
     clidir = make_package_dir(rootpkg / "cli", init_contents='"""Command line utilities for the progfigsite."""\n')
-    write_file_from_template("progfigsite_shim.py.temple", clidir / "progfigsite_shim.py", {})
+    write_file_from_template("progfigsite_shim.py.temple", clidir / "progfigsite_shim.py", {"name": name})
 
     make_package_dir(
         rootpkg / "builddata",

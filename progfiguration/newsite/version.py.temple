@@ -30,10 +30,8 @@ installing from source with progfiguration core not already present (e.g. with `
 
 The default version should be very low.
 
-We keep this out of the root module intentionally.
-The root module contains hoststore, secretstore, and mint_version,
-which might require elpers from progfiguration core.
 This module needs to be directly importable by setuptools without progfiguration core.
+(TODO: we could move this back to the root module now that progfiguration core imports are gone.)
 """
 
 
@@ -44,9 +42,8 @@ def get_version() -> str:
     and fall back to a default value if it was not.
     """
     try:
-        from progfiguration import sitewrapper
+        from {$}name.builddata import version as builddata_version
 
-        builddata_version = sitewrapper.site_submodule("builddata.version")
         return builddata_version.version
     except Exception as exc:
         return "0.0.1a0"

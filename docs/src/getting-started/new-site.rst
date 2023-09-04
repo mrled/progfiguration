@@ -42,6 +42,8 @@ See also :doc:`/user-reference/progfigsite/index`.
     +-------------------------------------------+-----------------------------------------------+
     | ``progfigsite/inventory.conf``            | An inventory config file for the site.        |
     +-------------------------------------------+-----------------------------------------------+
+    | ``progfigsite/inventory.py``              | The site's inventory module.                  |
+    +-------------------------------------------+-----------------------------------------------+
     | ``progfigsite/cli/``                      | A Python package for command line scripts.    |
     +-------------------------------------------+-----------------------------------------------+
     | ``progfigsite/cli/progfigsite_shim.py``   | The file that is installed as the             |

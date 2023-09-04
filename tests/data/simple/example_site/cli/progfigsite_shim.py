@@ -27,6 +27,8 @@ def main():
 
     ensure_staticinclude()
 
+    from progfiguration import sitewrapper
     from progfiguration.cli import progfiguration_site_cmd
 
+    sitewrapper.set_progfigsite_by_module_name("example_site")
     progfiguration_site_cmd.main()

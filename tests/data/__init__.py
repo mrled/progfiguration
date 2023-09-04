@@ -39,6 +39,7 @@ class ProgfigsiteTestData:
 
     def __enter__(self):
         self.progfigsite = sitewrapper.set_progfigsite_by_filepath(self.progfigsite_path, self.progfigsite_name)
+        self.inventory = sitewrapper.site_submodule("inventory")
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):

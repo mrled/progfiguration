@@ -32,8 +32,8 @@ class TestRun(PdbTestCase):
         and properly dereferencing secrets and role calculations.
         """
         with nnss_test_data as nnss:
-            for nodename in nnss.progfigsite.hoststore.nodes:
-                for role in nnss.progfigsite.hoststore.node_role_list(nodename, nnss.progfigsite.secretstore):
+            for nodename in nnss.inventory.hoststore.nodes:
+                for role in nnss.inventory.hoststore.node_role_list(nodename, nnss.inventory.secretstore):
                     with self.subTest(msg=f"nodename={nodename}, role={role}"):
                         pass
 
@@ -41,26 +41,26 @@ class TestRun(PdbTestCase):
     def test_list_nodes(self):
         """Find all nodes"""
         with nnss_test_data as nnss:
-            self.assertCountEqual(nnss.progfigsite.hoststore.nodes, ["node1"])
-            self.assertEqual(nnss.progfigsite.hoststore.node("node1").node.address, "node1.example.mil")
+            self.assertCountEqual(nnss.inventory.hoststore.nodes, ["node1"])
+            self.assertEqual(nnss.inventory.hoststore.node("node1").node.address, "node1.example.mil")
 
     @pdbexc
     def test_list_groups(self):
         """Find all groups"""
         with nnss_test_data as nnss:
-            self.assertCountEqual(nnss.progfigsite.hoststore.groups, ["universal", "group1"])
+            self.assertCountEqual(nnss.inventory.hoststore.groups, ["universal", "group1"])
 
     @pdbexc
     def test_list_functions(self):
         """Find all functions"""
         with nnss_test_data as nnss:
-            self.assertCountEqual(nnss.progfigsite.hoststore.functions, ["default", "func1"])
+            self.assertCountEqual(nnss.inventory.hoststore.functions, ["default", "func1"])
 
     @pdbexc
     def test_list_roles(self):
         """Find all roles"""
         with nnss_test_data as nnss:
-            self.assertCountEqual(nnss.progfigsite.hoststore.roles, ["settz"])
+            self.assertCountEqual(nnss.inventory.hoststore.roles, ["settz"])
 
 
 if __name__ == "__main__":

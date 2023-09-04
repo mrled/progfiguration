@@ -39,15 +39,16 @@ class ValidationResult:
     valid_attributes = [
         ProgfigsiteAttribute("site_name", str, True),
         ProgfigsiteAttribute("site_description", str, True),
-        ProgfigsiteAttribute("mint_version", Callable[[bool], str], True),
         ProgfigsiteAttribute("version", ModuleType, True),
-        ProgfigsiteAttribute("hoststore", HostStore, True),
-        ProgfigsiteAttribute("secretstore", SecretStore, True),
         ProgfigsiteAttribute("builddata", ModuleType, True),
         ProgfigsiteAttribute("groups", ModuleType, True),
         ProgfigsiteAttribute("nodes", ModuleType, True),
         ProgfigsiteAttribute("roles", ModuleType, True),
         ProgfigsiteAttribute("sitelib", ModuleType, False),
+        ProgfigsiteAttribute("inventory", ModuleType, False),
+        # ProgfigsiteAttribute("mint_version", Callable[[bool], str], True),
+        # ProgfigsiteAttribute("hoststore", HostStore, True),
+        # ProgfigsiteAttribute("secretstore", SecretStore, True),
     ]
     """A list of attributes that a progfigsite module must have"""
 
