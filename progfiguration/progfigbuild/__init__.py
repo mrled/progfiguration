@@ -40,6 +40,31 @@ def generate_builddata_version_py(version: str, build_date: datetime) -> str:
     return builddata_version_py
 
 
+def find_pyproject_root_from_package_path(package_path: pathlib.Path, traverse_max: int = 10) -> pathlib.Path:
+    """Find the project root containing a pyproject.toml from a package path
+
+    Look in the parent directories of the package path for a pyproject.toml file,
+    and return the path to the directory containing it.
+
+    :param package_path: The path to the package, eg "/path/to/progfigsite/src/progfigsite"
+    :param traverse_max: The maximum number of directories to traverse before giving up
+    :return: The path to the project root, eg "/path/to/progfigsite"
+    """
+    pyproject_toml_path = package_path / "pyproject.toml"
+    attempt = 0
+    while not pyproject_toml_path.exists():
+        if attempt > traverse_max:
+            raise FileNotFoundError(
+                f"Could not find progfigsite project path after {traverse_max} attempts, check your input and filesystem"
+            )
+        if pyproject_toml_path == pyproject_toml_path.parent:
+            # We have reached the root of the filesystem, where /../ == /
+            raise FileNotFoundError("Could not find progfigsite project path")
+        pyproject_toml_path = pyproject_toml_path.parent.parent / "pyproject.toml"
+        attempt += 1
+    return pyproject_toml_path.parent
+
+
 def build_progfigsite_zipapp(
     progfigsite_filesystem_path: pathlib.Path,
     progfigsite_modname: str,
@@ -265,15 +290,7 @@ class ProgfigsitePythonPackagePreparer:
 
         builddata_version_py = generate_builddata_version_py(self.minted_version, self.build_date)
 
-        # Find the progfigsite PROJECT path containing a pyproject.toml
-        # progfigsite_filesystem_path might be inside a directory called 'src' or 'progfigsite' inside the PROJECT path
-        progfigsite_pyproject_toml_path = progfigsite_filesystem_path / "pyproject.toml"
-        while not progfigsite_pyproject_toml_path.exists():
-            if progfigsite_pyproject_toml_path == progfigsite_pyproject_toml_path.parent:
-                raise RuntimeError("Could not find progfigsite project path")
-            progfigsite_pyproject_toml_path = progfigsite_pyproject_toml_path.parent
-
-        self.progfigsite_project_path = progfigsite_pyproject_toml_path.parent
+        self.progfigsite_project_path = find_pyproject_root_from_package_path(progfigsite_filesystem_path)
         """The filesystem path to the progfigsite project, eg `/path/to/progfigsite`
 
         This PROJECT directory should be the directory containing a pyproject.toml file.
