@@ -12,7 +12,7 @@ dependencies = []
 
 # The main entry point is the CLI shim.
 # By convention, this is named after the site.
-{$}name = "{$}name.cli.progfigsite_shim:main"
+"{$}name" = "{$}name.cli.progfigsite_shim:main"
 
 # Sites may add other entry points here,
 # however, it's worth noting that only the CLI shim is available from the zipapp package.
@@ -61,4 +61,4 @@ version = {attr = "{$}name.version.get_version"}
 # We do not build a MANIFEST.in or use setuptools_scm,
 # so we need to explicitly include them here.
 [tool.setuptools.package-data]
-{$}name = ["*"]
+"{$}name" = ["*"]
