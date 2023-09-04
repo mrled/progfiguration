@@ -9,18 +9,42 @@ requires-python = ">=3.10"
 dependencies = []
 
 [project.scripts]
+
+# The main entry point is the CLI shim.
+# By convention, this is named after the site.
 {$}name = "{$}name.cli.progfigsite_shim:main"
 
+# Sites may add other entry points here,
+# however, it's worth noting that only the CLI shim is available from the zipapp package.
+# Other entry points might be useful when installed as editable (perhaps in dev or CI environments),
+# but scripts meant to be installed to nodes in the inventory
+# should probably be installed as templates in a role.
+
 [project.optional-dependencies]
+
+# Development dependencies include all other extras
+# Sites can customize this section for their own needs.
 development = [
     # Progfiguration itself
     "progfiguration",
 
-    # Development tools
-    "black",
+    # Packaging tools
     "build",
+    "setuptools",
+
+    # IDE support, linters, formatters
+    "black",
     "mypy",
-    "twine",
+]
+
+# Packaging dependencies
+# Sites can delete this section if they aren't using it in CI.
+# The packaging extra is used in testing for progfiguration core.
+# Keep the list small to avoid long testing times.
+packaging = [
+    "progfiguration",
+    "build",
+    "setuptools",
 ]
 
 [build-system]
@@ -32,5 +56,9 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.dynamic]
 version = {attr = "{$}name.version.get_version"}
 
-[tool.black]
-line-length = 120
+# Package data includes common files like inventory.conf and JSON secrets files.
+# Roles also often include data files like templates and static assets.
+# We do not build a MANIFEST.in or use setuptools_scm,
+# so we need to explicitly include them here.
+[tool.setuptools.package-data]
+{$}name = ["*"]
