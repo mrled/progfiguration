@@ -181,25 +181,6 @@ def build_progfigsite_zipapp(
     package_out_path.chmod(package_out_path.stat().st_mode | stat.S_IEXEC)
 
 
-def progfigsite_setuptools_builder(
-    progfigsite_package_path: pathlib.Path,
-    package_out_path: pathlib.Path,
-    # config_settings: Optional[Dict[str, Any]] = None,
-    # isolation: bool = True,
-    # skip_dependency_check: bool = False,
-) -> str:
-    """Build a progfigsite package with build and setuptools
-
-    Requires that these modules already be installed in the current Python environment.
-
-    Returns the build package path.
-    """
-
-    cmd = ["python", "-m", "build", "-s", "-o", package_out_path.as_posix(), progfigsite_package_path.as_posix()]
-    result = magicrun(cmd)
-    return result.stdout.read()
-
-
 class ProgfigsitePythonPackagePreparer:
     """A context manager which prepares for building a Python package.
 
