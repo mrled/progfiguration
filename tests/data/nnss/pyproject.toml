@@ -32,9 +32,6 @@ Homepage = "https://github.com/mrled/progfiguration/"
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools.package-data]
-nnss_progfigsite = ["*"]
-
 [tool.setuptools.dynamic]
 version = { attr = "nnss_progfigsite.version.get_version" }
 

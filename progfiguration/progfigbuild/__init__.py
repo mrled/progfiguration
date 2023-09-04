@@ -54,11 +54,13 @@ def find_pyproject_root_from_package_path(package_path: pathlib.Path, traverse_m
     while not pyproject_toml_path.exists():
         if attempt > traverse_max:
             raise FileNotFoundError(
-                f"Could not find progfigsite project path after {traverse_max} attempts, check your input and filesystem"
+                f"Could not find pyproject root from the package path {package_path} after {traverse_max} attempts"
             )
         if pyproject_toml_path == pyproject_toml_path.parent:
             # We have reached the root of the filesystem, where /../ == /
-            raise FileNotFoundError("Could not find progfigsite project path")
+            raise FileNotFoundError(
+                f"Could not find pyproject root from the package path {package_path} before reaching the root filesystem (/)"
+            )
         pyproject_toml_path = pyproject_toml_path.parent.parent / "pyproject.toml"
         attempt += 1
     return pyproject_toml_path.parent
@@ -226,7 +228,7 @@ class ProgfigsitePythonPackagePreparer:
     ):
         """
 
-        :param progfigsite_filesystem_path: The path to the progfigsite package, eg "/path/to/progfigsite/src".
+        :param progfigsite_filesystem_path: The path to the progfigsite package, eg "/path/to/progfigsite/src/progfigsite".
         :param build_date: The build date to inject into the package.
             If None, the current date will be used.
         :param progfiguration_package_path: The path to the progfiguration package, eg "/path/to/progfiguration".
@@ -244,10 +246,10 @@ class ProgfigsitePythonPackagePreparer:
         """
 
         self.progfigsite_filesystem_path = progfigsite_filesystem_path
-        """The filesystem path to the progfigsite package, eg `/path/to/progfigsite/src`
+        """The filesystem path to the progfigsite package, eg `/path/to/progfigsite/src/progfigsite`
 
         This PACKAGE directory should be the path to the Python package itself with an `__init__.py`.
-        It might be inside a subfolder like "src" or "progfigsite" inside the PROJECT directory,
+        It should usually be inside the "src" subfolder of the PROJECT directory,
         which is the directory containing a pyproject.toml file.
 
         See also: `progfigsite_project_path`.
@@ -280,7 +282,8 @@ class ProgfigsitePythonPackagePreparer:
         """The filesystem path to the progfigsite project, eg `/path/to/progfigsite`
 
         This PROJECT directory should be the directory containing a pyproject.toml file.
-        It might contain a subfolder like "src" or "progfigsite" containing the Python PACKAGE itself.
+        It should usually contain a "src" subfolder
+        which contains a folder like "progfigsite" containing the Python PACKAGE itself.
 
         This is the directory you should run `python -m build` from.
 

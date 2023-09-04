@@ -28,46 +28,48 @@ See also :doc:`/user-reference/progfigsite/index`.
 
     Here's a table of the contents of the ``./progfigsite`` directory:
 
-    +-------------------------------------------+-----------------------------------------------+
-    | File                                      | Description                                   |
-    +===========================================+===============================================+
-    | ``pyproject.toml``                        | A Python project file.                        |
-    +-------------------------------------------+-----------------------------------------------+
-    | ``progfigsite/``                          | The root of the actual Python package.        |
-    |                                           | (The same name as the parent, e.g.            |
-    |                                           | ``progfigsite/progfigsite/``).                |
-    +-------------------------------------------+-----------------------------------------------+
-    | ``progfigsite/__init__.py``               | The root package exports some required        |
-    |                                           | attributes.                                   |
-    +-------------------------------------------+-----------------------------------------------+
-    | ``progfigsite/inventory.conf``            | An inventory config file for the site.        |
-    +-------------------------------------------+-----------------------------------------------+
-    | ``progfigsite/inventory.py``              | The site's inventory module.                  |
-    +-------------------------------------------+-----------------------------------------------+
-    | ``progfigsite/cli/``                      | A Python package for command line scripts.    |
-    +-------------------------------------------+-----------------------------------------------+
-    | ``progfigsite/cli/progfigsite_shim.py``   | The file that is installed as the             |
-    |                                           | ``progfigsite`` script.                       |
-    +-------------------------------------------+-----------------------------------------------+
-    | ``progfigsite/nodes/``                    | A directory for node definitions.             |
-    +-------------------------------------------+-----------------------------------------------+
-    | ``progfigsite/nodes/node1.py``            | An example node.                              |
-    +-------------------------------------------+-----------------------------------------------+
-    | ``progfigsite/groups/``                   | A directory for group definitions.            |
-    +-------------------------------------------+-----------------------------------------------+
-    | ``progfigsite/groups/universal.py``       | The universal group file.                     |
-    +-------------------------------------------+-----------------------------------------------+
-    | ``progfigsite/groups/group1.py``          | An example group.                             |
-    +-------------------------------------------+-----------------------------------------------+
-    | ``progfigsite/roles/``                    | A directory for role definitions.             |
-    +-------------------------------------------+-----------------------------------------------+
-    | ``progfigsite/roles/role1.py``            | An example role.                              |
-    +-------------------------------------------+-----------------------------------------------+
-    | ``progfigsite/sitelib/``                  | Site-specific utility functions etc.          |
-    +-------------------------------------------+-----------------------------------------------+
-    | ``progfigsite/builddata/``                | Used to inject data at build time like        |
-    |                                           | statically included packages, build date, etc.|
-    +-------------------------------------------+-----------------------------------------------+
+    +-----------------------------------------------+-----------------------------------------------+
+    | File                                          | Description                                   |
+    +===============================================+===============================================+
+    | ``pyproject.toml``                            | A Python project file.                        |
+    +-----------------------------------------------+-----------------------------------------------+
+    | ``src/``                                      | The src directory for src-layout.             |
+    +-----------------------------------------------+-----------------------------------------------+
+    | ``src/progfigsite/``                          | The root of the actual Python package.        |
+    |                                               | (The same name as the parent, e.g.            |
+    |                                               | ``progfigsite/progfigsite/``).                |
+    +-----------------------------------------------+-----------------------------------------------+
+    | ``src/progfigsite/__init__.py``               | The root package exports some required        |
+    |                                               | attributes.                                   |
+    +-----------------------------------------------+-----------------------------------------------+
+    | ``src/progfigsite/inventory.conf``            | An inventory config file for the site.        |
+    +-----------------------------------------------+-----------------------------------------------+
+    | ``src/progfigsite/inventory.py``              | The site's inventory module.                  |
+    +-----------------------------------------------+-----------------------------------------------+
+    | ``src/progfigsite/cli/``                      | A Python package for command line scripts.    |
+    +-----------------------------------------------+-----------------------------------------------+
+    | ``src/progfigsite/cli/progfigsite_shim.py``   | The file that is installed as the             |
+    |                                               | ``progfigsite`` script.                       |
+    +-----------------------------------------------+-----------------------------------------------+
+    | ``src/progfigsite/nodes/``                    | A directory for node definitions.             |
+    +-----------------------------------------------+-----------------------------------------------+
+    | ``src/progfigsite/nodes/node1.py``            | An example node.                              |
+    +-----------------------------------------------+-----------------------------------------------+
+    | ``src/progfigsite/groups/``                   | A directory for group definitions.            |
+    +-----------------------------------------------+-----------------------------------------------+
+    | ``src/progfigsite/groups/universal.py``       | The universal group file.                     |
+    +-----------------------------------------------+-----------------------------------------------+
+    | ``src/progfigsite/groups/group1.py``          | An example group.                             |
+    +-----------------------------------------------+-----------------------------------------------+
+    | ``src/progfigsite/roles/``                    | A directory for role definitions.             |
+    +-----------------------------------------------+-----------------------------------------------+
+    | ``src/progfigsite/roles/role1.py``            | An example role.                              |
+    +-----------------------------------------------+-----------------------------------------------+
+    | ``src/progfigsite/sitelib/``                  | Site-specific utility functions etc.          |
+    +-----------------------------------------------+-----------------------------------------------+
+    | ``src/progfigsite/builddata/``                | Used to inject data at build time like        |
+    |                                               | statically included packages, build date, etc.|
+    +-----------------------------------------------+-----------------------------------------------+
 
     Not included in the table are a readme file and some empty ``__init__.py`` files
     which make directories into Python packages.

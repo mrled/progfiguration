@@ -30,8 +30,6 @@ development = ["progfiguration @ file://$progfiguration_proj_path"]
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
-[tool.setuptools.package-data]
-example_site = ["*"]
 [tool.setuptools.dynamic.version]
 attr = "$sitename.version.get_version"
 [tool.black]
@@ -54,7 +52,7 @@ class TestRun(unittest.TestCase):
         cls.tmpdir = Path(tempfile.mkdtemp())
         cls.sitename = "testsite_xyz"
         cls.projectdir = cls.tmpdir / "testproj"
-        cls.packagedir = cls.projectdir / cls.sitename
+        cls.packagedir = cls.projectdir / "src" / cls.sitename
         cls.controllerage = cls.tmpdir / "controller.age"
         cls.pyproject = cls.projectdir / "pyproject.toml"
 

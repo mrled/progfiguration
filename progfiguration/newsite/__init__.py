@@ -82,8 +82,9 @@ def make_progfigsite(name: str, path: pathlib.Path, description: str, controller
     )
     write_file_from_template("readme.md.temple", pyprojdir / "readme.md", {"name": name})
 
+    (pyprojdir / "src").mkdir()
     rootpkg = make_package_dir(
-        pyprojdir / name,
+        pyprojdir / "src" / name,
         init_temple_name="progfigsite-init.py.temple",
         init_temple_args={"name": name, "description": description},
     )
