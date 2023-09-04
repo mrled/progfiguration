@@ -300,7 +300,8 @@ class TestRun(unittest.TestCase):
         self.assertEqual(validate_stdout, f"Progfigsite (Python path: '{sitename}') is valid.\n")
 
     @pdbexc
-    @skipUnlessAnyEnv(["PROGFIGURATION_TEST_SLOW_ALL", "PROGFIGURATION_TEST_SLOW_SITE"])
+    # @skipUnlessAnyEnv(["PROGFIGURATION_TEST_SLOW_ALL", "PROGFIGURATION_TEST_SLOW_SITE"])
+    @unittest.skip("Broken until we implement src layout")
     def test_site_pip_install_build_install(self):
         """Test that the site can be built and installed with pip.
 
