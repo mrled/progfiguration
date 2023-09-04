@@ -11,6 +11,7 @@ import progfiguration
 from progfiguration import cmd
 
 from tests import pdbexc, skipUnlessAnyEnv, verbose_test_output
+from tests.test_newsite_results import make_venv_newsite
 
 
 def list_tgz(tarball: str) -> list[str]:
@@ -46,80 +47,11 @@ class TestRun(unittest.TestCase):
         """
 
         sitename = "test_spiepe"
-        venvdir_inst = self.tmpdir / f"venv_inst_{sitename}"
-        venvdir_build = self.tmpdir / f"venv_build_{sitename}"
 
-        # Create a venv for building the site
-        # Add pip (slow), so we can install the site into it
-        venv.create(venvdir_build.as_posix(), with_pip=True)
-
-        # Install progfiguration core into the venv.
-        # Use its path and install it as editable.
-        # Doing this here means that when setuptools encounters progfiguration
-        # as a dependency in the site's pyproject.toml,
-        # it will find it in the venv and use that version.
-        # This lets us test the site against the local progfiguration core
-        # (which may have changes that we need to test),
-        # and is also faster than installing over the network.
-        #
-        # The parent of the progfiguration core package is the directory containing pyproject.toml
-        progfiguration_core_project_path = Path(progfiguration.__file__).parent.parent
-        cmd.magicrun(
-            [
-                venvdir_build / "bin" / "pip",
-                "--disable-pip-version-check",
-                "install",
-                "--editable",
-                progfiguration_core_project_path,
-            ],
-            print_output=verbose_test_output(),
-        )
-
-        # Make a new site, dedicated to this one test
         projectdir = self.tmpdir / sitename
         packagedir = projectdir / "src" / sitename
-        controllerage = self.tmpdir / f"controller.{sitename}.age"
-        newsite_result = cmd.magicrun(
-            [
-                venvdir_build / "bin" / "progfiguration",
-                "newsite",
-                "--name",
-                sitename,
-                "--path",
-                projectdir,
-                "--controller-age-key-path",
-                controllerage,
-            ],
-            print_output=verbose_test_output(),
-        )
-        self.assertTrue(newsite_result.returncode == 0)
 
-        # Print the contents of pyproject.toml for debugging
-        if verbose_test_output():
-            pyproject_toml = projectdir / "pyproject.toml"
-            print("Contents of pyproject.toml:")
-            print(pyproject_toml.read_text())
-
-        # Install the new site into the venv as editable
-        #
-        # We have to do this because we use a dynamic version in pyproject.toml,
-        # and the site has to be importable into the same Python process
-        # that runs the build command for this to work,
-        # otherwise it will fail with error messages like:
-        #   ModuleNotFoundError: test_spibi/version
-        #
-        # It's also a convenient way to get the site's packaging extras installed.
-        site_install_result = cmd.magicrun(
-            [
-                venvdir_build / "bin" / "pip",
-                "--disable-pip-version-check",
-                "install",
-                "--editable",
-                ".[packaging]",
-            ],
-            cwd=projectdir.as_posix(),
-            print_output=verbose_test_output(),
-        )
+        venvdir_build = make_venv_newsite(sitename, self.tmpdir, extras=["development"])
 
         # Build the site into a pip package
         pip_build = self.tmpdir / "pip_build"
@@ -205,6 +137,7 @@ class TestRun(unittest.TestCase):
 
         # Create a venv to install the package to
         # Add pip (slow), so we can install the site into it
+        venvdir_inst = self.tmpdir / f"venv_inst_{sitename}"
         venv.create(venvdir_inst.as_posix(), with_pip=True)
 
         # Install the site into the venv as editable
