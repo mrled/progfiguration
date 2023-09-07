@@ -159,6 +159,9 @@ def build_progfigsite_zipapp(
         # but there's no reason not to since it's a valid zip file either way.
         fp.write(b"#!/usr/bin/env python3\n")
 
+        # Note that we cannot combine the zipfile context manager with the open() context manager,
+        # because the zipfile context manager writes a zip header when it opens,
+        # and we need to write the shebang before the zip header.
         with zipfile.ZipFile(fp, "w", compression=compression) as z:
 
             # Copy the progfigsite package into the zipfile
