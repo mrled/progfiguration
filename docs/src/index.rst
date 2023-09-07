@@ -41,7 +41,7 @@ Availability
 
 *   Source code on GitHub at `mrled/progfiguration <https://github.com/mrled/progfiguration>`_.
 *   Releases on PyPI as `progfiguration <https://pypi.org/project/progfiguration/>`_.
-*   Available under the `MIT license <https://github.com/mrled/progfiguration/blob/master/LICENSE>`_.
+*   Licensed under `MIT <https://github.com/mrled/progfiguration/blob/master/LICENSE>`_.
 *   Written by `Micah R Ledbetter <http://me.micahrl.com>`_.
 
 Patches and bug reports are welcome!
