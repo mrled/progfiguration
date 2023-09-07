@@ -46,7 +46,7 @@ Availability
 
 Patches and bug reports are welcome!
 If you use ``progfiguration`` for your own infrastructure, I'd love to hear about it,
-and you're welcome to add yourself to the :doc:`list of users </appendix/users>` list.
+and you're welcome to add yourself to the :doc:`list of users </appendix/users>`.
 
 A guided tour of the documentation
 ----------------------------------
