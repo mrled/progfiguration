@@ -88,10 +88,12 @@ class TestRun(unittest.TestCase):
 
     @pdbexc
     @skipUnlessAnyEnv(["PROGFIGURATION_TEST_SLOW_ALL", "PROGFIGURATION_TEST_SLOW_SITE"])
-    def test_newsite_validates_site(self):
+    def test_newsite_builds_runs_zipapp_validates_site(self):
         """Test that it validates from the site 'validate' command
 
         Slow test, requires a new venv.
+
+        Uses a zipapp for convenience, which also tests that the zipapp functionality works.
         """
 
         venvdir = self.tmpdir / "venv_test_newsite_validates_site"
