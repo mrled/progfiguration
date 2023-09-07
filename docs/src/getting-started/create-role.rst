@@ -10,14 +10,14 @@ In :doc:`/getting-started/new-site`,
 the ``progfiguration newsite`` command created an example role called ``role1.py``.
 It looks like this:
 
-.. literalinclude:: ../../../progfiguration/newsite/exrole.py
+.. literalinclude:: ../../../src/progfiguration/newsite/exrole.py
 
 This role takes one argument, a string timezone name,
 and sets the node's timezone.
 Nodes and groups provide the time zone name via role arguments.
 You can see the example group we created provides a timezone:
 
-.. literalinclude:: ../../../progfiguration/newsite/exgroup.py
+.. literalinclude:: ../../../src/progfiguration/newsite/exgroup.py
 
 Adding a role to the inventory
 ------------------------------

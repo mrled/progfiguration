@@ -327,7 +327,7 @@ This is a rare case,
 since progfigsite packages are expected to be used via zipapp at least some of the time.
 However, it will work as long as the process used in the cli shim is followed:
 
-..  literalinclude:: ../../../progfiguration/newsite/progfigsite_shim.py.temple
+..  literalinclude:: ../../../src/progfiguration/newsite/progfigsite_shim.py.temple
     :language: python
 
 (Substitute ``{$}name`` with the name of your progfigsite package.)

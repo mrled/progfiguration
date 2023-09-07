@@ -7,7 +7,7 @@ In :doc:`/getting-started/new-site`,
 the ``progfiguration newsite`` command created an example node called ``node1.py``.
 It looks like this:
 
-.. literalinclude:: ../../../progfiguration/newsite/exnode.py
+.. literalinclude:: ../../../src/progfiguration/newsite/exnode.py
 
 Create a separate Python module for each node in your site.
 We'll use this example node in this tutorial.
@@ -59,7 +59,7 @@ Groups are collections of nodes,
 designed to allow you to specify common configurations one time.
 The ``progfiguration newsite`` command created an example group:
 
-.. literalinclude:: ../../../progfiguration/newsite/exgroup.py
+.. literalinclude:: ../../../src/progfiguration/newsite/exgroup.py
 
 Groups can also have secrets,
 but there is no group age key.

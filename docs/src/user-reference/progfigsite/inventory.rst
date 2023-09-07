@@ -30,7 +30,7 @@ Required attributes and function calls
 
     This function should return a **new** version number,
     suitable for the next build of the pacakge.
-    (This is different from the ``get_version()`` function in :ref:`/user-reference/progfigsite/version`,
+    (This is different from the ``get_version()`` function in :doc:`/user-reference/progfigsite/version`,
     which returns the **current** version number.)
 
     Progfiguration core ships with
@@ -48,7 +48,7 @@ but it can be used with
 :func:`progfiguration.sitehelpers.invconf.hosts_conf` and
 :func:`progfiguration.sitehelpers.invconf.secrets_conf` to create a
 :ref:`host store <progfigsite-concept-hoststore>` and
-:ref:`secrets store <progfigsite-concept-secretsstore>` respectively.
+:ref:`secrets store <progfigsite-concept-secretstore>` respectively.
 
 Here's an example from :mod:`example_site`:
 

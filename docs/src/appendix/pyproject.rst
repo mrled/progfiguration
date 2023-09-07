@@ -11,7 +11,7 @@ it creates a ``pyproject.toml`` for you that looks like the following.
 (Substitute a site name like ``mysite`` for ``{$}name``,
 and some reasonable description like ``the example.org site`` for ``{$}descriptiono``.)
 
-..  literalinclude:: ../../../progfiguration/newsite/pyproject.toml.temple
+..  literalinclude:: ../../../src/progfiguration/newsite/pyproject.toml.temple
     :language: toml
 
 Dynamic version

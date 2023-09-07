@@ -9,7 +9,7 @@ Only one item is required in this module: ``get_version()``.
     This function should return the **current** version number,
     for the currently-running package.
     (This is different from the ``mint_version()`` function
-    in :ref:`/user-reference/progfigsite/inventory`,
+    in :doc:`/user-reference/progfigsite/inventory`,
     which returns the **next** version number for a new build.)
 
     It should first look for a ``builddata.version`` package with a string ``version`` member and return that.

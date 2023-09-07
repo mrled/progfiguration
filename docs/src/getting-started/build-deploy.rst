@@ -58,7 +58,7 @@ You've created and deployed a simple progfigsite.
 
 * Add the rest of your hosts, groups, roles, and functions to the inventory.
 * Read :doc:`/user-reference/index` for a more complete exploration of the progfigsite API.
-* Read :doc:`/design/index` to learn about the goals design decisions of the project.
+* Read :doc:`/developer-reference/design` to learn about the goals design decisions of the project.
 * Add a link to your progfigsite package source to :doc:`/appendix/users`, if you wish.
 
 If you like this software, please deploy something weird with it.
