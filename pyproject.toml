@@ -43,7 +43,7 @@ Homepage = "https://github.com/mrled/progfiguration"
 line-length = 120
 
 [tool.setuptools.package-data]
-"*" = ["*"]
+"progfiguration" = ["*"]
 
 [tool.mypy]
 exclude = ["build", "dist", "docs", "venv"]
