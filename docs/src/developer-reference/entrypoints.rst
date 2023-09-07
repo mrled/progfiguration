@@ -219,7 +219,7 @@ Example
     ``pip install progfigsite && progfigsite ...``
 
 Working?
-    NO: TODO FIXME
+    Yes
 
 Progfigsite installed to Python path?
     Yes
@@ -312,3 +312,54 @@ Progfigsite installed to Python path?
 
 Progfiguration core installed to Python path?
     Yes
+
+Alternative entrypoints...
+--------------------------
+
+Sites may add alternative entrypoints as scripts in their ``pyproject.toml``.
+These are not accessible from the zipapp,
+but are available when installed via pip.
+
+... from an installed package
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This is a rare case,
+since progfigsite packages are expected to be used via zipapp at least some of the time.
+However, it will work as long as the process used in the cli shim is followed:
+
+..  literalinclude:: ../../../progfiguration/newsite/progfigsite_shim.py.temple
+    :language: python
+
+(Substitute ``{$}name`` with the name of your progfigsite package.)
+
+Working?
+    Yes
+
+Progfigsite installed to Python path?
+    Yes
+
+Progfiguration core installed to Python path?
+    No
+
+    The core package may not be in the Python path,
+    but it will be available under ``progfigsite.builddata.static_include``;
+    importers may import that first.
+
+... from source code installed as editable
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This might be useful for build scripts, such as
+`progfiguration-blacksite-buildapk <https://github.com/mrled/psyops/blob/master/progfiguration_blacksite/progfiguration_blacksite/cli/progfigsite_buildapk_cmd.py>`_
+
+Working?
+    Yes
+
+Progfigsite installed to Python path?
+    Yes
+
+Progfiguration core installed to Python path?
+    No
+
+    The core package may not be in the Python path,
+    but it will be available under ``progfigsite.builddata.static_include``;
+    importers may import that first.

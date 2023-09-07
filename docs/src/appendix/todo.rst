@@ -98,3 +98,9 @@ To do
     * Test most the command line invocations for both core and site.
 
 * Make RoleArgumentReference a protocol, not an ABC
+
+* Add to docs: Progfiguration selling point: you can debug your config with Python debugging tools.
+  You can launch an interactive python session anywhere.
+  Set it conditionally if you want.
+  Deploy it from the CLI and leave in a debug call without committing it.
+  The full power of ``pdb.set_trace()``...
