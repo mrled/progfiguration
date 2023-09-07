@@ -12,6 +12,7 @@ import zipfile
 import progfiguration
 from progfiguration import logger
 from progfiguration import sitewrapper
+from progfiguration.progfigtypes import PathOrStr
 
 
 @dataclass
@@ -39,7 +40,7 @@ def generate_builddata_version_py(version: str, build_date: datetime) -> str:
     return builddata_version_py
 
 
-def find_pyproject_root_from_package_path(package_path: pathlib.Path, traverse_max: int = 10) -> pathlib.Path:
+def find_pyproject_root_from_package_path(package_path: PathOrStr, traverse_max: int = 10) -> pathlib.Path:
     """Find the project root containing a pyproject.toml from a package path
 
     Look in the parent directories of the package path for a pyproject.toml file,
@@ -49,6 +50,8 @@ def find_pyproject_root_from_package_path(package_path: pathlib.Path, traverse_m
     :param traverse_max: The maximum number of directories to traverse before giving up
     :return: The path to the project root, eg "/path/to/progfigsite"
     """
+    if isinstance(package_path, str):
+        package_path = pathlib.Path(package_path)
     pyproject_toml_path = package_path / "pyproject.toml"
     attempt = 0
     while not pyproject_toml_path.exists():
@@ -163,9 +166,6 @@ def build_progfigsite_zipapp(
                 if shouldignore(child):
                     continue
                 child_relname = child.relative_to(progfigsite_filesystem_path)
-                # Place the progfigsite package inside a subdirectory called 'progfigsite'.
-                # This ignores the actual name of the package,
-                # and allows progfiguration to find it when run from the zipfile.
                 z.write(child, site_zip_directory + "/" + child_relname.as_posix())
 
             # Copy the progfiguration package into the zipfile

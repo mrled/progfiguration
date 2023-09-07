@@ -4,6 +4,7 @@ import venv
 
 import progfiguration
 from progfiguration import cmd
+from progfiguration.progfigbuild import find_pyproject_root_from_package_path
 
 from tests import verbose_test_output
 
@@ -34,9 +35,7 @@ def make_venv_newsite(sitename: str, tmpdir: Path, extras: Optional[list[str]] =
     # This lets us test the site against the local progfiguration core
     # (which may have changes that we need to test),
     # and is also faster than installing over the network.
-    #
-    # The parent of the progfiguration core package is the directory containing pyproject.toml
-    progfiguration_core_project_path = Path(progfiguration.__file__).parent.parent
+    progfiguration_core_project_path = find_pyproject_root_from_package_path(progfiguration.__file__)
     cmd.magicrun(
         [
             venvdir / "bin" / "pip",

@@ -139,7 +139,7 @@ class TestRun(unittest.TestCase):
         # This is a hack to avoid having to install over the network (slower, maybe network errors).
         #
         # The parent of the progfiguration core package is the directory containing pyproject.toml
-        progfiguration_core_project_path = Path(progfiguration.__file__).parent.parent
+        progfiguration_core_project_path = progfigbuild.find_pyproject_root_from_package_path(progfiguration.__file__)
         cmd.magicrun(
             [
                 venv_python.as_posix(),
