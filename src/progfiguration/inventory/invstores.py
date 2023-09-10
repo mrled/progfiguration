@@ -163,6 +163,8 @@ class SecretStore(Protocol):
         This operation returns an opaque Secret type.
         The secret does not have to be decrypted yet,
         but can be, depending on the Secret implementation.
+
+        If the secret does not exist, raise a KeyError.
         """
         raise NotImplementedError("get_secret not implemented")
 
@@ -209,15 +211,19 @@ class SecretStore(Protocol):
 
 def get_inherited_secret(hoststore: HostStore, secretstore: SecretStore, node: str, secret_name: str) -> Secret:
     """Get a secret for a node, inheriting from groups if necessary."""
-    secret = secretstore.get_secret("node", node, secret_name)
-    if secret is None:
-        # "universal" will be the first group; we want to check it last.
-        # Reminder that all other group order is not guaranteed.
-        for group in reversed(hoststore.node_groups[node]):
-            secret = secretstore.get_secret("group", group, secret_name)
-            if secret is not None:
-                break
-    return secret
+    secret = None
+    # "universal" will be the first group; we want to check it last.
+    # Reminder that all other group order is not guaranteed.
+    nodegroups = list(reversed(hoststore.node_groups[node]))
+    try:
+        return secretstore.get_secret("node", node, secret_name)
+    except KeyError:
+        for group in nodegroups:
+            try:
+                return secretstore.get_secret("group", group, secret_name)
+            except KeyError:
+                pass
+    raise KeyError(f"Secret {secret_name} not found for node {node}, including searching groups {nodegroups}")
 
 
 class SecretReference(RoleArgumentReference):
