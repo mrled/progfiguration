@@ -78,7 +78,7 @@ class LocalhostLinux:
         else:
             return contents
 
-    def chown(self, path: PathOrStr, owner: Optional[int | str], group: Optional[int | str]):
+    def chown(self, path: PathOrStr, owner: Optional[int | str], group: Optional[int | str], recursive=False):
         """Change the owner and/or group of a file or directory
 
         A convenience function that can handle any combination of owner and group.
@@ -93,6 +93,12 @@ class LocalhostLinux:
             # ... why is this not a thing in the stdlib?
             uid = os.stat(path).st_uid
             shutil.chown(path, uid, group)
+        if recursive:
+            for root, dirs, files in os.walk(path):
+                for d in dirs:
+                    self.chown(os.path.join(root, d), owner, group, recursive=True)
+                for f in files:
+                    self.chown(os.path.join(root, f), owner, group)
 
     def set_file_contents(
         self,
