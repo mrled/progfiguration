@@ -67,9 +67,9 @@ class RoleCalculationReference(RoleArgumentReference):
         self,
         nodename: str,
         hoststore: "HostStore",  # type: ignore
-        _: "SecretStore",  # type: ignore
+        secretstore: "SecretStore",  # type: ignore
     ) -> Any:
-        return hoststore.node_role(nodename, self.role).calculations()[self.calcname]
+        return hoststore.node_role(secretstore, nodename, self.role).calculations()[self.calcname]
 
 
 @dataclass(kw_only=True)
