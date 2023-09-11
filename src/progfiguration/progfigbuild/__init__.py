@@ -46,6 +46,8 @@ def find_pyproject_root_from_package_path(package_path: PathOrStr, traverse_max:
     Look in the parent directories of the package path for a pyproject.toml file,
     and return the path to the directory containing it.
 
+    We assume that the project is using pyproject.toml rather than setup.py or setup.cfg.
+
     :param package_path: The path to the package, eg "/path/to/progfigsite/src/progfigsite"
     :param traverse_max: The maximum number of directories to traverse before giving up
     :return: The path to the project root, eg "/path/to/progfigsite"
