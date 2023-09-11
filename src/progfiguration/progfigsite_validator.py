@@ -15,40 +15,56 @@ from progfiguration.inventory.invstores import HostStore, SecretStore
 
 
 @dataclass
-class ProgfigsiteAttribute:
-    """An attribute of a progfigsite module"""
+class ProgfigsiteProperty:
+    """A property of a progfigsite module."""
 
-    path: str
-    """The path of the attribute relative to the root module"""
+    submodule: str
+    """The name of the submodule that the attribute is in.
+
+    An empty string for the root module.
+    """
+
+    attribute: str
+    """The string name of the attribute in the module to check for.
+
+    If this is empty, we just check if the module exists.
+    """
 
     type: Any
-    """The type of the attribute"""
+    """The type of the attribute."""
 
-    required: bool
-    """Whether the attribute is required"""
+    required: bool = True
+    """Whether the attribute is required."""
 
     @property
     def errstr(self) -> str:
         """A string describing the error"""
-        return f"Module has no {self.path} attribute"
+        proppath_arr = []
+        if self.submodule:
+            proppath_arr.append(self.submodule)
+        if self.attribute:
+            proppath_arr.append(self.attribute)
+        proppath = ".".join(proppath_arr)
+        return f"Module has no {proppath} attribute of type {self.type.__name__}"
 
 
 class ValidationResult:
     """The result of validating a module"""
 
-    valid_attributes = [
-        ProgfigsiteAttribute("site_name", str, True),
-        ProgfigsiteAttribute("site_description", str, True),
-        ProgfigsiteAttribute("version", ModuleType, True),
-        ProgfigsiteAttribute("builddata", ModuleType, True),
-        ProgfigsiteAttribute("groups", ModuleType, True),
-        ProgfigsiteAttribute("nodes", ModuleType, True),
-        ProgfigsiteAttribute("roles", ModuleType, True),
-        ProgfigsiteAttribute("sitelib", ModuleType, False),
-        ProgfigsiteAttribute("inventory", ModuleType, False),
-        # ProgfigsiteAttribute("mint_version", Callable[[bool], str], True),
-        # ProgfigsiteAttribute("hoststore", HostStore, True),
-        # ProgfigsiteAttribute("secretstore", SecretStore, True),
+    valid_properties = [
+        ProgfigsiteProperty("", "site_name", str),
+        ProgfigsiteProperty("", "site_description", str),
+        ProgfigsiteProperty("version", "", ModuleType),
+        ProgfigsiteProperty("version", "get_version", Callable[[], str]),
+        ProgfigsiteProperty("builddata", "", ModuleType),
+        ProgfigsiteProperty("groups", "", ModuleType),
+        ProgfigsiteProperty("nodes", "", ModuleType),
+        ProgfigsiteProperty("roles", "", ModuleType),
+        ProgfigsiteProperty("sitelib", "", ModuleType, required=False),
+        ProgfigsiteProperty("inventory", "", ModuleType),
+        ProgfigsiteProperty("inventory", "mint_version", Callable[[bool], str]),
+        ProgfigsiteProperty("inventory", "hoststore", HostStore),
+        ProgfigsiteProperty("inventory", "secretstore", SecretStore),
     ]
     """A list of attributes that a progfigsite module must have"""
 
@@ -57,7 +73,7 @@ class ValidationResult:
         self.path = path
         """The path to the module (must already be present in Python module path)"""
 
-        self.errors: List[ProgfigsiteAttribute] = []
+        self.errors: List[ProgfigsiteProperty] = []
         """A list of errors that were found"""
 
     @property
@@ -73,16 +89,24 @@ def validate(module_path: str) -> ValidationResult:
     """
     result = ValidationResult(module_path)
     module = importlib.import_module(module_path)
+    imported = {}
 
-    for attribute in ValidationResult.valid_attributes:
-        if attribute.type == ModuleType:
-            try:
-                importlib.import_module(f"{module_path}.{attribute.path}")
-            except ImportError:
-                if attribute.required:
-                    result.errors.append(attribute)
+    for prop in ValidationResult.valid_properties:
+        if prop.submodule == "":
+            imported[""] = module
         else:
-            if not hasattr(module, attribute.path):
-                result.errors.append(attribute)
+            try:
+                if prop.submodule not in imported:
+                    imported[prop.submodule] = importlib.import_module(f"{module_path}.{prop.submodule}")
+            except ImportError:
+                if prop.required:
+                    result.errors.append(prop)
+                continue
+        property_module = imported[prop.submodule]
+        if prop.attribute == "" and prop.type == ModuleType:
+            continue
+        else:
+            if not hasattr(property_module, prop.attribute) and prop.required:
+                result.errors.append(prop)
 
     return result
