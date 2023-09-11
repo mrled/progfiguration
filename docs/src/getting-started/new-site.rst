@@ -74,6 +74,10 @@ See also :doc:`/user-reference/progfigsite/index`.
     Not included in the table are a readme file and some empty ``__init__.py`` files
     which make directories into Python packages.
 
+    NOTE: When changing this table, make corresponding updates to
+    :class:`progfiguration.progfigsite_validator.ValidationResult` and
+    :mod:`progfiguration.newsite`.
+
 3.  Store your controller's age key securely.
 
     As noted above, we saved the controller's age key to the current directory.

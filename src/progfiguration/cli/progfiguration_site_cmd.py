@@ -51,8 +51,7 @@ def _action_version_all():
     """Retrieve the version of progfiguration core and the progfigsite"""
 
     progfigsitename, progfigsite = sitewrapper.get_progfigsite()
-    site_vers_mod = sitewrapper.site_submodule("version")
-    version = site_vers_mod.get_version()
+    version = progfigsite.get_version()
     try:
         site_builddata_vers_mod = sitewrapper.site_submodule("builddata.version")
         builddate = site_builddata_vers_mod.builddate

@@ -22,10 +22,9 @@ We use
 ::
 
     [tool.setuptools.dynamic]
-    version = {attr = "SITENAME.version.get_version"}
+    version = {attr = "SITENAME.get_version"}
 
-This looks in the :doc:`/user-reference/progfigsite/version`
-for a function called ``get_version()``.
+This looks in the root module for a function called ``get_version()``.
 It runs that function
 
 1.  when installing as editable via ``pip install -e '.'``, or

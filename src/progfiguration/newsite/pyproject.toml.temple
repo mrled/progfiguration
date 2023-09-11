@@ -54,7 +54,7 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.dynamic]
-version = {attr = "{$}name.version.get_version"}
+version = {attr = "{$}name.get_version"}
 
 # Package data includes common files like inventory.conf and JSON secrets files.
 # Roles also often include data files like templates and static assets.

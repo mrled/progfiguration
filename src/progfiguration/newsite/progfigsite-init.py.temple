@@ -2,7 +2,7 @@
 
 """The root module for the progfigsite package.
 
-Should not reference progfiguration core.
+It must be directly importable by setuptools without progfiguration core.
 """
 
 
@@ -14,3 +14,43 @@ This must match the name of the site package defined in pyproject.toml.
 
 site_description = "{$}description"
 """A human-readable description of the site"""
+
+
+def get_version() -> str:
+    """Dynamically get the package version.
+
+    Used at both runtime and build time.
+    First look for ``progfigsite.builddata.version`` if it was injected at build time,
+    and fall back to a default value if it was not.
+
+    It must return the correct value in multiple contexts:
+
+    building a package (e.g. with `python -m build`)
+        First look for ``progfigsite.builddata.version``,
+        which will have been injected at build time by
+        `progfiguration.progfigbuild.ProgfigsitePythonPackagePreparer`.
+        If that fails, fall back to the default value returned by this function,
+
+    installing from a built package (e.g. a .tar.gz or .whl)
+        Use ``progfigsite.builddata.version`` as above.
+        This should always be present for a built package.
+
+    installing from source with progfiguration core already present (e.g. with `pip install -e .`)
+        Use the default value returned by this function,
+        which a very low version number.
+        ``progfigsite.builddata.version`` should never be present in this case.
+
+    installing from source with progfiguration core not already present (e.g. with `pip install -e '.[development]'`)
+        In this case, ``pip`` reads ``pyprojec.toml`` first,
+        and calculates the version before it installs prerequisites for the ``development`` extras --
+        meaning that ``progfiguration`` core is not yet installed.
+        Provide a fallback for this case so that ``pip`` can still retrieve a version.
+
+    The default version should be very low.
+    """
+    try:
+        from {$}name.builddata import version as builddata_version
+
+        return builddata_version.version
+    except Exception as exc:
+        return "0.0.1a0"

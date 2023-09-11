@@ -10,8 +10,8 @@ Retrieving the version...
 
 The version is calculated dynamically per ``pyproject.toml``,
 so it must be available even when the module isn't installed.
-The site must implement the function ``progfigsite.version.get_version``,
-by e.g. defining ``get_version()`` in ``progfigsite/version.py``.
+The site must implement the function ``progfigsite.get_version``,
+by e.g. defining ``get_version()`` in ``progfigsite/__init__.py``.
 
 When ``setuptools`` looks in this module for the version,
 it does *not* do a normal python import,

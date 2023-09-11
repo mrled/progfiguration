@@ -30,7 +30,7 @@ Required attributes and function calls
 
     This function should return a **new** version number,
     suitable for the next build of the pacakge.
-    (This is different from the ``get_version()`` function in :doc:`/user-reference/progfigsite/version`,
+    (This is different from the ``get_version()`` function in :doc:`/user-reference/progfigsite/rootmembers`,
     which returns the **current** version number.)
 
     Progfiguration core ships with

@@ -11,14 +11,14 @@ number, and then record it into the package it builds.
 
 See also :doc:`/user-reference/progfigsite/rootmembers`.
 
-Progfigisite packages also must implement ``version.get_version() -> str``,
+Progfigisite packages also must implement ``get_version() -> str`` in the root package,
 which should try to retrieve a version from ``progfigsite.builddata.version``
 if that module exists,
 and otherwise fall back to some arbitrary very low fallback version number, like ``0.0.1a1``.
 The build system will create the module ``progfigsite.builddata.version`` at build time,
 and include a version (generated from ``mint_version()``) and a datestamp.
 
-See also :doc:`/user-reference/progfigsite/version`.
+See also :doc:`/user-reference/progfigsite/rootmembers`.
 
 The site version number should not reference core
 -------------------------------------------------

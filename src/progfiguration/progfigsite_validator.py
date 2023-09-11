@@ -51,11 +51,13 @@ class ProgfigsiteProperty:
 class ValidationResult:
     """The result of validating a module"""
 
+    # NOTE: When changing these properties, make corresponding changes in:
+    #   1. src/progfiguration/newsite/__init__.py
+    #   2. docs/src/getting-started/new-site.rst
     valid_properties = [
         ProgfigsiteProperty("", "site_name", str),
         ProgfigsiteProperty("", "site_description", str),
-        ProgfigsiteProperty("version", "", ModuleType),
-        ProgfigsiteProperty("version", "get_version", Callable[[], str]),
+        ProgfigsiteProperty("", "get_version", Callable[[], str]),
         ProgfigsiteProperty("builddata", "", ModuleType),
         ProgfigsiteProperty("groups", "", ModuleType),
         ProgfigsiteProperty("nodes", "", ModuleType),
