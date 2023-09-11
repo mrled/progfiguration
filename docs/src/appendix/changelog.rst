@@ -6,6 +6,22 @@ WIP
 
 ... nothing yet ...
 
+`0.0.10`
+--------
+
+- Add progfigsite inventory module
+- Remove requirement for progfigsite version module
+- Use src-layout for all packages (site and core)
+- Remove the ``localhost.localusers`` module (sites can implement this themselves)
+- Fix issues with missing package-data
+- Add recursive chowns to localhost module
+- Fix bug preventing role argument collection in some cases
+- Add several tests
+- Improve magicrun logging
+- Fix many miscellaneous bugs and typos
+- Improve documentation
+- Remove dead code
+
 `0.0.9`
 -------
 
