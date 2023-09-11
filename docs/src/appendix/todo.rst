@@ -94,9 +94,6 @@ To do
 
 * Can we make all ABCs Protocols instead? Either do this, or write comments as to why.
 
-* Improve test coverage
-    * Test most the command line invocations for both core and site.
-
 * Make RoleArgumentReference a protocol, not an ABC
 
 * Add to docs: Progfiguration selling point: you can debug your config with Python debugging tools.
