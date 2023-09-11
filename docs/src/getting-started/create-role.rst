@@ -77,9 +77,7 @@ See :doc:`/user-reference/progfigsite/roles` for more details on how roles work,
 and a discussion of role calculations.
 
 Here, we will add an example role that accepts a password.
-This role uses the :func:`progfiguration.localhost.localusers.LocalhostUsers.add_service_account`
-function to create a service account,
-and then sets a password for it.
+The role creates a service account and then sets a password for it.
 
 .. code:: python
 
@@ -97,10 +95,11 @@ and then sets a password for it.
         """Set the timezone on an Alpine Linux host."""
 
         username: str
+        primgroup: str
         password: str
 
         def apply(self):
-            self.localhost.users.add_service_account(self.username, self.username, home=True)
+            magicrun(["adduser", "-D", "-S", "-s", "/bin/sh", "-G", self.primgroup, self.username]
             magicrun(["chpasswd"], input=f"{self.username}:{self.password}")
 
 You could set the username and password like this in a role:
