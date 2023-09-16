@@ -17,9 +17,8 @@ site_description = "This site is bundled with progfiguration core as an example"
 def get_version() -> str:
     """Dynamically get the package version."""
     try:
-        from progfiguration import sitewrapper
+        from example_site.builddata import version as builddata_version
 
-        builddata_version = sitewrapper.site_submodule("builddata.version")
         return builddata_version.version
     except Exception as exc:
         return "0.0.1a0"

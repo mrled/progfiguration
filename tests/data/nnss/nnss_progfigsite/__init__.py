@@ -14,9 +14,8 @@ site_description = "Force for Freedom"
 def get_version() -> str:
     """Dynamically get the package version."""
     try:
-        from progfiguration import sitewrapper
+        from nnss_progfigsite.builddata import version as builddata_version
 
-        builddata_version = sitewrapper.site_submodule("builddata.version")
         return builddata_version.version
     except Exception as exc:
         return "0.0.1a0"
