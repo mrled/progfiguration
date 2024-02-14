@@ -166,7 +166,7 @@ Rather than vendoring the dependency (by committing the source code into your re
 you could note it as a build-time dependency and copy its code into your package when it's built.
 This means updating the package is a bit less work compared to vendoring.
 
-If you're using zipapp pacakges, note that only pure Python dependencies can be vendored or statically included,
+If you're using zipapp packages, note that only pure Python dependencies can be vendored or statically included,
 see `zipapp caveats <https://docs.python.org/3/library/zipapp.html#caveats>`_.
 
 Python language servers

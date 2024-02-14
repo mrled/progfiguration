@@ -25,7 +25,7 @@ but we can't guarantee that in all the of the scenarios where we use it go get t
 ... when building a package
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Building progfigsite pacakges must be done via ``progfiguration build``,
+Building progfigsite packages must be done via ``progfiguration build``,
 in order to inject build data like the version and build date,
 and statically include progfiguration core.
 

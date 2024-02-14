@@ -45,7 +45,7 @@ You can install and run a combined progfiguration core + progfigsite package wit
     * progfiguration finds ``progfigsite`` package in Python path because progfigsite was installed by pip
 
 
-Building pacakges
+Building packages
 -----------------
 
 Progfigsite packages can be in *whatever format you want*.
