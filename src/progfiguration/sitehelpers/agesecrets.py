@@ -6,7 +6,6 @@ Each secret is encrypted by an Age key.
 Wrap the age binary to encrypt and decrypt secret values
 """
 
-
 from dataclasses import dataclass
 import datetime
 import json
@@ -124,7 +123,14 @@ class AgeSecretReference(SecretReference):
         hoststore: HostStore,
         secretstore: SecretStore,
     ) -> Any:
-        secret = get_inherited_secret(hoststore, secretstore, nodename, self.name)
+        secret: AgeSecret = get_inherited_secret(hoststore, secretstore, nodename, self.name)
+
+        # TODO: change the design to avoid this bad hack
+        node_module = hoststore.node(nodename)
+        node: InventoryNode = node_module.node
+        if node.sitedata and node.sitedata.get("age_key_path"):
+            secret.privkey_path = node.sitedata["age_key_path"]
+
         value = secret.decrypt()
         return value
 
