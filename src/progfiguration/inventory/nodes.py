@@ -30,6 +30,9 @@ class InventoryNode:
     You might include a serial number, a notes field, a location, etc.
     """
 
+    python: str = "python3"
+    """The Python interpreter to use on the remote host."""
+
     TESTING_DO_NOT_APPLY: bool = False
     """If this is True, 'progfiguration apply' will refuse to run.
 

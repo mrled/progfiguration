@@ -1,6 +1,5 @@
 """Support for building pip and zipapp progfigsite packages"""
 
-
 from dataclasses import dataclass
 from datetime import datetime
 import pathlib
@@ -159,6 +158,7 @@ def build_progfigsite_zipapp(
     with open(package_out_path, "wb") as fp:
         # Writing a shebang like this is optional in zipapp,
         # but there's no reason not to since it's a valid zip file either way.
+        # TODO: allow customizing the shebang path
         fp.write(b"#!/usr/bin/env python3\n")
 
         # Note that we cannot combine the zipfile context manager with the open() context manager,

@@ -233,7 +233,7 @@ def _action_deploy_apply(
                     f"{node.user}@{node.address}",
                     pyzfile.as_posix(),
                     args,
-                    interpreter=["python3", "-u"],
+                    interpreter=[node.python, "-u"],
                     ssh_tty=True,
                     ssh_stdin=subprocess.DEVNULL,
                     keep_remote_file=keep_remote_file,
