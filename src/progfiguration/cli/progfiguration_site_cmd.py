@@ -489,7 +489,7 @@ def _main_implementation(*arguments):
     if parsed.action == "version":
         _action_version_all()
     elif parsed.action == "apply":
-        _action_apply(hoststore, secretstore, parsed.nodename, roles=parsed.roles, force=parsed.force_apply)
+        _action_apply(hoststore, secretstore, nodename, roles=parsed.roles, force=parsed.force_apply)
     elif parsed.action == "deploy":
         if not parsed.nodes and not parsed.groups:
             parser.error("You must pass at least one of --nodes or --groups")
