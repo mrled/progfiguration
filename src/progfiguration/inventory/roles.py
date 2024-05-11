@@ -37,8 +37,8 @@ class RoleArgumentReference(Protocol):
     def dereference(
         self,
         nodename: str,
-        hoststore: "HostStore",  # type: ignore
-        secretstore: "SecretStore",  # type: ignore
+        hoststore: "HostStore",  # noqa: F821 # type: ignore
+        secretstore: "SecretStore",  # noqa: F821 # type: ignore
     ) -> Any:
         """Get the final value of a role argument for a node.
 
@@ -66,8 +66,8 @@ class RoleCalculationReference(RoleArgumentReference):
     def dereference(
         self,
         nodename: str,
-        hoststore: "HostStore",  # type: ignore
-        secretstore: "SecretStore",  # type: ignore
+        hoststore: "HostStore",  # noqa: F821 # type: ignore
+        secretstore: "SecretStore",  # noqa: F821 # type: ignore
     ) -> Any:
         return hoststore.node_role(secretstore, nodename, self.role).calculations()[self.calcname]
 
@@ -104,7 +104,7 @@ class ProgfigurationRole(ABC):
     # Take care when adding new attributes here.
     name: str
     localhost: LocalhostLinux
-    hoststore: "HostStore"  # type: ignore
+    hoststore: "HostStore"  # noqa: F821 # type: ignore
     rolepkg: str
 
     # This is just a cache
@@ -128,8 +128,8 @@ class ProgfigurationRole(ABC):
 
 
 def collect_role_arguments(
-    hoststore: "HostStore",  # type: ignore
-    secretstore: "SecretStore",  # type: ignore
+    hoststore: "HostStore",  # noqa: F821 # type: ignore
+    secretstore: "SecretStore",  # noqa: F821 # type: ignore
     nodename: str,
     node: InventoryNode,
     nodegroups: dict[str, ModuleType],

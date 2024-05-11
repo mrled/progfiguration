@@ -211,7 +211,6 @@ class SecretStore(Protocol):
 
 def get_inherited_secret(hoststore: HostStore, secretstore: SecretStore, node: str, secret_name: str) -> Secret:
     """Get a secret for a node, inheriting from groups if necessary."""
-    secret = None
     # "universal" will be the first group; we want to check it last.
     # Reminder that all other group order is not guaranteed.
     nodegroups = list(reversed(hoststore.node_groups[node]))

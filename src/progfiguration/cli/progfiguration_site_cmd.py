@@ -363,7 +363,7 @@ def _make_parser():
     subparsers = parser.add_subparsers(dest="action", required=True)
 
     # version subcommand
-    svn_all = subparsers.add_parser("version", description="Show progfiguration core and progfigsite versions")
+    subparsers.add_parser("version", description="Show progfiguration core and progfigsite versions")
 
     # apply subcommand
     sub_apply = subparsers.add_parser("apply", parents=[roles_opts], description="Apply configuration")
@@ -414,9 +414,7 @@ def _make_parser():
     )
 
     # info subcommand
-    sub_info = subparsers.add_parser(
-        "info", parents=[node_opts, func_opts], description="Display info about nodes and groups"
-    )
+    subparsers.add_parser("info", parents=[node_opts, func_opts], description="Display info about nodes and groups")
 
     # encrypt subcommand
     sub_encrypt = subparsers.add_parser(
@@ -432,20 +430,18 @@ def _make_parser():
     sub_encrypt.add_argument("--stdout", action="store_true", help="Print encrypted value to stdout")
 
     # decrypt subcommand
-    sub_decrypt = subparsers.add_parser(
+    subparsers.add_parser(
         "decrypt", parents=[node_opts, ctrl_opts], description="Decrypt secrets from the secret store"
     )
 
     # validate subcommand
-    sub_validate = subparsers.add_parser(
-        "validate", description="Validate the progfigsite that it matches the required API"
-    )
+    subparsers.add_parser("validate", description="Validate the progfigsite that it matches the required API")
 
     # debugger subcommand
     # This is useful for debugging a pyz deployment,
     # since you can't just 'import progfiguration' inside a python3 interpreter
     # because the pyz is not on the PYTHONPATH.
-    sub_debugger = subparsers.add_parser(
+    subparsers.add_parser(
         "debugger",
         description="Open a debugger on localhost.",
     )

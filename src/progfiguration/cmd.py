@@ -142,8 +142,8 @@ def magicrun(cmd: str | list, print_output=True, log_output=False, check=True, *
     if check and process.returncode != 0:
         msg = f"Command failed with exit code {process.returncode}: {cmd}"
         logger.error(msg)
-        logger.info(f"stdout: {process.stdout.getvalue()}")
-        logger.info(f"stderr: {process.stderr.getvalue()}")
+        # logger.info(f"stdout: {process.stdout.getvalue()}")
+        # logger.info(f"stderr: {process.stderr.getvalue()}")
         raise Exception(msg)
 
     logger.info(f"Command completed with return code {process.returncode}: {cmd}")
