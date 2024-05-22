@@ -254,14 +254,19 @@ class AgeSecretStore(SecretStore):
             self._cache[collection][name] = {}
         return self._cache[collection][name]
 
-    def _save_secrets(self, collection: Literal["node", "group", "special"], name: str):
-        """Save a secrets to a secret store.
+    def _append_secret(
+        self, collection: Literal["node", "group", "special"], name: str, secret_name: str, encrypted_value: str
+    ):
+        """Append a secret to the cache.
 
-        Save them to disk.
+        This is used when a secret is encrypted and stored
         """
         secrets_file = self._get_secrets_file(collection, name)
+        with secrets_file.open() as fp:
+            contents = json.load(fp)
+        contents[secret_name] = encrypted_value
         with secrets_file.open("w") as fp:
-            json.dump(self._cache[collection][name], fp, indent=2, sort_keys=True)
+            json.dump(contents, fp, indent=2, sort_keys=True)
 
     def list_secrets(self, collection: Literal["node", "group", "special"], name: str) -> List[str]:
         """List secrets."""
@@ -313,20 +318,11 @@ class AgeSecretStore(SecretStore):
 
         if store:
             for node in nodes:
-                if node not in self._cache["node"]:
-                    self._cache["node"][node] = {}
-                self._cache["node"][node][name] = encrypted_value
-                self._save_secrets("node", node)
+                self._append_secret("node", node, name, encrypted_value)
             for group in groups:
-                if group not in self._cache["group"]:
-                    self._cache["group"][group] = {}
-                self._cache["group"][group][name] = encrypted_value
-                self._save_secrets("group", group)
+                self._append_secret("group", group, name, encrypted_value)
             if controller_key:
-                if name not in self._cache["special"]["controller"]:
-                    self._cache["special"]["controller"] = {}
-                self._cache["special"]["controller"][name] = encrypted_value
-                self._save_secrets("special", "controller")
+                self._append_secret("special", "controller", name, encrypted_value)
 
         return encrypted_value
 
