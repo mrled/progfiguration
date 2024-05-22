@@ -11,7 +11,7 @@ import datetime
 import json
 from pathlib import Path
 import subprocess
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from progfiguration import logger, sitewrapper
 from progfiguration.inventory.invstores import Secret, SecretStore, SecretReference, HostStore, get_inherited_secret
@@ -135,13 +135,15 @@ class AgeSecretReference(SecretReference):
         return value
 
 
-def encrypt(value: str, pubkeys: List[str]):
+def encrypt(value: Union[str, bytes], pubkeys: List[str]):
     """Encrypt a value to a list of public age keys"""
     age_cmd = ["age", "--armor"]
     for pubkey in pubkeys:
         age_cmd.append("--recipient")
         age_cmd.append(pubkey)
-    proc = subprocess.run(age_cmd, input=value.encode(), check=True, capture_output=True)
+    if isinstance(value, str):
+        value = value.encode()
+    proc = subprocess.run(age_cmd, input=value, check=True, capture_output=True)
     return proc.stdout.decode()
 
 

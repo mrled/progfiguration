@@ -514,7 +514,7 @@ def _main_implementation(*arguments):
         if not parsed.value and not parsed.file:
             parser.error("You must pass one of --value or --file")
         if parsed.file:
-            with open(parsed.file) as fp:
+            with open(parsed.file, "rb") as fp:
                 value = fp.read()
         else:
             value = parsed.value
