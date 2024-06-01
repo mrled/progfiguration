@@ -1,6 +1,5 @@
 """What the nodes have to say about themselves"""
 
-
 import os
 from pathlib import Path
 import shutil
@@ -109,6 +108,7 @@ class LocalhostLinux:
         mode: Optional[int] = None,
         dirmode: Optional[int] = None,
     ):
+        """Set the contents of a file, creating it if necessary."""
         if not isinstance(path, str):
             path = str(path)
         self.makedirs(os.path.dirname(path), owner, group, dirmode)
@@ -127,6 +127,7 @@ class LocalhostLinux:
         group: Optional[str] = None,
         mode: Optional[int] = None,
     ):
+        """Create a directory and its parents, with the specified owner/group/mode."""
         if isinstance(path, str):
             path = Path(os.path.abspath(path))
         if path.exists():
@@ -156,6 +157,8 @@ class LocalhostLinux:
         mode: Optional[int] = None,
         dirmode: Optional[int] = None,
     ):
+        """Copy a file or directory, creating the destination if necessary, with the specified owner/group/mode."""
+
         if isinstance(src, str):
             src = Path(src)
         if isinstance(dest, str):
@@ -207,6 +210,7 @@ class LocalhostLinux:
         mode: Optional[int] = None,
         dirmode: Optional[int] = None,
     ):
+        """Template a file using Python's string.Template class."""
         return self._template_backend(string.Template, src, dest, template_args, owner, group, mode, dirmode)
 
     def temple(
@@ -219,6 +223,12 @@ class LocalhostLinux:
         mode: Optional[int] = None,
         dirmode: Optional[int] = None,
     ):
+        """Template a file using the Temple class.
+
+        The Temple class is very similar to string.Template,
+        but does not require escaping dollar sign variables,
+        which are used in shell scripts and therefore pretty common in progfiguration templates.
+        """
         return self._template_backend(temple.Temple, src, dest, template_args, owner, group, mode, dirmode)
 
     def linesinfile(
