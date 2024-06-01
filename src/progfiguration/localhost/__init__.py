@@ -84,14 +84,9 @@ class LocalhostLinux:
         """
         if not isinstance(path, str):
             path = str(path)
-        if owner and group:
-            shutil.chown(path, owner, group)
-        elif owner:
-            shutil.chown(path, owner)
-        elif group:
-            # ... why is this not a thing in the stdlib?
-            uid = os.stat(path).st_uid
-            shutil.chown(path, uid, group)
+        if not owner:
+            owner = -1
+        shutil.chown(path, owner, group)
         if recursive:
             for root, dirs, files in os.walk(path):
                 for d in dirs:
