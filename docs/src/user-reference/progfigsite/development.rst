@@ -97,7 +97,5 @@ and see the code in :mod:`progfiguration.progfigbuild`.
 Building other package types
 ----------------------------
 
-The ``pip`` package builder is useful for building distribution-specific packages too.
-You can see an example of it being used to to build an APK package for Alpine Linux in the
-`progfiguration-blacksite-buildapk command <https://github.com/mrled/psyops/blob/master/progfiguration_blacksite/progfiguration_blacksite/cli/progfigsite_buildapk_cmd.py>`_.
-You might extend this to build an RPM or whatever is appropriate for your environment.
+The ``pip`` package builder is useful for building distribution-specific packages too,
+like RPM or whatever is appropriate for your environment.

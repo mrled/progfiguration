@@ -348,8 +348,7 @@ Progfiguration core installed to Python path?
 ... from source code installed as editable
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This might be useful for build scripts, such as
-`progfiguration-blacksite-buildapk <https://github.com/mrled/psyops/blob/master/progfiguration_blacksite/progfiguration_blacksite/cli/progfigsite_buildapk_cmd.py>`_
+This might be useful for build scripts.
 
 Working?
     Yes

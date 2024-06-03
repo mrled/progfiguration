@@ -19,9 +19,7 @@ but have real version numbers and can be installed anywhere a Pip package can.
 Many operating system package systems support building Pip packages into OS packages,
 like RPM and APK,
 so you can use this as a base to build packages for your OS if that fits your use case --
-see the context manager :class:`progfiguration.progfigbuild.ProgfigsitePythonPackagePreparer`
-and `progfiguration-blacksite-buildapk <https://github.com/mrled/psyops/blob/master/progfiguration_blacksite/progfiguration_blacksite/cli/progfigsite_buildapk_cmd.py>`_
-for an example that uses it.
+see the context manager :class:`progfiguration.progfigbuild.ProgfigsitePythonPackagePreparer`.
 
 Why statically include progfiguration core?
 -------------------------------------------
@@ -57,8 +55,5 @@ Recommendations
 
 * Add commands that will only be run from your controller as scripts in your progfigsite package.
 
-  `progfiguration_blacksite <https://github.com/mrled/psyops/tree/master/progfiguration_blacksite>`_
-  does this with a script that builds Alpine .apk packages,
-  `progfiguration-blacksite-buildapk <https://github.com/mrled/psyops/blob/master/progfiguration_blacksite/progfiguration_blacksite/cli/progfigsite_buildapk_cmd.py>`_.
   Write the script inside the ``cli`` module
   and add it to ``[project.scripts]`` in ``pyproject.toml``.
