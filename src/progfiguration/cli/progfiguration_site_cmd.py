@@ -404,6 +404,17 @@ def _make_parser():
         help=f"The destination path on the remote system, default is based on the time this program was started, like {default_dest}",
     )
 
+    # zipapp subcommand
+    sub_zipapp = subparsers.add_parser(
+        "zipapp",
+        description="Create a zipapp of the progfigsite",
+    )
+    sub_zipapp.add_argument(
+        "output",
+        type=pathlib.Path,
+        help="The output file for the zipapp",
+    )
+
     # list subcommand
     sub_list = subparsers.add_parser("list", description="List hoststore items")
     list_choices = ["nodes", "groups", "functions", "svcpreps"]
@@ -504,6 +515,8 @@ def _main_implementation(*arguments):
             print(f"Copied to remote host(s) at {parsed.destination}")
         else:
             parser.error(f"Unknown deploy action {parsed.deploy_action}")
+    elif parsed.action == "zipapp":
+        progfigbuild.build_progfigsite_zipapp(sitewrapper.get_progfigsite_path(), progfigsitename, parsed.output)
     elif parsed.action == "list":
         _action_list(hoststore, parsed.collection)
     elif parsed.action == "info":
