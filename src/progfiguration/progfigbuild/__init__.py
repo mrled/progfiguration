@@ -107,7 +107,7 @@ def build_progfigsite_zipapp(
     <https://github.com/python/cpython/blob/3.11/Lib/zipapp.py>
 
     We don't use the zipapp code itself because we want more control over what goes into the zipfile,
-    like ignoring __pycache__, \*.dist-info, etc.
+    like ignoring __pycache__, *.dist-info, etc.
 
     We don't need the ProgfigsitePythonPackagePreparer context manager here,
     because we don't need to inject build data into the filesystem before building the zipapp.
