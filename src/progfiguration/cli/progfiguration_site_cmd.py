@@ -30,26 +30,7 @@ from progfiguration.inventory.invstores import HostStore
 from progfiguration.progfigsite_validator import validate
 
 
-def _action_version_core():
-    """Retrieve the version of progfiguration core"""
-
-    try:
-        coreversion = importlib.metadata.version("progfiguration")
-    except importlib.metadata.PackageNotFoundError:
-        # This happens if progfiguration was statically included.
-        # TODO: Handle this case more gracefully.
-        coreversion = "statically included"
-    result = [
-        f"progfiguration core:",
-        f"    path: {pathlib.Path(progfiguration.__file__).parent}",
-        f"    version: {coreversion}",
-    ]
-    print("\n".join(result))
-
-
-def _action_version_all():
-    """Retrieve the version of progfiguration core and the progfigsite"""
-
+def _action_version_sitepkg():
     progfigsitename, progfigsite = sitewrapper.get_progfigsite()
     version = progfigsite.get_version()
     try:
@@ -66,9 +47,32 @@ def _action_version_all():
         f"    build date: {version}",
         f"    version: {builddate}",
     ]
+    return result
 
-    _action_version_core()
-    print("\n".join(result))
+
+def _action_version_core():
+    """Retrieve the version of progfiguration core"""
+
+    try:
+        coreversion = importlib.metadata.version("progfiguration")
+    except importlib.metadata.PackageNotFoundError:
+        # This happens if progfiguration was statically included.
+        # TODO: Handle this case more gracefully.
+        coreversion = "statically included"
+    result = [
+        f"progfiguration core:",
+        f"    path: {pathlib.Path(progfiguration.__file__).parent}",
+        f"    version: {coreversion}",
+    ]
+    return result
+
+
+def _action_version_all():
+    """Retrieve the version of progfiguration core and the progfigsite"""
+
+    corevers = _action_version_core()
+    sitevers = _action_version_sitepkg()
+    print("\n".join(corevers + sitevers))
 
 
 def _action_apply(
@@ -363,7 +367,10 @@ def _make_parser():
     subparsers = parser.add_subparsers(dest="action", required=True)
 
     # version subcommand
-    subparsers.add_parser("version", description="Show progfiguration core and progfigsite versions")
+    svn = subparsers.add_parser("version", description="Show progfiguration core and progfigsite versions")
+    svn.add_argument(
+        "--site", "-s", action="store_true", help="Show only the simple site version (can be usefil in CI)"
+    )
 
     # apply subcommand
     sub_apply = subparsers.add_parser("apply", parents=[roles_opts], description="Apply configuration")
@@ -494,7 +501,10 @@ def _main_implementation(*arguments):
     hoststore = inventory.hoststore
 
     if parsed.action == "version":
-        _action_version_all()
+        if parsed.site:
+            print(progfigsite.get_version())
+        else:
+            _action_version_all()
     elif parsed.action == "apply":
         _action_apply(hoststore, secretstore, nodename, roles=parsed.roles, force=parsed.force_apply)
     elif parsed.action == "deploy":
