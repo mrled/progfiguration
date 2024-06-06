@@ -44,8 +44,8 @@ def _action_version_sitepkg():
         f"    path: {sitewrapper.get_progfigsite_path()}",
         f"    name: {progfigsite.site_name}",
         f"    description: {progfigsite.site_description}",
-        f"    build date: {version}",
-        f"    version: {builddate}",
+        f"    build date: {builddate}",
+        f"    version: {version}",
     ]
     return result
 
