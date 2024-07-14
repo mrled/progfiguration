@@ -22,7 +22,7 @@ It provides:
     the default secret storage mechanism uses `Age <https://github.com/FiloSottile/age>`_,
     and building/development use well supported third party Python libraries.
 *   A command-line interface for running your configuration.
-*   A nice package building experience that assmebles your code into a single executable.
+*   A nice package building experience that assembles your code into a single executable.
 
 The whole point of ``progfiguration`` is that your configuration is just Python code.
 You can use any Python library you want, and you can use any Python code you want.
