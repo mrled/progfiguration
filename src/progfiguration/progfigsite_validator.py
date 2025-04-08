@@ -45,7 +45,7 @@ class ProgfigsiteProperty:
         if self.attribute:
             proppath_arr.append(self.attribute)
         proppath = ".".join(proppath_arr)
-        return f"Module has no {proppath} attribute of type {self.type.__name__}"
+        return f"Module has no '{proppath}' attribute of type '{self.type.__name__}'"
 
 
 class ValidationResult:
@@ -58,7 +58,10 @@ class ValidationResult:
         ProgfigsiteProperty("", "site_name", str),
         ProgfigsiteProperty("", "site_description", str),
         ProgfigsiteProperty("", "get_version", Callable[[], str]),
-        ProgfigsiteProperty("builddata", "", ModuleType),
+        # We can't require builddata, because it's only present in a build,
+        # not in an editable install,
+        # but the progfiguration_site_cmd requires validation before it will run.
+        # ProgfigsiteProperty("builddata", "", ModuleType),
         ProgfigsiteProperty("groups", "", ModuleType),
         ProgfigsiteProperty("nodes", "", ModuleType),
         ProgfigsiteProperty("roles", "", ModuleType),
