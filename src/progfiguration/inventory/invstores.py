@@ -54,6 +54,7 @@ class HostStore(Protocol):
     TODO: can we get rid of this?
     """
 
+    # TODO: make a nice wrapper around this so that if a node doesn't have a function, it ends gracefully instead of throwing an exception.
     node_function: Dict[str, str]
     """A dict where keys are node names and values are function names"""
 
