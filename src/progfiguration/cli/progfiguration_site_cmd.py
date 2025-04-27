@@ -25,7 +25,7 @@ from progfiguration.cli.util import (
     progfiguration_log_levels,
     syslog_excepthook,
 )
-from progfiguration.inventory.invstores import SecretStore
+from progfiguration.inventory.invstores import Secret, SecretStore
 from progfiguration.inventory.invstores import HostStore
 from progfiguration.progfigsite_validator import validate
 
@@ -187,6 +187,27 @@ def _action_decrypt(
             print("---")
             print(secretstore.get_secret("special", "controller", secret).decrypt())
             print("---")
+
+
+def _action_reencrypt(
+    secretstore: SecretStore,
+    hoststore: HostStore,
+    nodes: List[str],
+    groups: List[str],
+    controller_key: bool,
+):
+    for node in nodes:
+        for name in secretstore.list_secrets("node", node):
+            secret = secretstore.get_secret("node", node, name)
+            secretstore.encrypt_secret(hoststore, name, secret.decrypt(), [node], [], controller_key, store=True)
+    for group in groups:
+        for name in secretstore.list_secrets("group", group):
+            secret = secretstore.get_secret("group", group, name)
+            secretstore.encrypt_secret(hoststore, name, secret.decrypt(), [], [group], controller_key, store=True)
+    if controller_key:
+        for name in secretstore.list_secrets("special", "controller"):
+            secret = secretstore.get_secret("special", "controller", name)
+            secretstore.encrypt_secret(hoststore, name, secret.decrypt(), [], [], controller_key, store=True)
 
 
 def _action_deploy_apply(
@@ -452,6 +473,13 @@ def _make_parser():
         "decrypt", parents=[node_opts, ctrl_opts], description="Decrypt secrets from the secret store"
     )
 
+    # reencrypt subcommand
+    subparsers.add_parser(
+        "reencrypt",
+        parents=[node_opts, ctrl_opts],
+        description="Decrypt and re-encrypt secrets from the secret store; used when a host key has changed, or a group has added a new node",
+    )
+
     # validate subcommand
     subparsers.add_parser("validate", description="Validate the progfigsite that it matches the required API")
 
@@ -556,6 +584,16 @@ def _main_implementation(*arguments):
         if not parsed.nodes and not parsed.groups and not parsed.controller:
             parser.error("You must pass at least one of --nodes, --groups, or --controller")
         _action_decrypt(secretstore, hoststore, parsed.nodes, parsed.groups, parsed.controller)
+    elif parsed.action == "reencrypt":
+        if not parsed.nodes and not parsed.groups and not parsed.controller:
+            parser.error("You must pass at least one of --nodes, --groups, or --controller")
+        _action_reencrypt(
+            secretstore,
+            hoststore,
+            parsed.nodes,
+            parsed.groups,
+            parsed.controller,
+        )
     elif parsed.action == "validate":
         # We always validate but this shows a nice message even if validation succeeds
         _action_validate(progfigsitename)
